@@ -1,6 +1,14 @@
 {
   "runs": [
     {
+      "file": "bench_smoke_synthetic_5000_32.json",
+      "sha256": "74400022f9d32be5833369c845cc25e0d9fd31292100f915638e573358d076c1",
+      "commit": "unknown",
+      "dataset": "synthetic_5000_32_l2",
+      "state": "benchmark",
+      "size_bytes": 18585
+    },
+    {
       "file": "bug_after_dataset_a.json",
       "sha256": "d1797b102157145ff798f1339612e97a854719e6b5c051f5281079c29689bd3c",
       "commit": "4012691d5a5974b9abb12c3fb364bae3b0341b0c",
