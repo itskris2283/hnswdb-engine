@@ -14,7 +14,8 @@
 - **C++17 Core Engine:** Complete implementation of HNSW graph indexing (Malkov & Yashunin 2018) with heuristic neighbor pruning and `keepPrunedConnections`.
 - **SIMD Acceleration:** AVX2 + FMA vector kernels with automatic runtime CPUID dispatch and unrolled scalar fallbacks.
 - **Epoch-Based Visited Pool:** Reusable tag-pool with $O(1)$ epoch resets, eliminating dynamic heap allocations during graph traversal.
-- **Thread-Safe Striped Concurrency:** 1,024 striped spinlocks for deadlock-free fine-grained edge edits under reader-writer structure locks.
+- **Thread-Safe Striped Concurrency:** 1,024 striped spinlocks for deadlock-safe fine-grained edge edits under reader-writer structure locks.
+
 - **Expressive Filtered Search:** JSON/AST filter engine supporting `$eq, $ne, $gt, $gte, $lt, $lte, $in, $and, $or, $not` with inverted index selectivity acceleration.
 - **Production Persistence:** Little-endian binary format with IEEE 802.3 CRC32 checksum trailers and atomic write-rename guarantees (`.hdb`).
 - **Full-Stack Ecosystem:** Python API with zero-copy NumPy buffers and GIL release, FastAPI collection service, and CLI.
@@ -101,8 +102,8 @@ Evaluated on **Fashion-MNIST** (60,000 train vectors, 10,000 test vectors, 784 d
 
 | Metric | HNSWDB | FAISS HNSW | hnswlib |
 | :--- | :---: | :---: | :---: |
-| **Recall@10 (ef=50)** | 0.9976 | 0.9948 | 0.9950 |
-| **Recall@10 (ef=200)** | 0.9994 | 0.9990 | 0.9992 |
+| **Recall@10 (ef=50)** | 0.9972 | 0.9948 | 0.9950 |
+| **Recall@10 (ef=200)** | 0.9991 | 0.9990 | 0.9992 |
 | **p50 Latency (ef=50)** | 0.220 ms | 0.195 ms | 0.251 ms |
 | **p99 Latency (ef=50)** | 0.442 ms | 0.459 ms | 0.416 ms |
 | **Sequential QPS (ef=50)** | 4,304 | 4,696 | 3,899 |
@@ -111,7 +112,8 @@ Evaluated on **Fashion-MNIST** (60,000 train vectors, 10,000 test vectors, 784 d
 | **Index Disk Size** | 187.85 MB | 187.70 MB | 187.94 MB |
 | **Process RSS Delta** | 194.09 MB | 189.11 MB | 203.17 MB |
 
-For detailed analysis, investigations, and trade-offs, see [`docs/TRADEOFFS.md`](docs/TRADEOFFS.md), [`docs/BENCHMARKS.md`](docs/BENCHMARKS.md), and [`docs/INVESTIGATIONS.md`](docs/INVESTIGATIONS.md).
+For detailed analysis, investigations, and trade-offs, see [TRADEOFFS.md](docs/TRADEOFFS.md), [BENCHMARKS.md](docs/BENCHMARKS.md), and [INVESTIGATIONS.md](docs/INVESTIGATIONS.md).
+
 
 ---
 

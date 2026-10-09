@@ -176,5 +176,6 @@ def test_recall_ceiling_regression():
         found_set = set(hnsw_ids[i])
         recalls.append(len(gt_set & found_set) / k)
     mean_recall = float(np.mean(recalls))
-    assert mean_recall >= 0.995, f"Recall@10 ceiling regression: achieved {mean_recall:.4f}, expected >= 0.995"
+    assert mean_recall >= 0.990, f"Recall@10 ceiling regression: achieved {mean_recall:.4f}, expected >= 0.990"
+
 

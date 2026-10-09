@@ -100,7 +100,11 @@ def check_claims():
 
         # Check for banned phrases
         for phrase in BANNED_PHRASES:
-            if phrase.lower() in content.lower():
+            if phrase == "lock-free":
+                pattern = r'(?<!dead)\block-free\b'
+            else:
+                pattern = r'\b' + re.escape(phrase) + r'\b'
+            if re.search(pattern, content, re.IGNORECASE):
                 errors.append(f"{rel_fpath}: Contains prohibited phrase '{phrase}'")
 
         # Check for absolute paths
@@ -108,6 +112,7 @@ def check_claims():
             errors.append(f"{rel_fpath}: Contains prohibited 'file:///' link")
         if re.search(r'[A-Za-z]:[\\/][A-Za-z0-9_-]', content):
             errors.append(f"{rel_fpath}: Contains prohibited Windows absolute path")
+
 
         # Check unqualified sub-millisecond
         for line_num, line in enumerate(lines, 1):

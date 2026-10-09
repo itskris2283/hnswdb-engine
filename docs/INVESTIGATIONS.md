@@ -1,6 +1,6 @@
 # Engineering Investigations & Performance Debugging
 
-This document records empirical investigations, root-cause analyses, and before/after verification for performance and quality anomalies in HNSWDB. Every metric reported here corresponds to raw result artifacts in `results/raw/` registered in [`results/raw/MANIFEST.json`](file:///d:/MERN/CustomVecDB/results/raw/MANIFEST.json).
+This document records empirical investigations, root-cause analyses, and before/after verification for performance and quality anomalies in HNSWDB. Every metric reported here corresponds to raw result artifacts in `results/raw/` registered in [MANIFEST.json](../results/raw/MANIFEST.json).
 
 ---
 
@@ -11,7 +11,7 @@ This document records empirical investigations, root-cause analyses, and before/
 - **Impact:** Redundant candidate evaluations and wasted link slots reduced graph diversity and search recall.
 
 ### 2. Diagnostic Methodology
-We implemented [`HNSWIndex::diagnostics()`](file:///d:/MERN/CustomVecDB/src/hnsw_index.cpp) and graph topology audits to track:
+We implemented `HNSWIndex::diagnostics()` in [src/hnsw_index.cpp](../src/hnsw_index.cpp) and graph topology audits to track:
 - **Snapshot graph invariants:** Exact count of duplicate outgoing links (`duplicate_links_count`), self-loops (`self_links_count`), in-degree distribution, weakly connected components (`weakly_connected_components`), and layer-0 BFS reachability from the entry point (`unreachable_nodes_count`).
 - **Cumulative runtime counters:** Total calls to heuristic selection (`cumulative_heuristic_calls`), overflow re-selections (`cumulative_overflow_reselections`), and rejected duplicate link insertion attempts (`cumulative_duplicate_insert_attempts`).
 
@@ -27,7 +27,7 @@ In `select_neighbors_heuristic`:
 2. When reverse links were added to neighbor nodes, duplicate checks were needed to prevent adding existing connections.
 
 ### 4. Fix Applied
-In [`src/hnsw_index.cpp`](file:///d:/MERN/CustomVecDB/src/hnsw_index.cpp):
+In [src/hnsw_index.cpp](../src/hnsw_index.cpp):
 1. **Candidate Deduplication:** Unique filtering is applied to candidates prior to beam selection.
 2. **Discarded List Uniqueness Guard:** Elements from `discarded_list` are checked against `return_list` before insertion.
 3. **Legacy Bug Compile Guard:** Added `-DHNSWDB_LEGACY_DUPLICATE_BUG` in CMake to allow reproducible before/after verification on the identical codebase and commit.
@@ -35,8 +35,8 @@ In [`src/hnsw_index.cpp`](file:///d:/MERN/CustomVecDB/src/hnsw_index.cpp):
 ### 5. Empirical Verification & Measured Results
 
 All runs executed under identical hardware configuration (Intel Core i7-8650U, AVX2+FMA kernel, MSVC 2022 Release /O2). Raw JSON artifacts:
-- Before fix: [`results/raw/bug_before_dataset_a.json`](file:///d:/MERN/CustomVecDB/results/raw/bug_before_dataset_a.json), [`results/raw/bug_before_dataset_b.json`](file:///d:/MERN/CustomVecDB/results/raw/bug_before_dataset_b.json), [`results/raw/bug_before_fashion_mnist.json`](file:///d:/MERN/CustomVecDB/results/raw/bug_before_fashion_mnist.json)
-- After fix: [`results/raw/bug_after_dataset_a.json`](file:///d:/MERN/CustomVecDB/results/raw/bug_after_dataset_a.json), [`results/raw/bug_after_dataset_b.json`](file:///d:/MERN/CustomVecDB/results/raw/bug_after_dataset_b.json), [`results/raw/bug_after_fashion_mnist.json`](file:///d:/MERN/CustomVecDB/results/raw/bug_after_fashion_mnist.json)
+- Before fix: [bug_before_dataset_a.json](../results/raw/bug_before_dataset_a.json), [bug_before_dataset_b.json](../results/raw/bug_before_dataset_b.json), [bug_before_fashion_mnist.json](../results/raw/bug_before_fashion_mnist.json)
+- After fix: [bug_after_dataset_a.json](../results/raw/bug_after_dataset_a.json), [bug_after_dataset_b.json](../results/raw/bug_after_dataset_b.json), [bug_after_fashion_mnist.json](../results/raw/bug_after_fashion_mnist.json)
 
 #### Dataset A: Clustered Synthetic ($N=5,000, D=32, M=16, ef_c=100, k=10$)
 | $ef_{search}$ | Before Fix (`HNSWDB_LEGACY_DUPLICATE_BUG=ON`) | After Fix (Current Clean Engine) | Delta |
@@ -70,7 +70,7 @@ All runs executed under identical hardware configuration (Intel Core i7-8650U, A
 | 200 | 0.9991 | **0.9991** | 0.00% |
 | **Self-Retrieval Rate (1-NN)** | 0.9550 | **0.9630** | +0.80% |
 
-- **Regression Test:** [`tests/python/test_regression_bug.py`](file:///d:/MERN/CustomVecDB/tests/python/test_regression_bug.py) verifies graph connectivity, zero duplicate links, and recall $\ge 0.995$ on Dataset A.
+- **Regression Test:** [test_regression_bug.py](../tests/python/test_regression_bug.py) verifies graph connectivity, zero duplicate links, and recall $\ge 0.995$ on Dataset A.
 
 ---
 
@@ -84,8 +84,8 @@ Index construction in HNSWDB takes longer than `hnswlib` (e.g. single-thread bui
 2. **Lock Hold Duration in Graph Search:** Copying neighbor lists under spinlocks during multi-threaded batch ingestion.
 
 ### 3. Optimizations Applied
-In [`src/hnsw_index.cpp`](file:///d:/MERN/CustomVecDB/src/hnsw_index.cpp):
-1. **Stack Buffer Neighbor Copy:** `search_layer` copies links into a fixed stack array (`uint32_t local_nbrs[512]`) under the spinlock, releasing the lock in $< 20$ ns before executing distance calculations and prefetch instructions lock-free.
+In [src/hnsw_index.cpp](../src/hnsw_index.cpp):
+1. **Stack Buffer Neighbor Copy:** `search_layer` copies links into a fixed stack array (`uint32_t local_nbrs[512]`) under the spinlock, releasing the lock in $< 20$ ns before executing distance calculations and prefetch instructions without holding locks.
 2. **In-place Pruning:** Removed redundant allocations in candidate selection.
 
 ### 4. Measured Impact

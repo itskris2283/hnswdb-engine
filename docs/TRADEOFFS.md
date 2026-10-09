@@ -2,9 +2,9 @@
 
 ## 1. Executive Summary
 
-HNSWDB was engineered from first principles in C++17 as an educational and production-grade ANN vector database. Across synthetic and real-world datasets, HNSWDB achieves **97.0% – 99.9% Recall@10**, sub-millisecond search latency, and consistent throughput across sequential and multi-threaded queries.
+HNSWDB was engineered from first principles in C++17 as an approximate nearest neighbor (ANN) vector database. Across synthetic and real-world datasets, HNSWDB achieves **97.0% – 99.9% Recall@10**, p50 search latency under 0.3 ms at $ef=50$, and consistent throughput across sequential and multi-threaded queries.
 
-In direct comparison with industry benchmarks (**FAISS** and **hnswlib**), HNSWDB demonstrates competitive search latency and memory efficiency, while exhibiting defensible differences in index build throughput and SIMD specialization.
+In direct comparison with reference benchmarks (**FAISS** and **hnswlib**), HNSWDB demonstrates competitive search latency and memory efficiency, while exhibiting defensible differences in index build throughput and SIMD specialization.
 
 ---
 
@@ -33,7 +33,7 @@ Evaluated on **Fashion-MNIST** ($N=60,000, D=784, M=16, ef_c=100, k=10$) on Wind
 
 ### 3.2 SIMD Kernel Dispatch vs. Template Specialization
 - **FAISS & hnswlib:** Compile dimension-specialized template instantiations (e.g. `L2SqrSIMD16Ext`), allowing compiler loop unrolling and zero-overhead direct inlining.
-- **HNSWDB:** Implements dynamic vector dimensions with runtime CPUID kernel dispatch (`DistFunc dist_func_`) and scalar tail loops. As measured in [`results/raw/kernel_microbench.json`](file:///d:/MERN/CustomVecDB/results/raw/kernel_microbench.json), HNSWDB AVX2+FMA kernels achieve high throughput:
+- **HNSWDB:** Implements dynamic vector dimensions with runtime CPUID kernel dispatch (`DistFunc dist_func_`) and scalar tail loops. As measured in [kernel_microbench.json](../results/raw/kernel_microbench.json), HNSWDB AVX2+FMA kernels achieve high throughput:
   - **16-dim:** 8.0 ns/eval (124.6 M-evals/s)
   - **32-dim:** 7.5 ns/eval (132.5 M-evals/s)
   - **64-dim:** 9.0 ns/eval (111.4 M-evals/s)
@@ -50,6 +50,6 @@ Evaluated on **Fashion-MNIST** ($N=60,000, D=784, M=16, ef_c=100, k=10$) on Wind
 
 ## 4. Where HNSWDB Excels Over FAISS / hnswlib
 
-1. **Embedded Metadata Filtering:** FAISS requires external ID selector callbacks; HNSWDB includes an integrated JSON-like AST engine with inverted index acceleration, automatically switching between exact subset brute-force ($\le 2\%$) and expanded graph traversal ($> 2\%$).
+1. **Embedded Metadata Filtering:** Unlike libraries that rely on external callback wrappers, HNSWDB includes an integrated JSON-like AST engine with inverted index acceleration, automatically switching between exact subset brute-force ($\le 2\%$) and expanded graph traversal ($> 2\%$).
 2. **Crash-Safe Persistence:** HNSWDB includes IEEE 802.3 CRC32 checksum trailers and atomic write-rename guarantees (`.hdb`), catching silent bit flips and partial writes.
 3. **Ergonomic Full-Stack Ecosystem:** Includes native Python bindings (zero-copy NumPy buffers, GIL release), FastAPI REST server with collection management, and Typer CLI.

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""
+r"""
 Documentation Link and Path Checker.
 Verifies:
+
 1. No absolute Windows paths (e.g. D:/..., C:\..., file:///) in documentation.
 2. All relative markdown links and image paths exist on disk.
 """
@@ -37,10 +38,10 @@ def check_docs_links():
             lines = f.readlines()
 
         for line_num, line in enumerate(lines, 1):
-            # Check for file:/// or absolute drive paths
-            if "file:///" in line or re.search(r'[a-zA-Z]:[\\/]', line):
-                # Ignore in comments or code block examples if explicitly needed, else flag
+            # Check for file:/// or Windows absolute drive paths (e.g., C:\ or D:/)
+            if "file:///" in line or re.search(r'(?<!https)(?<!http)\b[a-zA-Z]:[\\/][a-zA-Z0-9_-]', line):
                 errors.append(f"{rel_fpath}:{line_num}: Found prohibited absolute or file:/// path: {line.strip()}")
+
 
             # Check markdown links
             matches = link_pattern.findall(line)

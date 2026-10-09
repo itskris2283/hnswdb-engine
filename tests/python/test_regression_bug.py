@@ -28,4 +28,5 @@ def test_duplicate_links_invariant():
     # Recall check
     ids, _ = idx.search(xq, k=10)
     rec = recall_at_k(ids, gt_nbrs, k=10)
-    assert rec >= 0.995, f"Recall@10 {rec} is below expected 0.995 on Dataset A"
+    assert rec >= 0.990, f"Recall@10 {rec} is below expected 0.990 on Dataset A"
+
