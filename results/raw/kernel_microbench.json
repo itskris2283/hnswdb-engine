@@ -1,0 +1,70 @@
+{
+  "benchmark": "kernel_microbench",
+  "active_kernel": "avx2",
+  "results": {
+    "dim_16": {
+      "dim": 16,
+      "ns_per_distance": 8.02,
+      "million_distances_per_sec": 124.65,
+      "effective_gflops": 5.98
+    },
+    "dim_32": {
+      "dim": 32,
+      "ns_per_distance": 7.55,
+      "million_distances_per_sec": 132.52,
+      "effective_gflops": 12.72
+    },
+    "dim_64": {
+      "dim": 64,
+      "ns_per_distance": 8.98,
+      "million_distances_per_sec": 111.38,
+      "effective_gflops": 21.38
+    },
+    "dim_128": {
+      "dim": 128,
+      "ns_per_distance": 12.69,
+      "million_distances_per_sec": 78.79,
+      "effective_gflops": 30.26
+    },
+    "dim_784": {
+      "dim": 784,
+      "ns_per_distance": 53.22,
+      "million_distances_per_sec": 18.79,
+      "effective_gflops": 44.2
+    }
+  },
+  "env": {
+    "cpu_model": "Intel(R) Core(TM) i7-8650U CPU @ 1.90GHz",
+    "physical_cores": 4,
+    "logical_cores": 8,
+    "cpu_clock_mhz": 1910.0,
+    "ram_gb": 15.84,
+    "os": "Windows",
+    "os_release": "11",
+    "os_version": "10.0.22621",
+    "machine": "AMD64",
+    "python_version": "3.12.6",
+    "compiler": "MSVC 2022 (cl.exe 19.40)",
+    "cmake_build_type": "Release",
+    "cmake_flags": "/O2 /MD /arch:AVX2 (MSVC)",
+    "git_commit": "bde8cd2e25e857c8355847520b7cbdcd34ebacce",
+    "active_simd_kernel": "avx2",
+    "process_affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "process_priority": "32",
+    "versions": {
+      "hnswdb": "0.1.0",
+      "numpy": "2.3.5",
+      "faiss": "1.15.1",
+      "hnswlib": "0.8.0"
+    }
+  }
+}

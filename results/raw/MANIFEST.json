@@ -4,8 +4,8 @@
       "file": "bench_smoke_synthetic_5000_32.json",
       "sha256": "74400022f9d32be5833369c845cc25e0d9fd31292100f915638e573358d076c1",
       "commit": "unknown",
-      "dataset": "synthetic_5000_32_l2",
-      "state": "benchmark",
+      "dataset": "unknown",
+      "state": "microbench",
       "size_bytes": 18585
     },
     {
@@ -55,6 +55,14 @@
       "dataset": "fashion_mnist",
       "state": "before",
       "size_bytes": 1946
+    },
+    {
+      "file": "kernel_microbench.json",
+      "sha256": "546b6f840d90f333499d5ad38323776b9d5e63cf8cbf97370421d9db3c50cd6e",
+      "commit": "bde8cd2e25e857c8355847520b7cbdcd34ebacce",
+      "dataset": "kernel_microbench",
+      "state": "microbench",
+      "size_bytes": 1674
     }
   ]
 }
