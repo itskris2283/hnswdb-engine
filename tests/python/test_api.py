@@ -189,3 +189,26 @@ def test_flat_index_api():
     flat.delete(3)
     assert not flat.contains(3)
     assert len(flat) == 9
+
+
+def test_diagnostics_dictionary():
+    dim = 16
+    idx = HNSWIndex(dim=dim, metric="l2", max_elements=50, M=16, ef_construction=100, ef_search=50, seed=42)
+    vecs = np.random.randn(30, dim).astype(np.float32)
+    idx.add(vecs, np.arange(30, dtype=np.int64))
+
+    diag = idx.diagnostics()
+    assert isinstance(diag, dict)
+    assert diag["unreachable_nodes_count"] == 0
+    assert diag["zero_in_degree_count"] == 0
+    assert diag["duplicate_links_count"] == 0
+    assert diag["self_links_count"] == 0
+    assert diag["weakly_connected_components"] == 1
+    assert diag["layer0_degree_min"] >= 1
+    assert diag["layer0_degree_mean"] > 1.0
+    assert diag["layer0_degree_max"] <= 32
+    assert diag["reciprocal_links_fraction"] > 0.0
+    assert diag["distance_computations_build"] > 0
+
+
+

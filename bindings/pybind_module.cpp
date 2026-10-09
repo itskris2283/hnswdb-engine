@@ -359,6 +359,14 @@ PYBIND11_MODULE(_core, m) {
             return d;
         })
 
+        .def("diagnostics", [](const HNSWIndex& self) {
+            auto diag_map = self.diagnostics();
+            py::dict d;
+            for (const auto& [k, v] : diag_map) {
+                d[py::str(k)] = v;
+            }
+            return d;
+        })
 
         .def("__len__", &HNSWIndex::size)
         .def("size", &HNSWIndex::size)

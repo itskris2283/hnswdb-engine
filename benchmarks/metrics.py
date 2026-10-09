@@ -2,21 +2,48 @@ import time
 import numpy as np
 
 
-def recall_at_k(found: np.ndarray, truth: np.ndarray, k: int) -> float:
-    """Compute mean Recall@k between found IDs and ground truth IDs."""
+def per_query_recall(found: np.ndarray, truth: np.ndarray, k: int) -> np.ndarray:
+    """Compute per-query recall array for k neighbors."""
     if len(found) == 0 or len(truth) == 0 or k <= 0:
-        return 0.0
-    recalls = []
-    for f, t in zip(found, truth):
+        return np.array([], dtype=np.float64)
+    recalls = np.zeros(len(found), dtype=np.float64)
+    for i, (f, t) in enumerate(zip(found, truth)):
         f_k = set(f[:k].tolist())
         t_k = set(t[:k].tolist())
-        # Remove padding / negative IDs
         f_k.discard(-1)
         t_k.discard(-1)
-        if len(t_k) == 0:
-            continue
-        recalls.append(len(f_k & t_k) / float(min(k, len(t_k))))
-    return float(np.mean(recalls)) if recalls else 0.0
+        denom = float(min(k, len(t_k)))
+        if denom > 0:
+            recalls[i] = len(f_k & t_k) / denom
+        else:
+            recalls[i] = 1.0
+    return recalls
+
+
+def recall_at_k(found: np.ndarray, truth: np.ndarray, k: int) -> float:
+    """Compute mean Recall@k between found IDs and ground truth IDs."""
+    arr = per_query_recall(found, truth, k)
+    return float(np.mean(arr)) if len(arr) > 0 else 0.0
+
+
+def self_retrieval_rate(search_fn, xb: np.ndarray, labels: np.ndarray = None) -> float:
+    """
+    Check 1-NN self-retrieval: querying with xb[i] should return label[i] at rank 0.
+    search_fn(query_vector_1d_or_2d) -> (ids, dists)
+    """
+    n = len(xb)
+    if n == 0:
+        return 1.0
+    if labels is None:
+        labels = np.arange(n, dtype=np.int64)
+    correct = 0
+    for i in range(n):
+        q = np.ascontiguousarray(xb[i:i+1], dtype=np.float32)
+        ids, _ = search_fn(q)
+        if len(ids) > 0 and len(ids[0]) > 0 and ids[0][0] == labels[i]:
+            correct += 1
+    return float(correct / n)
+
 
 
 def approx_ratio(found_d: np.ndarray, true_d: np.ndarray, k: int, squared: bool = True) -> float:

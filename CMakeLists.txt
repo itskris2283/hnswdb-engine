@@ -9,6 +9,7 @@ option(HNSWDB_BUILD_TESTS "Build tests" ON)
 option(HNSWDB_WERROR "Treat warnings as errors" OFF)
 set(HNSWDB_SANITIZE "" CACHE STRING "Comma-separated list of sanitizers (e.g. address,undefined,thread)")
 option(HNSWDB_NATIVE "Optimize for native architecture" OFF)
+option(HNSWDB_LEGACY_DUPLICATE_BUG "Reintroduce legacy duplicate link behavior for regression testing" OFF)
 
 find_package(Threads REQUIRED)
 
@@ -20,6 +21,10 @@ add_library(hnswdb
     src/serialization.cpp
     src/thread_pool.cpp
 )
+
+if(HNSWDB_LEGACY_DUPLICATE_BUG)
+    target_compile_definitions(hnswdb PUBLIC HNSWDB_LEGACY_DUPLICATE_BUG)
+endif()
 
 target_include_directories(hnswdb PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 

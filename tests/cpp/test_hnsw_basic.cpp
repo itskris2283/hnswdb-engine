@@ -125,3 +125,29 @@ TEST(HnswBasic, UpsertReplacesVector) {
     EXPECT_EQ(search_res.ids[0], 1);
     EXPECT_NEAR(search_res.dists[0], 0.0f, 1e-5f);
 }
+
+TEST(HnswBasic, DiagnosticsReportsValidGraphProperties) {
+    constexpr std::size_t d = 8;
+    constexpr std::size_t n = 50;
+    hnswdb::HNSWIndex idx(d, hnswdb::Metric::L2, n, 16, 100, 50, 42);
+
+    auto data = make_random_matrix(n, d, 123);
+    for (std::size_t i = 0; i < n; ++i) {
+        idx.add(data.data() + i * d, static_cast<hnswdb::label_t>(i));
+    }
+
+    auto diag = idx.diagnostics();
+    EXPECT_EQ(diag.at("unreachable_nodes_count"), 0.0);
+    EXPECT_EQ(diag.at("zero_in_degree_count"), 0.0);
+    EXPECT_EQ(diag.at("duplicate_links_count"), 0.0);
+    EXPECT_EQ(diag.at("self_links_count"), 0.0);
+    EXPECT_EQ(diag.at("weakly_connected_components"), 1.0);
+    EXPECT_GE(diag.at("layer0_degree_min"), 1.0);
+    EXPECT_GT(diag.at("layer0_degree_mean"), 1.0);
+    EXPECT_LE(diag.at("layer0_degree_max"), 32.0);
+    EXPECT_GT(diag.at("reciprocal_links_fraction"), 0.0);
+    EXPECT_GT(diag.at("distance_computations_build"), 0.0);
+}
+
+
+

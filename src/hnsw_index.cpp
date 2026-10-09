@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <queue>
+#include <unordered_set>
 #include <chrono>
 #include <cstring>
 #include <future>
@@ -176,18 +177,24 @@ std::vector<HNSWIndex::Candidate> HNSWIndex::search_layer(
     idx_t entry_point,
     std::size_t ef,
     int layer,
-    VisitedList* visited) const {
+    VisitedList* visited,
+    bool is_build) const {
 
     std::priority_queue<Candidate, std::vector<Candidate>, std::greater<Candidate>> candidates;
     std::priority_queue<Candidate, std::vector<Candidate>, std::less<Candidate>> w_results;
 
+    if (is_build) {
+        distance_computations_build_++;
+    } else {
+        distance_computations_query_++;
+    }
     float init_dist = compute_dist_by_idx(query_vec, entry_point);
     visited->mark_visited(entry_point);
 
     candidates.push({init_dist, entry_point});
     w_results.push({init_dist, entry_point});
 
-    uint32_t local_nbrs[128];
+    uint32_t local_nbrs[512];
 
     while (!candidates.empty()) {
         Candidate curr = candidates.top();
@@ -202,14 +209,14 @@ std::vector<HNSWIndex::Candidate> HNSWIndex::search_layer(
         if (layer == 0) {
             SpinLockGuard guard(get_stripe_lock(curr.idx));
             nbr_count = *get_layer0_link_count_ptr(curr.idx);
-            if (nbr_count > 128) nbr_count = 128;
+            if (nbr_count > 512) nbr_count = 512;
             const uint32_t* links = get_layer0_links_ptr(curr.idx);
             std::memcpy(local_nbrs, links, nbr_count * sizeof(uint32_t));
         } else {
             SpinLockGuard guard(get_stripe_lock(curr.idx));
             if (layer - 1 < static_cast<int>(upper_links_[curr.idx].size())) {
                 const auto& l_links = upper_links_[curr.idx][layer - 1];
-                nbr_count = static_cast<uint32_t>(std::min<size_t>(l_links.size(), 128));
+                nbr_count = static_cast<uint32_t>(std::min<size_t>(l_links.size(), 512));
                 std::memcpy(local_nbrs, l_links.data(), nbr_count * sizeof(uint32_t));
             }
         }
@@ -218,6 +225,11 @@ std::vector<HNSWIndex::Candidate> HNSWIndex::search_layer(
             idx_t nbr = local_nbrs[i];
             if (visited->mark_visited(nbr)) {
                 distance::prefetch_vector(vectors_.data() + nbr * dim_, dim_);
+                if (is_build) {
+                    distance_computations_build_++;
+                } else {
+                    distance_computations_query_++;
+                }
                 float nbr_dist = compute_dist_by_idx(query_vec, nbr);
 
                 if (w_results.size() < ef || nbr_dist < w_results.top().dist) {
@@ -242,11 +254,14 @@ std::vector<HNSWIndex::Candidate> HNSWIndex::search_layer(
     return result_vec;
 }
 
+
 std::vector<idx_t> HNSWIndex::select_neighbors_heuristic(
     const float* query_vec,
     std::vector<Candidate>& candidates,
     std::size_t max_links,
     bool keep_pruned) const {
+
+    heuristic_selection_calls_++;
 
     if (candidates.empty()) {
         return {};
@@ -258,6 +273,7 @@ std::vector<idx_t> HNSWIndex::select_neighbors_heuristic(
         return a.idx < b.idx;
     });
 
+#ifndef HNSWDB_LEGACY_DUPLICATE_BUG
     // Remove duplicates in-place
     size_t unique_count = 0;
     for (size_t i = 0; i < candidates.size(); ++i) {
@@ -266,6 +282,7 @@ std::vector<idx_t> HNSWIndex::select_neighbors_heuristic(
         }
     }
     candidates.resize(unique_count);
+#endif
 
     if (candidates.size() <= max_links && !keep_pruned) {
         std::vector<idx_t> result;
@@ -291,6 +308,7 @@ std::vector<idx_t> HNSWIndex::select_neighbors_heuristic(
 
         for (idx_t selected_idx : return_list) {
             const float* selected_vec = vectors_.data() + selected_idx * dim_;
+            distance_computations_build_++;
             float dist_to_selected = compute_dist(current_vec, selected_vec);
 
             if (dist_to_selected < current.dist) {
@@ -298,6 +316,7 @@ std::vector<idx_t> HNSWIndex::select_neighbors_heuristic(
                 break;
             }
         }
+
 
         if (is_good) {
             return_list.push_back(current.idx);
@@ -309,6 +328,7 @@ std::vector<idx_t> HNSWIndex::select_neighbors_heuristic(
     if (keep_pruned && return_list.size() < max_links) {
         for (const auto& discarded : discarded_list) {
             if (return_list.size() >= max_links) break;
+#ifndef HNSWDB_LEGACY_DUPLICATE_BUG
             bool already_present = false;
             for (idx_t sel : return_list) {
                 if (sel == discarded.idx) {
@@ -319,6 +339,9 @@ std::vector<idx_t> HNSWIndex::select_neighbors_heuristic(
             if (!already_present) {
                 return_list.push_back(discarded.idx);
             }
+#else
+            return_list.push_back(discarded.idx);
+#endif
         }
     }
 
@@ -394,6 +417,7 @@ void HNSWIndex::add(const float* vector, label_t label, const MetaMap* metadata)
     }
 
     // Greedy descent from curr_max_level down to node_level + 1
+    distance_computations_build_++;
     float cur_dist = compute_dist_by_idx(vec_to_store, curr_obj);
     for (int l = curr_max_level; l > node_level; --l) {
         bool changed = true;
@@ -402,6 +426,7 @@ void HNSWIndex::add(const float* vector, label_t label, const MetaMap* metadata)
             changed = false;
             get_node_links(curr_obj, l, links);
             for (idx_t nbr : links) {
+                distance_computations_build_++;
                 float d = compute_dist_by_idx(vec_to_store, nbr);
                 if (d < cur_dist) {
                     cur_dist = d;
@@ -415,9 +440,10 @@ void HNSWIndex::add(const float* vector, label_t label, const MetaMap* metadata)
     // Connect layers down to 0
     for (int l = std::min(node_level, curr_max_level); l >= 0; --l) {
         VisitedListGuard visited_guard(*visited_pool_);
-        std::vector<Candidate> candidates = search_layer(vec_to_store, curr_obj, ef_construction_, l, visited_guard.get());
+        std::vector<Candidate> candidates = search_layer(vec_to_store, curr_obj, ef_construction_, l, visited_guard.get(), true);
 
         std::size_t M_l = (l == 0) ? M0_ : Mmax_;
+
         std::vector<idx_t> selected_neighbors = select_neighbors_heuristic(vec_to_store, candidates, M_l, true);
 
         set_node_links(new_idx, l, selected_neighbors);
@@ -430,18 +456,24 @@ void HNSWIndex::add(const float* vector, label_t label, const MetaMap* metadata)
                 uint32_t* links = get_layer0_links_ptr(nbr);
 
                 bool already_linked = false;
+#ifndef HNSWDB_LEGACY_DUPLICATE_BUG
                 for (uint32_t i = 0; i < count; ++i) {
                     if (links[i] == new_idx) {
                         already_linked = true;
                         break;
                     }
                 }
+                if (already_linked) {
+                    duplicate_insert_attempts_++;
+                }
+#endif
 
                 if (!already_linked) {
                     if (count < M0_) {
                         links[count++] = new_idx;
                         *get_layer0_link_count_ptr(nbr) = count;
                     } else {
+                        overflow_reselection_calls_++;
                         std::vector<Candidate> nbr_candidates;
                         nbr_candidates.reserve(count + 1);
                         const float* nbr_vec = vectors_.data() + nbr * dim_;
@@ -462,17 +494,23 @@ void HNSWIndex::add(const float* vector, label_t label, const MetaMap* metadata)
                 auto& nbr_links = upper_links_[nbr][l - 1];
 
                 bool already_linked = false;
+#ifndef HNSWDB_LEGACY_DUPLICATE_BUG
                 for (idx_t link_idx : nbr_links) {
                     if (link_idx == new_idx) {
                         already_linked = true;
                         break;
                     }
                 }
+                if (already_linked) {
+                    duplicate_insert_attempts_++;
+                }
+#endif
 
                 if (!already_linked) {
                     if (nbr_links.size() < Mmax_) {
                         nbr_links.push_back(new_idx);
                     } else {
+                        overflow_reselection_calls_++;
                         std::vector<Candidate> nbr_candidates;
                         nbr_candidates.reserve(nbr_links.size() + 1);
                         const float* nbr_vec = vectors_.data() + nbr * dim_;
@@ -694,6 +732,8 @@ SearchResult HNSWIndex::search(const float* query,
             curr_max_level = max_level_.load();
         }
 
+        distance_computations_query_++;
+        float cur_dist_f = compute_dist_by_idx(q, curr_obj);
         for (int l = curr_max_level; l > 0; --l) {
             bool changed = true;
             std::vector<idx_t> links;
@@ -701,8 +741,10 @@ SearchResult HNSWIndex::search(const float* query,
                 changed = false;
                 get_node_links(curr_obj, l, links);
                 for (idx_t nbr : links) {
+                    distance_computations_query_++;
                     float d = compute_dist_by_idx(q, nbr);
-                    if (d < compute_dist_by_idx(q, curr_obj)) {
+                    if (d < cur_dist_f) {
+                        cur_dist_f = d;
                         curr_obj = nbr;
                         changed = true;
                     }
@@ -711,7 +753,7 @@ SearchResult HNSWIndex::search(const float* query,
         }
 
         VisitedListGuard visited_guard(*visited_pool_);
-        std::vector<Candidate> candidates = search_layer(q, curr_obj, ef, 0, visited_guard.get());
+        std::vector<Candidate> candidates = search_layer(q, curr_obj, ef, 0, visited_guard.get(), false);
 
         SearchResult result;
         result.ids.reserve(k);
@@ -745,6 +787,7 @@ SearchResult HNSWIndex::search(const float* query,
         curr_max_level = max_level_.load();
     }
 
+    distance_computations_query_++;
     float cur_dist = compute_dist_by_idx(q, curr_obj);
     for (int l = curr_max_level; l > 0; --l) {
         bool changed = true;
@@ -753,6 +796,7 @@ SearchResult HNSWIndex::search(const float* query,
             changed = false;
             get_node_links(curr_obj, l, links);
             for (idx_t nbr : links) {
+                distance_computations_query_++;
                 float d = compute_dist_by_idx(q, nbr);
                 if (d < cur_dist) {
                     cur_dist = d;
@@ -764,7 +808,8 @@ SearchResult HNSWIndex::search(const float* query,
     }
 
     VisitedListGuard visited_guard(*visited_pool_);
-    std::vector<Candidate> candidates = search_layer(q, curr_obj, ef, 0, visited_guard.get());
+    std::vector<Candidate> candidates = search_layer(q, curr_obj, ef, 0, visited_guard.get(), false);
+
 
     SearchResult result;
     result.ids.reserve(k);
@@ -978,6 +1023,179 @@ std::unordered_map<std::string, double> HNSWIndex::stats() const {
     res["memory_bytes"] = static_cast<double>(mem);
 
     return res;
+}
+
+std::unordered_map<std::string, double> HNSWIndex::diagnostics() const {
+    std::shared_lock<std::shared_mutex> lock(structure_lock_);
+    std::unordered_map<std::string, double> d;
+
+    std::size_t total = cur_element_count_.load();
+    std::size_t live = live_count_.load();
+    d["total_elements"] = static_cast<double>(total);
+    d["live_elements"] = static_cast<double>(live);
+
+    if (total == 0) {
+        d["duplicate_links_count"] = 0.0;
+        d["self_links_count"] = 0.0;
+        d["unreachable_nodes_count"] = 0.0;
+        d["zero_in_degree_count"] = 0.0;
+        d["weakly_connected_components"] = 0.0;
+        d["reciprocal_links_fraction"] = 1.0;
+        d["layer0_degree_mean"] = 0.0;
+        d["layer0_degree_min"] = 0.0;
+        d["layer0_degree_max"] = 0.0;
+        d["cumulative_duplicate_insert_attempts"] = 0.0;
+        d["cumulative_heuristic_calls"] = 0.0;
+        d["cumulative_overflow_reselections"] = 0.0;
+        d["distance_computations_build"] = 0.0;
+        d["distance_computations_query"] = 0.0;
+        return d;
+    }
+
+    uint64_t dup_count = 0;
+    uint64_t self_links = 0;
+    double min_deg = 1e9, max_deg = 0.0, sum_deg = 0.0;
+    std::vector<uint32_t> in_degree(total, 0);
+    std::vector<std::vector<uint32_t>> adj(total);
+
+    for (std::size_t i = 0; i < total; ++i) {
+        if (deleted_[i]) continue;
+        uint32_t cnt = *get_layer0_link_count_ptr(static_cast<idx_t>(i));
+        const uint32_t* links = get_layer0_links_ptr(static_cast<idx_t>(i));
+
+        sum_deg += cnt;
+        if (cnt < min_deg) min_deg = cnt;
+        if (cnt > max_deg) max_deg = cnt;
+
+        std::unordered_set<uint32_t> seen;
+        for (uint32_t j = 0; j < cnt; ++j) {
+            uint32_t nbr = links[j];
+            if (nbr == i) ++self_links;
+            if (!seen.insert(nbr).second) {
+                ++dup_count;
+            }
+            if (nbr < total) {
+                in_degree[nbr]++;
+                adj[i].push_back(nbr);
+            }
+        }
+    }
+
+    // Upper layer dups & self links
+    for (std::size_t i = 0; i < total; ++i) {
+        if (deleted_[i]) continue;
+        int lvl = levels_[i];
+        for (int l = 1; l <= lvl; ++l) {
+            if (l - 1 < static_cast<int>(upper_links_[i].size())) {
+                const auto& u_links = upper_links_[i][l - 1];
+                std::unordered_set<uint32_t> u_seen;
+                for (uint32_t nbr : u_links) {
+                    if (nbr == i) ++self_links;
+                    if (!u_seen.insert(nbr).second) {
+                        ++dup_count;
+                    }
+                }
+            }
+        }
+    }
+
+    d["duplicate_links_count"] = static_cast<double>(dup_count);
+    d["self_links_count"] = static_cast<double>(self_links);
+    d["layer0_degree_mean"] = live > 0 ? (sum_deg / live) : 0.0;
+    d["layer0_degree_min"] = (min_deg > 1e8) ? 0.0 : min_deg;
+    d["layer0_degree_max"] = max_deg;
+
+    // Zero in-degree nodes (excluding entry point)
+    idx_t ep = entry_point_.load();
+    uint64_t zero_in = 0;
+    for (std::size_t i = 0; i < total; ++i) {
+        if (!deleted_[i] && i != ep && in_degree[i] == 0) {
+            ++zero_in;
+        }
+    }
+    d["zero_in_degree_count"] = static_cast<double>(zero_in);
+
+    // BFS reachability from entry point at layer 0
+    std::vector<bool> reachable(total, false);
+    if (ep < total && !deleted_[ep]) {
+        std::queue<idx_t> q;
+        q.push(ep);
+        reachable[ep] = true;
+        while (!q.empty()) {
+            idx_t curr = q.front();
+            q.pop();
+            for (uint32_t nbr : adj[curr]) {
+                if (nbr < total && !reachable[nbr]) {
+                    reachable[nbr] = true;
+                    q.push(nbr);
+                }
+            }
+        }
+    }
+
+    uint64_t unreachable = 0;
+    for (std::size_t i = 0; i < total; ++i) {
+        if (!deleted_[i] && !reachable[i]) {
+            ++unreachable;
+        }
+    }
+    d["unreachable_nodes_count"] = static_cast<double>(unreachable);
+
+    // Weakly connected components
+    std::vector<std::vector<uint32_t>> undir_adj(total);
+    for (std::size_t i = 0; i < total; ++i) {
+        if (deleted_[i]) continue;
+        for (uint32_t nbr : adj[i]) {
+            undir_adj[i].push_back(nbr);
+            undir_adj[nbr].push_back(static_cast<uint32_t>(i));
+        }
+    }
+
+    std::vector<bool> visited_wcc(total, false);
+    uint64_t num_wcc = 0;
+    for (std::size_t i = 0; i < total; ++i) {
+        if (deleted_[i] || visited_wcc[i]) continue;
+        ++num_wcc;
+        std::queue<uint32_t> q;
+        q.push(static_cast<uint32_t>(i));
+        visited_wcc[i] = true;
+        while (!q.empty()) {
+            uint32_t u = q.front();
+            q.pop();
+            for (uint32_t v : undir_adj[u]) {
+                if (v < total && !deleted_[v] && !visited_wcc[v]) {
+                    visited_wcc[v] = true;
+                    q.push(v);
+                }
+            }
+        }
+    }
+    d["weakly_connected_components"] = static_cast<double>(num_wcc);
+
+    // Reciprocal links fraction
+    uint64_t total_edges = 0;
+    uint64_t reciprocal_edges = 0;
+    for (std::size_t i = 0; i < total; ++i) {
+        if (deleted_[i]) continue;
+        for (uint32_t nbr : adj[i]) {
+            if (nbr >= total || deleted_[nbr]) continue;
+            ++total_edges;
+            const auto& nbr_links = adj[nbr];
+            if (std::find(nbr_links.begin(), nbr_links.end(), static_cast<uint32_t>(i)) != nbr_links.end()) {
+                ++reciprocal_edges;
+            }
+        }
+    }
+    d["reciprocal_links_fraction"] = total_edges > 0 ? (static_cast<double>(reciprocal_edges) / total_edges) : 1.0;
+
+    // Cumulative counters
+    d["cumulative_duplicate_insert_attempts"] = static_cast<double>(duplicate_insert_attempts_.load());
+    d["cumulative_heuristic_calls"] = static_cast<double>(heuristic_selection_calls_.load());
+    d["cumulative_overflow_reselections"] = static_cast<double>(overflow_reselection_calls_.load());
+    d["distance_computations_build"] = static_cast<double>(distance_computations_build_.load());
+    d["distance_computations_query"] = static_cast<double>(distance_computations_query_.load());
+
+    return d;
 }
 
 bool HNSWIndex::validate_graph() const {

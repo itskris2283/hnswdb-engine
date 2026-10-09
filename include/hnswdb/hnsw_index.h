@@ -104,6 +104,7 @@ public:
 
     // Inspection and metrics
     std::unordered_map<std::string, double> stats() const;
+    std::unordered_map<std::string, double> diagnostics() const;
     bool validate_graph() const;
 
     void set_ef_search(std::size_t ef) { ef_search_ = ef; }
@@ -152,7 +153,9 @@ private:
         idx_t entry_point,
         std::size_t ef,
         int layer,
-        VisitedList* visited) const;
+        VisitedList* visited,
+        bool is_build = false) const;
+
 
     // Filtered search helpers
     double estimate_selectivity(const FilterExpr& filter, std::vector<label_t>& out_matching) const;
@@ -217,6 +220,13 @@ private:
     static constexpr std::size_t NUM_STRIPES = 1024;
     mutable std::unique_ptr<SpinLock[]> striped_locks_;
     mutable std::shared_mutex structure_lock_;
+
+    // Cumulative diagnostic counters
+    mutable std::atomic<uint64_t> duplicate_insert_attempts_{0};
+    mutable std::atomic<uint64_t> heuristic_selection_calls_{0};
+    mutable std::atomic<uint64_t> overflow_reselection_calls_{0};
+    mutable std::atomic<uint64_t> distance_computations_build_{0};
+    mutable std::atomic<uint64_t> distance_computations_query_{0};
 };
 
 } // namespace hnswdb
