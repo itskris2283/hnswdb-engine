@@ -1,0 +1,52 @@
+{
+  "runs": [
+    {
+      "file": "bug_after_dataset_a.json",
+      "sha256": "d1797b102157145ff798f1339612e97a854719e6b5c051f5281079c29689bd3c",
+      "commit": "4012691d5a5974b9abb12c3fb364bae3b0341b0c",
+      "dataset": "dataset_a",
+      "state": "after",
+      "size_bytes": 1928
+    },
+    {
+      "file": "bug_after_dataset_b.json",
+      "sha256": "81e5f98b266421f0b15c84ea449e3e487fbe8bf00fd133711272799950fe5d8f",
+      "commit": "4012691d5a5974b9abb12c3fb364bae3b0341b0c",
+      "dataset": "dataset_b",
+      "state": "after",
+      "size_bytes": 1931
+    },
+    {
+      "file": "bug_after_fashion_mnist.json",
+      "sha256": "5ddf350c0fb45601b88d61d9b9972dece6bd97372a08ed58cafc21d5cef7767b",
+      "commit": "4012691d5a5974b9abb12c3fb364bae3b0341b0c",
+      "dataset": "fashion_mnist",
+      "state": "after",
+      "size_bytes": 1945
+    },
+    {
+      "file": "bug_before_dataset_a.json",
+      "sha256": "01944856b191c901f2cb1c95de2b6bf120f3f2038b4e29ec983c59a1e6cb5dc6",
+      "commit": "4012691d5a5974b9abb12c3fb364bae3b0341b0c",
+      "dataset": "dataset_a",
+      "state": "before",
+      "size_bytes": 1930
+    },
+    {
+      "file": "bug_before_dataset_b.json",
+      "sha256": "380fe03cab6f01385efcb34d4792ee22a5d13c4fabea517a8acb89a0a2359949",
+      "commit": "4012691d5a5974b9abb12c3fb364bae3b0341b0c",
+      "dataset": "dataset_b",
+      "state": "before",
+      "size_bytes": 1933
+    },
+    {
+      "file": "bug_before_fashion_mnist.json",
+      "sha256": "542869eec9595d348d22d58cb27906a525b55e34ee953a7205606b77abc197d8",
+      "commit": "4012691d5a5974b9abb12c3fb364bae3b0341b0c",
+      "dataset": "fashion_mnist",
+      "state": "before",
+      "size_bytes": 1946
+    }
+  ]
+}

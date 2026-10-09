@@ -1,0 +1,71 @@
+{
+  "dataset": "fashion_mnist",
+  "state": "after",
+  "commit": "4012691d5a5974b9abb12c3fb364bae3b0341b0c",
+  "n_train": 60000,
+  "dim": 784,
+  "M": 16,
+  "ef_construction": 100,
+  "seed": 42,
+  "build_time_s": 26.4314,
+  "diagnostics": {
+    "total_elements": 60000.0,
+    "live_elements": 60000.0,
+    "self_links_count": 0.0,
+    "zero_in_degree_count": 261.0,
+    "layer0_degree_min": 1.0,
+    "distance_computations_build": 275231638.0,
+    "duplicate_links_count": 0.0,
+    "layer0_degree_mean": 31.98885,
+    "layer0_degree_max": 32.0,
+    "unreachable_nodes_count": 287.0,
+    "weakly_connected_components": 1.0,
+    "reciprocal_links_fraction": 0.5496008765554248,
+    "cumulative_duplicate_insert_attempts": 0.0,
+    "cumulative_heuristic_calls": 2044131.0,
+    "cumulative_overflow_reselections": 1980187.0,
+    "distance_computations_query": 0.0
+  },
+  "recalls": {
+    "recall_at_10_ef_10": 0.9698,
+    "recall_at_10_ef_20": 0.9894,
+    "recall_at_10_ef_50": 0.9972,
+    "recall_at_10_ef_100": 0.9987,
+    "recall_at_10_ef_200": 0.9991
+  },
+  "self_retrieval_rate": 0.963,
+  "env": {
+    "cpu_model": "Intel(R) Core(TM) i7-8650U CPU @ 1.90GHz",
+    "physical_cores": 4,
+    "logical_cores": 8,
+    "cpu_clock_mhz": 1910.0,
+    "ram_gb": 15.84,
+    "os": "Windows",
+    "os_release": "11",
+    "os_version": "10.0.22621",
+    "machine": "AMD64",
+    "python_version": "3.12.6",
+    "compiler": "MSVC 2022 (cl.exe 19.40)",
+    "cmake_build_type": "Release",
+    "cmake_flags": "/O2 /MD /arch:AVX2 (MSVC)",
+    "git_commit": "4012691d5a5974b9abb12c3fb364bae3b0341b0c",
+    "active_simd_kernel": "avx2",
+    "process_affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "process_priority": "32",
+    "versions": {
+      "hnswdb": "0.1.0",
+      "numpy": "2.3.5",
+      "faiss": "1.15.1",
+      "hnswlib": "0.8.0"
+    }
+  }
+}

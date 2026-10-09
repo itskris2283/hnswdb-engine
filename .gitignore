@@ -4,5 +4,8 @@ build/
 dist/
 *.egg-info/
 data/
-results/
+results/*
+!results/raw/
+!results/raw/**
 .pytest_cache/
+
