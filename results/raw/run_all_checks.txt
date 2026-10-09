@@ -1,0 +1,110 @@
+HNSWDB Full Verification Run - 2026-10-09T19:20:17.750482
+=== COMMAND: ctest --test-dir build/rel -C Release --output-on-failure ===
+Exit Code: 0
+--- STDOUT ---
+Test project D:/MERN/CustomVecDB/build/rel
+    Start 1: test_distance
+1/9 Test #1: test_distance ....................   Passed    0.03 sec
+    Start 2: test_flat_index
+2/9 Test #2: test_flat_index ..................   Passed    0.04 sec
+    Start 3: test_hnsw_basic
+3/9 Test #3: test_hnsw_basic ..................   Passed    0.06 sec
+    Start 4: test_hnsw_invariants
+4/9 Test #4: test_hnsw_invariants .............   Passed   11.56 sec
+    Start 5: test_hnsw_delete
+5/9 Test #5: test_hnsw_delete .................   Passed    0.09 sec
+    Start 6: test_errors
+6/9 Test #6: test_errors ......................   Passed    0.02 sec
+    Start 7: test_metadata_filter
+7/9 Test #7: test_metadata_filter .............   Passed    1.61 sec
+    Start 8: test_serialization
+8/9 Test #8: test_serialization ...............   Passed    0.39 sec
+    Start 9: test_concurrency
+9/9 Test #9: test_concurrency .................   Passed    2.69 sec
+
+100% tests passed out of 9
+
+Total Test time (real) =  16.54 sec
+
+--- STDERR ---
+
+
+=== COMMAND: C:\Users\lenovo\AppData\Local\Programs\Python\Python312\python.exe -m pytest tests/python -v ===
+Exit Code: 0
+--- STDOUT ---
+============================= test session starts =============================
+platform win32 -- Python 3.12.6, pytest-8.3.4, pluggy-1.6.0 -- C:\Users\lenovo\AppData\Local\Programs\Python\Python312\python.exe
+cachedir: .pytest_cache
+rootdir: D:\
+configfile: pyproject.toml
+plugins: anyio-4.6.2, langsmith-0.4.43, asyncio-0.25.0, cov-6.0.0, typeguard-4.4.2
+asyncio: mode=Mode.STRICT, asyncio_default_fixture_loop_scope=None
+collecting ... collected 38 items
+
+tests\python\test_api.py::test_basic_lifecycle PASSED                    [  2%]
+tests\python\test_api.py::test_batch_add_and_search_shapes PASSED        [  5%]
+tests\python\test_api.py::test_1d_inputs PASSED                          [  7%]
+tests\python\test_api.py::test_type_casting PASSED                       [ 10%]
+tests\python\test_api.py::test_dimension_mismatch PASSED                 [ 13%]
+tests\python\test_api.py::test_invalid_vector_exceptions PASSED          [ 15%]
+tests\python\test_api.py::test_capacity_exceeded PASSED                  [ 18%]
+tests\python\test_api.py::test_stats_dictionary PASSED                   [ 21%]
+tests\python\test_api.py::test_flat_index_api PASSED                     [ 23%]
+tests\python\test_api.py::test_diagnostics_dictionary PASSED             [ 26%]
+tests\python\test_benchmark_metrics.py::test_recall_at_k_exact_and_disjoint PASSED [ 28%]
+tests\python\test_benchmark_metrics.py::test_approx_ratio_metrics PASSED [ 31%]
+tests\python\test_benchmark_metrics.py::test_measure_single_query_latency_and_suspect_validation PASSED [ 34%]
+tests\python\test_benchmark_metrics.py::test_measure_batch_qps_repeats PASSED [ 36%]
+tests\python\test_benchmark_metrics.py::test_equal_recall_interpolation PASSED [ 39%]
+tests\python\test_benchmark_smoke.py::test_benchmark_smoke PASSED        [ 42%]
+tests\python\test_ceiling.py::test_recall_monotonicity_and_convergence_dataset_b PASSED [ 44%]
+tests\python\test_ceiling.py::test_fashion_mnist_convergence PASSED      [ 47%]
+tests\python\test_cli.py::test_cli_build_info_query_bench PASSED         [ 50%]
+tests\python\test_concurrency.py::test_concurrent_python_readers_and_writers PASSED [ 52%]
+tests\python\test_concurrency.py::test_concurrent_batch_threading PASSED [ 55%]
+tests\python\test_filtering.py::test_simple_equality_filter PASSED       [ 57%]
+tests\python\test_filtering.py::test_complex_filter_operators PASSED     [ 60%]
+tests\python\test_filtering.py::test_filtered_search_recall PASSED       [ 63%]
+tests\python\test_fuzz_model.py::test_fuzz_operations PASSED             [ 65%]
+tests\python\test_kernel_parity.py::test_kernel_parity_l2_and_ip PASSED  [ 68%]
+tests\python\test_kernel_parity.py::test_odd_dimensions_parity PASSED    [ 71%]
+tests\python\test_persistence.py::test_hnsw_save_load_roundtrip PASSED   [ 73%]
+tests\python\test_persistence.py::test_flat_save_load_roundtrip PASSED   [ 76%]
+tests\python\test_persistence.py::test_corruption_detection PASSED       [ 78%]
+tests\python\test_recall_vs_faiss.py::test_recall_vs_faiss_l2 PASSED     [ 81%]
+tests\python\test_recall_vs_faiss.py::test_recall_vs_faiss_ip PASSED     [ 84%]
+tests\python\test_recall_vs_faiss.py::test_recall_vs_faiss_cosine PASSED [ 86%]
+tests\python\test_recall_vs_faiss.py::test_ef_search_monotonicity PASSED [ 89%]
+tests\python\test_recall_vs_faiss.py::test_recall_ceiling_regression PASSED [ 92%]
+tests\python\test_regression_bug.py::test_duplicate_links_invariant PASSED [ 94%]
+tests\python\test_rest_api.py::test_health PASSED                        [ 97%]
+tests\python\test_rest_api.py::test_full_rest_workflow PASSED            [100%]
+
+======================== 38 passed in 92.91s (0:01:32) ========================
+
+--- STDERR ---
+C:\Users\lenovo\AppData\Local\Programs\Python\Python312\Lib\site-packages\pytest_asyncio\plugin.py:207: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+
+
+=== COMMAND: C:\Users\lenovo\AppData\Local\Programs\Python\Python312\python.exe scripts/check_claims.py ===
+Exit Code: 0
+--- STDOUT ---
+Running Strict Claims and Consistency Check...
+PASSED: All documentation claims, banned phrases, and formats verified successfully.
+
+--- STDERR ---
+
+
+=== COMMAND: C:\Users\lenovo\AppData\Local\Programs\Python\Python312\python.exe scripts/check_docs_links.py ===
+Exit Code: 0
+--- STDOUT ---
+Checking documentation links and paths...
+PASSED: All documentation links and relative paths resolve successfully.
+
+--- STDERR ---
+
+
+OVERALL STATUS: ALL CHECKS PASSED

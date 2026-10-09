@@ -3,9 +3,9 @@
     {
       "file": "bench_smoke_synthetic_5000_32.json",
       "sha256": "74400022f9d32be5833369c845cc25e0d9fd31292100f915638e573358d076c1",
-      "commit": "unknown",
-      "dataset": "unknown",
-      "state": "microbench",
+      "commit": "72aad13",
+      "dataset": "synthetic_5000_32_l2",
+      "state": "raw_result",
       "size_bytes": 18585
     },
     {
@@ -57,12 +57,36 @@
       "size_bytes": 1946
     },
     {
+      "file": "claims_check_after.txt",
+      "sha256": "08394dca5b10efb3c571ea648e00613f744c1813284518898a9e3f6c35ccf516",
+      "commit": "72aad13",
+      "dataset": "n/a",
+      "state": "claim_audit",
+      "size_bytes": 270
+    },
+    {
+      "file": "claims_check_before.txt",
+      "sha256": "b4ca1acea4c38bdb8a53f9653db8c1c9ee633acd5f5fd1ea4c280d9b5953a471",
+      "commit": "72aad13",
+      "dataset": "n/a",
+      "state": "claim_audit",
+      "size_bytes": 2564
+    },
+    {
       "file": "kernel_microbench.json",
       "sha256": "546b6f840d90f333499d5ad38323776b9d5e63cf8cbf97370421d9db3c50cd6e",
       "commit": "bde8cd2e25e857c8355847520b7cbdcd34ebacce",
       "dataset": "kernel_microbench",
-      "state": "microbench",
+      "state": "raw_result",
       "size_bytes": 1674
+    },
+    {
+      "file": "run_all_checks.txt",
+      "sha256": "5564346bba83da40c815e07428ec3beb6eceb4bc0c66cee8f5b1da060f26cf0d",
+      "commit": "72aad13",
+      "dataset": "n/a",
+      "state": "test_suite_log",
+      "size_bytes": 6359
     }
   ]
 }
