@@ -1,0 +1,36 @@
+[build-system]
+requires = ["scikit-build-core", "pybind11"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "hnswdb"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "typer",
+    "fastapi",
+    "uvicorn",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "h5py",
+    "faiss-cpu",
+    "hnswlib",
+    "psutil",
+    "matplotlib",
+    "pandas",
+    "httpx",
+    "pybind11",
+]
+
+[project.scripts]
+hnswdb = "hnswdb.cli:app"
+
+[tool.scikit-build]
+minimum-version = "0.4"
+build-dir = "build/{wheel_tag}"
+wheel.packages = ["python/hnswdb"]
+

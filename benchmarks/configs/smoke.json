@@ -1,0 +1,10 @@
+{
+  "name": "smoke",
+  "dataset": "synthetic_5000_32_l2",
+  "engines": ["hnswdb", "faiss_hnsw", "hnswlib"],
+  "M": 16,
+  "ef_construction": 100,
+  "ef_search": [10, 20, 50, 100],
+  "k": 10,
+  "threads": [1, 4]
+}

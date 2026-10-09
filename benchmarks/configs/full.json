@@ -1,0 +1,14 @@
+{
+  "name": "full",
+  "datasets": [
+    "synthetic_20000_64_l2",
+    "synthetic_20000_64_cosine",
+    "fashion-mnist-784-euclidean"
+  ],
+  "engines": ["hnswdb", "faiss_hnsw", "hnswlib"],
+  "M": [16, 32],
+  "ef_construction": [100, 200],
+  "ef_search": [10, 20, 50, 100, 200],
+  "k": 10,
+  "threads": [1, 4]
+}
