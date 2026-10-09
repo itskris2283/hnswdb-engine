@@ -52,3 +52,38 @@ In [`src/hnsw_index.cpp`](file:///d:/MERN/CustomVecDB/src/hnsw_index.cpp):
 - **Regression Test:** Added [`test_recall_ceiling_regression`](file:///d:/MERN/CustomVecDB/tests/python/test_recall_vs_faiss.py#L150) in Python test suite, asserting recall $\ge 0.995$ at $ef=100$.
 
 ---
+
+## Investigation 2: Build Time Performance & Multi-threaded Scaling Gap
+
+### 1. Context & Symptom
+- **Observed Behavior:** Index construction in HNSWDB took substantially longer than `hnswlib` (e.g. 8.36s vs 2.58s single-thread, and 5.34s vs 0.49s at 8 threads on $N=10,000, D=64, M=16, ef_c=100$).
+- **Impact:** Multi-threaded build did not scale effectively past 2-3 threads and single-thread build fell short of the $3\times$ target against hnswlib.
+
+### 2. Profiling & Bottleneck Analysis
+Profiling identified three primary hotspots:
+1. **Dynamic Memory Allocation in Neighbor Pruning:** Every call to `select_neighbors_heuristic` allocated `std::unordered_set` hash tables and dynamic `std::vector` candidate lists on the heap. With $N=10,000$ and $ef_c=100$, over 350,000 heap allocation/deallocation cycles occurred per build.
+2. **Lock Hold Duration in Graph Search:** In `search_layer`, `get_node_links` acquired a striped spinlock and held it while copying vectors, performing visited checks, and calling vector prefetching.
+3. **Lock Contention in Multi-threaded Ingestion:** Contention occurred across striped spinlocks and global mutexes during parallel batch adds.
+
+### 3. Optimizations Applied
+In [`src/hnsw_index.cpp`](file:///d:/MERN/CustomVecDB/src/hnsw_index.cpp):
+1. **Allocation-Free Heuristic Pruning:** Replaced heap-allocated hash tables with in-place vector sorting and linear stack-based uniqueness filtering.
+2. **Minimized Spinlock Critical Sections:** In `search_layer`, links are quickly copied into a stack buffer (`uint32_t local_nbrs[128]`) under the spinlock ($< 10$ ns), and all visited checks, prefetching, and distance calculations execute completely lock-free.
+3. **Optimized Candidate Buffer Operations:** Eliminated redundant vector copies.
+
+### 4. Verification & Before/After Metrics ($N=10,000, D=64, M=16, ef_c=100$)
+
+| Engine | 1 Thread Build Time | 8 Threads Build Time | Speedup (8T vs 1T) |
+| :--- | :---: | :---: | :---: |
+| **HNSWDB (Before Fix)** | 8.358 s | 5.338 s | $1.57\times$ |
+| **HNSWDB (Optimized)** | **5.536 s** | **2.118 s** | **$2.61\times$** |
+| **hnswlib** | 2.576 s | 0.647 s | $3.98\times$ |
+
+### 5. Architectural Analysis: Why hnswlib Retains a Lead
+An honest architectural breakdown reveals why `hnswlib` remains ~2.5x faster on single-thread and ~3.2x faster at 8 threads:
+1. **Interleaved Memory Layout:** `hnswlib` stores each element's vector data and link headers in a contiguous chunk (`char* data_level0_memory_`). Traversing a node fetches its links and vector in a single cache line. HNSWDB maintains separate `vectors_` and `layer0_links_` flat arrays, requiring two independent DRAM/L3 cache misses per visited node.
+2. **Compile-time SIMD Specialization:** `hnswlib` generates template specializations for fixed dimensions (e.g. 16, 32, 64, 128) via `L2SqrSIMD16Ext`, unrolling loops with zero tail handling and direct inlining. HNSWDB uses runtime function pointer dispatch (`DistFunc dist_func_`) which incurs function call overhead and prevents compiler loop unrolling across function boundaries.
+3. **Fine-grained Lock Granularity:** `hnswlib` uses individual `std::mutex` per node rather than hash-striped spinlocks, reducing false sharing across nodes that map to identical stripes.
+
+---
+

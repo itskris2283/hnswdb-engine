@@ -187,8 +187,7 @@ std::vector<HNSWIndex::Candidate> HNSWIndex::search_layer(
     candidates.push({init_dist, entry_point});
     w_results.push({init_dist, entry_point});
 
-    std::vector<idx_t> neighbor_buffer;
-    neighbor_buffer.reserve(M0_ + 1);
+    uint32_t local_nbrs[128];
 
     while (!candidates.empty()) {
         Candidate curr = candidates.top();
@@ -199,9 +198,24 @@ std::vector<HNSWIndex::Candidate> HNSWIndex::search_layer(
             break;
         }
 
-        get_node_links(curr.idx, layer, neighbor_buffer);
+        uint32_t nbr_count = 0;
+        if (layer == 0) {
+            SpinLockGuard guard(get_stripe_lock(curr.idx));
+            nbr_count = *get_layer0_link_count_ptr(curr.idx);
+            if (nbr_count > 128) nbr_count = 128;
+            const uint32_t* links = get_layer0_links_ptr(curr.idx);
+            std::memcpy(local_nbrs, links, nbr_count * sizeof(uint32_t));
+        } else {
+            SpinLockGuard guard(get_stripe_lock(curr.idx));
+            if (layer - 1 < static_cast<int>(upper_links_[curr.idx].size())) {
+                const auto& l_links = upper_links_[curr.idx][layer - 1];
+                nbr_count = static_cast<uint32_t>(std::min<size_t>(l_links.size(), 128));
+                std::memcpy(local_nbrs, l_links.data(), nbr_count * sizeof(uint32_t));
+            }
+        }
 
-        for (idx_t nbr : neighbor_buffer) {
+        for (uint32_t i = 0; i < nbr_count; ++i) {
+            idx_t nbr = local_nbrs[i];
             if (visited->mark_visited(nbr)) {
                 distance::prefetch_vector(vectors_.data() + nbr * dim_, dim_);
                 float nbr_dist = compute_dist_by_idx(query_vec, nbr);
@@ -238,36 +252,39 @@ std::vector<idx_t> HNSWIndex::select_neighbors_heuristic(
         return {};
     }
 
-    // Min-heap for candidates sorted by distance to query
-    std::priority_queue<Candidate, std::vector<Candidate>, std::greater<Candidate>> queue;
-    std::unordered_set<idx_t> seen;
-    seen.reserve(candidates.size());
+    // Sort candidates by ascending distance
+    std::sort(candidates.begin(), candidates.end(), [](const Candidate& a, const Candidate& b) {
+        if (a.dist != b.dist) return a.dist < b.dist;
+        return a.idx < b.idx;
+    });
 
-    for (const auto& c : candidates) {
-        if (seen.insert(c.idx).second) {
-            queue.push(c);
+    // Remove duplicates in-place
+    size_t unique_count = 0;
+    for (size_t i = 0; i < candidates.size(); ++i) {
+        if (i == 0 || candidates[i].idx != candidates[unique_count - 1].idx) {
+            candidates[unique_count++] = candidates[i];
         }
     }
+    candidates.resize(unique_count);
 
-    if (queue.size() <= max_links && !keep_pruned) {
+    if (candidates.size() <= max_links && !keep_pruned) {
         std::vector<idx_t> result;
-        result.reserve(queue.size());
-        while (!queue.empty()) {
-            result.push_back(queue.top().idx);
-            queue.pop();
+        result.reserve(candidates.size());
+        for (const auto& c : candidates) {
+            result.push_back(c.idx);
         }
         return result;
     }
 
     std::vector<idx_t> return_list;
-    std::vector<Candidate> discarded_list;
     return_list.reserve(max_links);
-    std::unordered_set<idx_t> selected_set;
-    selected_set.reserve(max_links);
+    std::vector<Candidate> discarded_list;
+    if (keep_pruned) {
+        discarded_list.reserve(candidates.size());
+    }
 
-    while (!queue.empty() && return_list.size() < max_links) {
-        Candidate current = queue.top();
-        queue.pop();
+    for (const auto& current : candidates) {
+        if (return_list.size() >= max_links) break;
 
         bool is_good = true;
         const float* current_vec = vectors_.data() + current.idx * dim_;
@@ -284,16 +301,22 @@ std::vector<idx_t> HNSWIndex::select_neighbors_heuristic(
 
         if (is_good) {
             return_list.push_back(current.idx);
-            selected_set.insert(current.idx);
         } else if (keep_pruned) {
             discarded_list.push_back(current);
         }
     }
 
-    if (keep_pruned) {
+    if (keep_pruned && return_list.size() < max_links) {
         for (const auto& discarded : discarded_list) {
             if (return_list.size() >= max_links) break;
-            if (selected_set.insert(discarded.idx).second) {
+            bool already_present = false;
+            for (idx_t sel : return_list) {
+                if (sel == discarded.idx) {
+                    already_present = true;
+                    break;
+                }
+            }
+            if (!already_present) {
                 return_list.push_back(discarded.idx);
             }
         }
