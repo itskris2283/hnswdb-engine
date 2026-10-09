@@ -1,3 +1,4 @@
+import os
 import platform
 import subprocess
 import sys
@@ -72,6 +73,18 @@ def get_env_info() -> dict:
     # Memory in GiB
     ram_gb = round(psutil.virtual_memory().total / (1024 ** 3), 2)
 
+    # Process affinity and priority
+    proc = psutil.Process()
+    try:
+        cpu_affinity = proc.cpu_affinity()
+    except Exception:
+        cpu_affinity = list(range(psutil.cpu_count(logical=True) or 1))
+
+    try:
+        niceness = proc.nice()
+    except Exception:
+        niceness = None
+
     # Active kernel
     simd_kernel = "unknown"
     if _core is not None and hasattr(_core, "active_kernel_name"):
@@ -96,6 +109,8 @@ def get_env_info() -> dict:
         "cmake_flags": "/O2 /MD /arch:AVX2 (MSVC)" if platform.system() == "Windows" else "-O3 -march=native",
         "git_commit": get_git_commit(),
         "active_simd_kernel": simd_kernel,
+        "process_affinity": cpu_affinity,
+        "process_priority": str(niceness),
         "versions": {
             "hnswdb": get_version("hnswdb", hnswdb),
             "numpy": get_version("numpy", np),

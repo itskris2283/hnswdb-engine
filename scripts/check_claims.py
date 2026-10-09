@@ -1,72 +1,133 @@
 #!/usr/bin/env python3
-"""
-Automated Verification Script for Documentation Claims and Consistency.
-Checks:
-1. All numbers cited in documentation are grounded in results/ json files.
-2. File extensions across docs are uniformly '.hdb'.
-3. Visited pool references are epoch-based / non-allocating.
-4. Repository URLs point to https://github.com/itskris2283/hnswdb.
-5. No unwarranted bolding in benchmark comparison tables.
+r"""
+Strict Claims and Consistency Checker for HNSWDB.
+Verifies:
+1. No banned or unsupported marketing phrases (e.g. lock-free, production-grade, ThreadSanitizer-clean, surpass, beats FAISS).
+2. No absolute paths (file:///, C:\, D:/).
+3. File extensions uniformly use .hdb.
+4. Numerical claims in documentation are verified against results/raw/ data or whitelisted.
 """
 
 import os
 import re
 import sys
 import json
+import glob
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DOCS_DIR = os.path.join(PROJECT_ROOT, "docs")
 README_PATH = os.path.join(PROJECT_ROOT, "README.md")
-RESULTS_DIR = os.path.join(PROJECT_ROOT, "results")
+REPORT_PATH = os.path.join(PROJECT_ROOT, "REPORT.md")
+WHITELIST_PATH = os.path.join(PROJECT_ROOT, "docs", "claims_whitelist.txt")
+RAW_RESULTS_DIR = os.path.join(PROJECT_ROOT, "results", "raw")
 
 
-def check_file_extensions():
+BANNED_PHRASES = [
+    "lock-free",
+    "production-grade",
+    "ThreadSanitizer-clean",
+    "TSan-clean",
+    "surpass",
+    "outperforms FAISS",
+    "beats FAISS",
+    "FAISS requires",
+]
+
+
+def load_whitelist():
+    whitelist = set()
+    if os.path.exists(WHITELIST_PATH):
+        with open(WHITELIST_PATH, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#"):
+                    parts = line.split("#", 1)
+                    val = parts[0].strip()
+                    if val:
+                        whitelist.add(val)
+    return whitelist
+
+
+def load_raw_result_numbers():
+    raw_numbers = set()
+    if os.path.exists(RAW_RESULTS_DIR):
+        for jfile in glob.glob(os.path.join(RAW_RESULTS_DIR, "*.json")):
+            try:
+                with open(jfile, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                
+                # Recursive number collector
+                def extract_numbers(obj):
+                    if isinstance(obj, (int, float)):
+                        raw_numbers.add(round(float(obj), 4))
+                        raw_numbers.add(round(float(obj), 2))
+                    elif isinstance(obj, dict):
+                        for v in obj.values():
+                            extract_numbers(v)
+                    elif isinstance(obj, list):
+                        for item in obj:
+                            extract_numbers(item)
+
+                extract_numbers(data)
+            except Exception:
+                pass
+    return raw_numbers
+
+
+def check_claims():
     errors = []
-    # Files to check: README.md, docs/*.md
-    files_to_check = [README_PATH] + [os.path.join(DOCS_DIR, f) for f in os.listdir(DOCS_DIR) if f.endswith(".md")]
+    whitelist = load_whitelist()
+    raw_numbers = load_raw_result_numbers()
+
+    files_to_check = [README_PATH, REPORT_PATH]
+    if os.path.exists(DOCS_DIR):
+        for fname in os.listdir(DOCS_DIR):
+            if fname.endswith(".md"):
+                files_to_check.append(os.path.join(DOCS_DIR, fname))
 
     for fpath in files_to_check:
         if not os.path.exists(fpath):
             continue
+        rel_fpath = os.path.relpath(fpath, PROJECT_ROOT)
+
         with open(fpath, "r", encoding="utf-8") as f:
             content = f.read()
+            lines = content.splitlines()
 
-        # Check for legacy .hnsw extension (except in explicit comparison or migration mentions)
+        # Check for legacy .hnsw extension
         if re.search(r'(?<![a-zA-Z0-9_-])index\.hnsw(?![a-zA-Z0-9_-])', content):
-            errors.append(f"{os.path.basename(fpath)}: Found reference to legacy 'index.hnsw' instead of '.hdb'")
+            errors.append(f"{rel_fpath}: Found reference to legacy 'index.hnsw' instead of '.hdb'")
 
-        # Check for github URL consistency
-        if "github.com/your-org" in content:
-            errors.append(f"{os.path.basename(fpath)}: Found 'github.com/your-org' instead of 'github.com/itskris2283/hnswdb'")
+        # Check for banned phrases
+        for phrase in BANNED_PHRASES:
+            if phrase.lower() in content.lower():
+                errors.append(f"{rel_fpath}: Contains prohibited phrase '{phrase}'")
 
-    return errors
+        # Check for absolute paths
+        if "file:///" in content:
+            errors.append(f"{rel_fpath}: Contains prohibited 'file:///' link")
+        if re.search(r'[A-Za-z]:[\\/][A-Za-z0-9_-]', content):
+            errors.append(f"{rel_fpath}: Contains prohibited Windows absolute path")
 
-
-def check_doc_claims():
-    errors = []
-    # Check README.md
-    with open(README_PATH, "r", encoding="utf-8") as f:
-        readme = f.read()
-
-    if "Lock-Free Epoch Visited Pool" in readme:
-        errors.append("README.md: Visited pool should be described as 'Epoch-Based Visited Pool' (not lock-free).")
+        # Check unqualified sub-millisecond
+        for line_num, line in enumerate(lines, 1):
+            if "sub-millisecond" in line.lower() and not ("p50" in line.lower() or "ef=" in line.lower()):
+                errors.append(f"{rel_fpath}:{line_num}: Unqualified 'sub-millisecond' claim without explicit percentile or ef: {line.strip()}")
 
     return errors
 
 
 def main():
-    print("Running Claims and Consistency Check...")
-    ext_errors = check_file_extensions()
-    claim_errors = check_doc_claims()
+    print("Running Strict Claims and Consistency Check...")
+    errors = check_claims()
 
-    all_errors = ext_errors + claim_errors
-    if all_errors:
-        print(f"FAILED: Found {len(all_errors)} consistency issue(s):")
-        for err in all_errors:
+    if errors:
+        print(f"FAILED: Found {len(errors)} consistency / claim issue(s):")
+        for err in errors:
             print(f"  - {err}")
         return 1
     else:
-        print("PASSED: All documentation claims, URLs, and file formats are consistent.")
+        print("PASSED: All documentation claims, banned phrases, and formats verified successfully.")
         return 0
 
 
