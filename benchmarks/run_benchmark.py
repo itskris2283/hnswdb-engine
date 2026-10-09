@@ -73,13 +73,14 @@ def benchmark_single_engine_worker(ds_name: str, engine_name: str, M: int, ef_c:
 
     records = []
     primary_k = 10 if 10 in (k_list if isinstance(k_list, list) else [k_list]) else max_k
+    eval_queries = test_data[:1000] if n_test > 1000 else test_data
 
     for ef_s in ef_s_list:
         # 1. Single-query latency (strictly 1 query per call, 1 thread)
         lat_stats = measure_single_query_latency(
             lambda q: engine.search(q, k=primary_k, ef_search=ef_s, num_threads=1),
-            test_data,
-            warmup=min(500, n_test),
+            eval_queries,
+            warmup=min(100, len(eval_queries)),
         )
 
         # 2. Accuracy search on full test set with 1 thread
@@ -98,10 +99,10 @@ def benchmark_single_engine_worker(ds_name: str, engine_name: str, M: int, ef_c:
         for num_th in threads_list:
             qps_res = measure_batch_qps(
                 lambda queries, th: engine.search(queries, k=primary_k, ef_search=ef_s, num_threads=th),
-                test_data,
+                eval_queries,
                 num_threads=num_th,
-                repeats=5,
-                warmup=min(500, n_test),
+                repeats=3,
+                warmup=min(100, len(eval_queries)),
             )
             batch_qps_metrics[f"batch_qps_{num_th}th"] = round(qps_res["median"], 2)
             batch_qps_metrics[f"batch_qps_{num_th}th_min"] = round(qps_res["min"], 2)

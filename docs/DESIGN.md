@@ -2,9 +2,9 @@
 
 ## 1. Architectural Overview
 
-HNSWDB is an approximate nearest neighbor (ANN) vector database engine implemented from scratch in C++17 with Python bindings (pybind11), FastAPI REST service, and Typer CLI.
+HNSWDB is an approximate nearest neighbor (ANN) vector database engine implemented from scratch in C++17 with Python bindings (`pybind11`), a FastAPI REST service, and a Typer CLI.
 
-The design strictly follows the Hierarchical Navigable Small World (HNSW) graph algorithm formulated by Yu. A. Malkov and D. A. Yashunin (2018), with production enhancements including epoch-stamped visited pools, striped lock concurrency, bit-packed tombstoning, and hybrid filtered search.
+The design strictly implements the Hierarchical Navigable Small World (HNSW) graph algorithm formulated by Yu. A. Malkov and D. A. Yashunin (2018), with production enhancements including epoch-stamped visited pools, striped lock concurrency, tombstoning, and hybrid filtered search.
 
 ```
 +-------------------------------------------------------------------+
@@ -70,18 +70,18 @@ Distance computation accounts for >80% of execution time in ANN graph traversal.
 
 ## 4. Memory Layout & Cache Optimization
 
-All node vectors are stored in a contiguous, 64-byte aligned buffer:
-- Node vectors: `float vectors_[max_elements * dim]` (cacheline aligned).
-- Layer 0 graph links: Flattened contiguous array `layer0_links_[max_elements * (1 + M0)]` with fixed stride `(1 + M0)` where index 0 stores the degree count followed by link target internal IDs.
+All node vectors are stored in a contiguous buffer:
+- Node vectors: `float vectors_[max_elements * dim]`.
+- Layer 0 graph links: Flattened contiguous array `layer0_links_[max_elements * (1 + 2*M)]` with fixed stride `(1 + 2*M)` where index 0 stores the degree count followed by link target internal IDs.
 - Upper layers ($l \ge 1$): Dynamically allocated only for the minority of nodes where $\text{level} > 0$ ($\approx 1/M$ fraction of nodes), dramatically reducing memory footprint.
 - Parallel flat vectors:
   - `labels_`: `std::vector<label_t>` (8 bytes/element)
   - `levels_`: `std::vector<uint8_t>` (1 byte/element)
-  - `deleted_`: `std::vector<uint8_t>` (1 byte/element bit/byte flag)
+  - `deleted_`: `std::vector<uint8_t>` (1 byte tombstone flag per internal node)
 
 ---
 
-## 5. Epoch-Stamped Visited List Pool
+## 5. Epoch-Based Visited List Pool
 
 Graph traversal requires tracking visited nodes to prevent cycles:
 - Standard `std::unordered_set<idx_t>` incurs dynamic heap allocation on every search ($O(ef)$ mallocs), severely degrading search QPS.

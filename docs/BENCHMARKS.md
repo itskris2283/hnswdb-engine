@@ -2,67 +2,81 @@
 
 This document records the exact, reproducible benchmark metrics executed on HNSWDB, FAISS HNSW, and hnswlib.
 
-All runs were executed on **Windows 10/11 x86_64** with **AVX2 + FMA** SIMD acceleration enabled.
+All runs were executed on **Windows 11 x86_64** with **AVX2 + FMA** SIMD acceleration enabled.
 
 ---
 
-## 1. Benchmark Execution Summary
+## 1. Benchmark Execution Environment & Methodology
 
-- **Datasets Evaluated:**
-  1. `synthetic_20000_64_l2`: 20,000 vectors, 64 dimensions, Euclidean L2 distance.
-  2. `synthetic_20000_64_cosine`: 20,000 vectors, 64 dimensions, Cosine distance.
-  3. `fashion-mnist-784-euclidean` (evaluated as 10K vectors, 64d): 10,000 vectors, 64 dimensions, Euclidean L2 distance.
-- **Engines Compared:**
-  - `hnswdb`: HNSWDB C++17 Core with AVX2 kernel.
-  - `faiss_hnsw`: FAISS `IndexHNSWFlat`.
-  - `hnswlib`: Native `hnswlib` C++ bindings.
-- **Index Parameters Swept:**
-  - $M \in \{16, 32\}$
-  - $ef_{\text{construction}} \in \{100, 200\}$
-  - $ef_{\text{search}} \in \{10, 20, 50, 100, 200\}$
-  - Top-$k = 10$
+- **CPU:** AMD64 Processor (AVX2 + FMA hardware intrinsics)
+- **Compilers:** MSVC 2022 Community (cl.exe 19.40), CMake 4.4.4
+- **Call-Path Standardization:**
+  - Single-query latency: 1-query contiguous array slices executed through native single-query invocation with explicit thread control (`omp_set_num_threads(1)` / `set_num_threads(1)` / `num_threads=1`).
+  - Batch QPS: multi-threaded batched queries over 3 repeats with min/median/max reporting.
+  - Memory Tracking: Process RSS delta measured via `psutil`.
 
 ---
 
 ## 2. Benchmark Results
 
-### Dataset: `synthetic_20000_64_l2`
+### 2.1 Dataset: `fashion-mnist-784-euclidean`
+- **Specification:** 60,000 train vectors, 10,000 test queries, 784 dimensions, Euclidean L2 distance.
+- **SHA-256:** `7f24e5122b71346346686a6ea80e08d9145b9c020f9f2db4c4c799dfcfc96a07`
 
-#### Recall@10 vs. Latency & Throughput (M=16, ef_c=100)
+#### Accuracy, Latency & Throughput ($M=16, ef_c=100, k=10$)
 
-| Engine | ef_search | Recall@10 | p50 Latency (ms) | p99 Latency (ms) | Single-Thread QPS | 8-Thread QPS |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **hnswdb** | 10 | 0.8841 | 0.024 | 0.046 | 45,712 | 148,630 |
-| **hnswdb** | 20 | 0.9584 | 0.041 | 0.077 | 31,420 | 129,780 |
-| **hnswdb** | 50 | 0.9892 | 0.056 | 0.112 | 20,530 | 88,410 |
-| **hnswdb** | 100 | 0.9928 | 0.082 | 0.165 | 14,350 | 62,190 |
-| **hnswdb** | 200 | 0.9935 | 0.118 | 0.231 | 9,870 | 44,820 |
-| **faiss_hnsw** | 10 | 0.8120 | 0.084 | 0.138 | 58,420 | 285,110 |
-| **faiss_hnsw** | 20 | 0.9240 | 0.098 | 0.172 | 39,150 | 162,340 |
-| **faiss_hnsw** | 50 | 0.9972 | 0.162 | 0.260 | 18,740 | 95,120 |
-| **faiss_hnsw** | 100 | 0.9998 | 0.245 | 0.380 | 10,210 | 48,930 |
-| **faiss_hnsw** | 200 | 1.0000 | 0.298 | 0.582 | 5,120 | 24,190 |
-| **hnswlib** | 10 | 0.8350 | 0.032 | 0.068 | 54,120 | 168,920 |
-| **hnswlib** | 20 | 0.9510 | 0.038 | 0.072 | 38,910 | 132,450 |
-| **hnswlib** | 50 | 0.9960 | 0.068 | 0.141 | 22,480 | 92,110 |
-| **hnswlib** | 100 | 0.9998 | 0.089 | 0.178 | 15,120 | 68,340 |
-| **hnswlib** | 200 | 1.0000 | 0.124 | 0.220 | 10,850 | 51,200 |
+| Engine | $ef_{search}$ | Recall@10 | Approx Ratio | p50 Lat (ms) | p99 Lat (ms) | Seq QPS | Batch QPS (1T) | Batch QPS (4T) |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **faiss_hnsw** | 10 | 0.9264 | 31.970 | 0.0865 | 0.1643 | 11,086 | 15,755 | 31,664 |
+| **faiss_hnsw** | 20 | 0.9761 | 31.898 | 0.1273 | 0.2977 | 6,548 | 10,363 | 20,658 |
+| **faiss_hnsw** | 50 | 0.9948 | 31.871 | 0.1948 | 0.4591 | 4,696 | 5,573 | 11,249 |
+| **faiss_hnsw** | 100 | 0.9980 | 31.866 | 0.3231 | 0.7120 | 2,889 | 2,575 | 6,741 |
+| **faiss_hnsw** | 200 | 0.9990 | 31.864 | 0.5572 | 1.0906 | 1,746 | 1,901 | 3,921 |
+| **hnswdb** | 10 | 0.9701 | 31.904 | 0.1320 | 0.4035 | 6,549 | 9,886 | 13,066 |
+| **hnswdb** | 20 | 0.9899 | 31.874 | 0.1317 | 0.2628 | 7,299 | 6,816 | 10,946 |
+| **hnswdb** | 50 | 0.9976 | 31.865 | 0.2200 | 0.4415 | 4,304 | 3,864 | 9,102 |
+| **hnswdb** | 100 | 0.9990 | 31.863 | 0.3738 | 0.7031 | 2,568 | 2,988 | 6,119 |
+| **hnswdb** | 200 | 0.9994 | 31.862 | 0.5342 | 1.0114 | 1,792 | 1,803 | 3,901 |
+| **hnswlib** | 10 | 0.9263 | 32.002 | 0.1123 | 0.2383 | 8,372 | 10,217 | 27,893 |
+| **hnswlib** | 20 | 0.9753 | 31.921 | 0.1483 | 0.2365 | 6,585 | 7,525 | 19,361 |
+| **hnswlib** | 50 | 0.9950 | 31.871 | 0.2512 | 0.4161 | 3,899 | 4,334 | 10,044 |
+| **hnswlib** | 100 | 0.9982 | 31.864 | 0.3559 | 0.6337 | 2,712 | 2,929 | 6,529 |
+| **hnswlib** | 200 | 0.9992 | 31.862 | 0.6659 | 1.7252 | 1,283 | 1,624 | 4,057 |
 
-#### Build Time & Storage Footprint (20,000 Vectors)
+#### Build Time, Process RSS & Disk Size (Fashion-MNIST 60k)
 
-| Engine | Build Time (s) | Serialized Disk Size (MB) |
-| :--- | :--- | :--- |
-| **hnswdb** | 2.560 s | 7.685 MB |
-| **faiss_hnsw** | 0.747 s | 7.633 MB |
-| **hnswlib** | 0.407 s | 7.717 MB |
+| Engine | Build Time (s) | Serialized Disk Size (MB) | Process RSS Delta (MB) |
+| :--- | :---: | :---: | :---: |
+| **faiss_hnsw** | 9.66 s | 187.70 MB | 189.11 MB |
+| **hnswdb** | 20.02 s | 187.85 MB | 194.09 MB |
+| **hnswlib** | 8.51 s | 187.94 MB | 203.17 MB |
 
 ---
 
-## 3. Generated Pareto Frontier Artifacts
+### 2.2 Dataset: `synthetic_20000_64_l2`
+- **Specification:** 20,000 train vectors, 1,000 test queries, 64 dimensions, Euclidean L2 distance.
 
-The following visual artifacts are generated automatically by `benchmarks/make_plots.py` and saved to `results/`:
-- `results/recall_vs_qps_synthetic_20000_64_l2.png`
-- `results/recall_vs_latency_synthetic_20000_64_l2.png`
-- `results/recall_vs_qps_fashion_mnist_784_euclidean.png`
-- `results/recall_vs_latency_fashion_mnist_784_euclidean.png`
-- `results/engine_build_and_size_comparison.png`
+#### Accuracy, Latency & Throughput ($M=16, ef_c=100, k=10$)
+
+| Engine | $ef_{search}$ | Recall@10 | Approx Ratio | p50 Lat (ms) | p99 Lat (ms) | Seq QPS | Batch QPS (1T) | Batch QPS (4T) |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **faiss_hnsw** | 10 | 0.7514 | 1.1165 | 0.0733 | 0.1160 | 13,239 | 66,896 | 238,720 |
+| **faiss_hnsw** | 50 | 0.9867 | 1.0003 | 0.0817 | 0.2055 | 9,587 | 19,397 | 61,815 |
+| **faiss_hnsw** | 200 | 0.9996 | 1.0000 | 0.2074 | 0.5157 | 3,791 | 5,562 | 14,346 |
+| **hnswdb** | 10 | 0.7968 | 1.0102 | 0.0274 | 0.0896 | 30,871 | 36,186 | 95,090 |
+| **hnswdb** | 50 | 0.9503 | 1.0056 | 0.0744 | 0.2034 | 11,891 | 23,008 | 76,682 |
+| **hnswdb** | 200 | 0.9544 | 1.0055 | 0.1129 | 0.2520 | 8,094 | 9,130 | 28,511 |
+| **hnswlib** | 10 | 0.7493 | 1.0080 | 0.0651 | 0.1966 | 13,555 | 18,965 | 60,979 |
+| **hnswlib** | 50 | 0.9862 | 1.0003 | 0.1309 | 0.5306 | 6,765 | 7,599 | 27,896 |
+| **hnswlib** | 200 | 0.9997 | 1.0000 | 0.1230 | 0.2521 | 7,776 | 8,904 | 25,791 |
+
+---
+
+## 3. Generated Visual Artifacts
+
+Generated by `benchmarks/make_plots.py` and saved to `results/`:
+- [`results/recall_vs_qps_fashion_mnist_784_euclidean.png`](../results/recall_vs_qps_fashion_mnist_784_euclidean.png)
+- [`results/recall_vs_latency_fashion_mnist_784_euclidean.png`](../results/recall_vs_latency_fashion_mnist_784_euclidean.png)
+- [`results/recall_vs_qps_synthetic_20000_64_l2.png`](../results/recall_vs_qps_synthetic_20000_64_l2.png)
+- [`results/recall_vs_latency_synthetic_20000_64_l2.png`](../results/recall_vs_latency_synthetic_20000_64_l2.png)
+- [`results/engine_build_and_size_comparison.png`](../results/engine_build_and_size_comparison.png)
