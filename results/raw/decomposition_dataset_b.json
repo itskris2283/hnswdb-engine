@@ -1,0 +1,143 @@
+{
+  "run_id": "decomp-e111e7e5",
+  "timestamp": "2026-10-10T17:19:31Z",
+  "dataset": "Dataset B (20K x 64d, 50 clusters, sigma=0.1)",
+  "comparisons": {
+    "legacy": {
+      "options": {
+        "new_node_degree": "M0",
+        "keep_pruned": true,
+        "protect_last_in_edge": false
+      },
+      "recalls": {
+        "ef10": 0.9101000000000001,
+        "ef50": 0.9711,
+        "ef200": 0.9716
+      },
+      "final_unreachable": 2,
+      "final_zero_in_degree": 2,
+      "trajectory": [
+        {
+          "elements": 1000,
+          "unreachable_nodes": 0,
+          "zero_in_degree_nodes": 0,
+          "duplicate_links": 0,
+          "mean_layer0_degree": 32.0,
+          "reciprocal_links_fraction": 0.6768125,
+          "weakly_connected_components": 1
+        },
+        {
+          "elements": 2000,
+          "unreachable_nodes": 0,
+          "zero_in_degree_nodes": 0,
+          "duplicate_links": 0,
+          "mean_layer0_degree": 32.0,
+          "reciprocal_links_fraction": 0.8605,
+          "weakly_connected_components": 1
+        },
+        {
+          "elements": 5000,
+          "unreachable_nodes": 0,
+          "zero_in_degree_nodes": 0,
+          "duplicate_links": 0,
+          "mean_layer0_degree": 32.0,
+          "reciprocal_links_fraction": 0.692275,
+          "weakly_connected_components": 1
+        },
+        {
+          "elements": 10000,
+          "unreachable_nodes": 1,
+          "zero_in_degree_nodes": 1,
+          "duplicate_links": 0,
+          "mean_layer0_degree": 32.0,
+          "reciprocal_links_fraction": 0.62838125,
+          "weakly_connected_components": 1
+        },
+        {
+          "elements": 20000,
+          "unreachable_nodes": 2,
+          "zero_in_degree_nodes": 2,
+          "duplicate_links": 0,
+          "mean_layer0_degree": 32.0,
+          "reciprocal_links_fraction": 0.599709375,
+          "weakly_connected_components": 1
+        }
+      ],
+      "in_degree_distribution": {
+        "deg_0": 2,
+        "deg_1_to_5": 224,
+        "deg_6_to_15": 5017,
+        "deg_16_to_32": 8024,
+        "deg_gt_32": 6733
+      }
+    },
+    "cured": {
+      "options": {
+        "new_node_degree": "M",
+        "keep_pruned": false,
+        "protect_last_in_edge": false
+      },
+      "recalls": {
+        "ef10": 0.8461000000000002,
+        "ef50": 0.9977999999999999,
+        "ef200": 1.0
+      },
+      "final_unreachable": 8,
+      "final_zero_in_degree": 8,
+      "trajectory": [
+        {
+          "elements": 1000,
+          "unreachable_nodes": 0,
+          "zero_in_degree_nodes": 0,
+          "duplicate_links": 0,
+          "mean_layer0_degree": 9.223,
+          "reciprocal_links_fraction": 0.9569554374932234,
+          "weakly_connected_components": 1
+        },
+        {
+          "elements": 2000,
+          "unreachable_nodes": 0,
+          "zero_in_degree_nodes": 0,
+          "duplicate_links": 0,
+          "mean_layer0_degree": 9.658,
+          "reciprocal_links_fraction": 0.9607579208945951,
+          "weakly_connected_components": 1
+        },
+        {
+          "elements": 5000,
+          "unreachable_nodes": 0,
+          "zero_in_degree_nodes": 0,
+          "duplicate_links": 0,
+          "mean_layer0_degree": 11.5096,
+          "reciprocal_links_fraction": 0.9666365468826024,
+          "weakly_connected_components": 1
+        },
+        {
+          "elements": 10000,
+          "unreachable_nodes": 0,
+          "zero_in_degree_nodes": 0,
+          "duplicate_links": 0,
+          "mean_layer0_degree": 13.3687,
+          "reciprocal_links_fraction": 0.9656585905884641,
+          "weakly_connected_components": 1
+        },
+        {
+          "elements": 20000,
+          "unreachable_nodes": 8,
+          "zero_in_degree_nodes": 8,
+          "duplicate_links": 0,
+          "mean_layer0_degree": 15.4948,
+          "reciprocal_links_fraction": 0.9508867491029248,
+          "weakly_connected_components": 1
+        }
+      ],
+      "in_degree_distribution": {
+        "deg_0": 8,
+        "deg_1_to_5": 1208,
+        "deg_6_to_15": 9782,
+        "deg_16_to_32": 8389,
+        "deg_gt_32": 613
+      }
+    }
+  }
+}

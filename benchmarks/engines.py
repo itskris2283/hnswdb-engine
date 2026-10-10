@@ -38,11 +38,12 @@ class BaseEngine:
 
 
 class HNSWDBEngine(BaseEngine):
-    def __init__(self, dim: int, metric: str = "l2", M: int = 16, ef_construction: int = 200, seed: int = 42, **kwargs):
+    def __init__(self, dim: int, metric: str = "l2", M: int = 16, ef_construction: int = 200, seed: int = 42, build_options=None, **kwargs):
         super().__init__(dim, metric, **kwargs)
         self.M = M
         self.ef_construction = ef_construction
         self.seed = seed
+        self.build_options = build_options if build_options is not None else hnswdb.BuildOptions()
         self.index = None
 
     def build(self, data: np.ndarray, num_threads: int = 0) -> float:
@@ -58,6 +59,7 @@ class HNSWDBEngine(BaseEngine):
             M=self.M,
             ef_construction=self.ef_construction,
             seed=self.seed,
+            build_options=self.build_options,
         )
         ids = np.arange(n, dtype=np.int64)
         t0 = time.perf_counter()

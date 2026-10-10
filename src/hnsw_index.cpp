@@ -18,7 +18,8 @@ HNSWIndex::HNSWIndex(std::size_t dim,
                      std::size_t M,
                      std::size_t ef_construction,
                      std::size_t ef_search,
-                     uint64_t seed)
+                     uint64_t seed,
+                     BuildOptions build_options)
     : dim_(dim),
       metric_(metric),
       max_elements_(max_elements),
@@ -28,7 +29,8 @@ HNSWIndex::HNSWIndex(std::size_t dim,
       ef_construction_(ef_construction),
       ef_search_(ef_search),
       seed_(seed),
-      rng_(seed) {
+      rng_(seed),
+      build_options_(std::move(build_options)) {
     if (dim_ < 1 || dim_ > 4096) {
         throw InvalidArgument("Dimension must be between 1 and 4096, got " + std::to_string(dim_));
     }
@@ -54,6 +56,7 @@ HNSWIndex::HNSWIndex(std::size_t dim,
 
     layer0_links_.resize(max_elements_ * (1 + M0_), 0);
     upper_links_.resize(max_elements_);
+    in_degrees_l0_.resize(max_elements_, 0);
 
     striped_locks_ = std::make_unique<SpinLock[]>(NUM_STRIPES);
 
@@ -81,6 +84,7 @@ HNSWIndex& HNSWIndex::operator=(HNSWIndex&& other) noexcept {
         mL_ = other.mL_;
         seed_ = other.seed_;
         dist_func_ = other.dist_func_;
+        build_options_ = std::move(other.build_options_);
 
         vectors_ = std::move(other.vectors_);
         labels_ = std::move(other.labels_);
@@ -88,6 +92,7 @@ HNSWIndex& HNSWIndex::operator=(HNSWIndex&& other) noexcept {
         deleted_ = std::move(other.deleted_);
         layer0_links_ = std::move(other.layer0_links_);
         upper_links_ = std::move(other.upper_links_);
+        in_degrees_l0_ = std::move(other.in_degrees_l0_);
         label_to_idx_ = std::move(other.label_to_idx_);
         cur_element_count_.store(other.cur_element_count_.load());
         live_count_.store(other.live_count_.load());
@@ -193,6 +198,93 @@ std::vector<HNSWIndex::Candidate> HNSWIndex::search_layer(
 
     candidates.push({init_dist, entry_point});
     w_results.push({init_dist, entry_point});
+
+    uint32_t local_nbrs[512];
+
+    while (!candidates.empty()) {
+        Candidate curr = candidates.top();
+        candidates.pop();
+
+        Candidate furthest_result = w_results.top();
+        if (curr.dist > furthest_result.dist && w_results.size() >= ef) {
+            break;
+        }
+
+        uint32_t nbr_count = 0;
+        if (layer == 0) {
+            SpinLockGuard guard(get_stripe_lock(curr.idx));
+            nbr_count = *get_layer0_link_count_ptr(curr.idx);
+            if (nbr_count > 512) nbr_count = 512;
+            const uint32_t* links = get_layer0_links_ptr(curr.idx);
+            std::memcpy(local_nbrs, links, nbr_count * sizeof(uint32_t));
+        } else {
+            SpinLockGuard guard(get_stripe_lock(curr.idx));
+            if (layer - 1 < static_cast<int>(upper_links_[curr.idx].size())) {
+                const auto& l_links = upper_links_[curr.idx][layer - 1];
+                nbr_count = static_cast<uint32_t>(std::min<size_t>(l_links.size(), 512));
+                std::memcpy(local_nbrs, l_links.data(), nbr_count * sizeof(uint32_t));
+            }
+        }
+
+        for (uint32_t i = 0; i < nbr_count; ++i) {
+            idx_t nbr = local_nbrs[i];
+            if (visited->mark_visited(nbr)) {
+                distance::prefetch_vector(vectors_.data() + nbr * dim_, dim_);
+                if (is_build) {
+                    distance_computations_build_++;
+                } else {
+                    distance_computations_query_++;
+                }
+                float nbr_dist = compute_dist_by_idx(query_vec, nbr);
+
+                if (w_results.size() < ef || nbr_dist < w_results.top().dist) {
+                    candidates.push({nbr_dist, nbr});
+                    w_results.push({nbr_dist, nbr});
+
+                    if (w_results.size() > ef) {
+                        w_results.pop();
+                    }
+                }
+            }
+        }
+    }
+
+    std::vector<Candidate> result_vec;
+    result_vec.reserve(w_results.size());
+    while (!w_results.empty()) {
+        result_vec.push_back(w_results.top());
+        w_results.pop();
+    }
+    std::reverse(result_vec.begin(), result_vec.end());
+    return result_vec;
+}
+
+std::vector<HNSWIndex::Candidate> HNSWIndex::search_layer_multi(
+    const float* query_vec,
+    const std::vector<idx_t>& entry_points,
+    std::size_t ef,
+    int layer,
+    VisitedList* visited,
+    bool is_build) const {
+
+    std::priority_queue<Candidate, std::vector<Candidate>, std::greater<Candidate>> candidates;
+    std::priority_queue<Candidate, std::vector<Candidate>, std::less<Candidate>> w_results;
+
+    for (idx_t ep : entry_points) {
+        if (visited->mark_visited(ep)) {
+            if (is_build) {
+                distance_computations_build_++;
+            } else {
+                distance_computations_query_++;
+            }
+            float dist = compute_dist_by_idx(query_vec, ep);
+            candidates.push({dist, ep});
+            w_results.push({dist, ep});
+            if (w_results.size() > ef) {
+                w_results.pop();
+            }
+        }
+    }
 
     uint32_t local_nbrs[512];
 
@@ -438,15 +530,30 @@ void HNSWIndex::add(const float* vector, label_t label, const MetaMap* metadata)
     }
 
     // Connect layers down to 0
+    std::vector<idx_t> enter_points;
+    enter_points.push_back(curr_obj);
+
     for (int l = std::min(node_level, curr_max_level); l >= 0; --l) {
         VisitedListGuard visited_guard(*visited_pool_);
-        std::vector<Candidate> candidates = search_layer(vec_to_store, curr_obj, ef_construction_, l, visited_guard.get(), true);
+        std::vector<Candidate> candidates;
+        if (build_options_.layer_entry == "all" && enter_points.size() > 1) {
+            candidates = search_layer_multi(vec_to_store, enter_points, ef_construction_, l, visited_guard.get(), true);
+        } else {
+            candidates = search_layer(vec_to_store, enter_points.empty() ? curr_obj : enter_points[0], ef_construction_, l, visited_guard.get(), true);
+        }
 
-        std::size_t M_l = (l == 0) ? M0_ : Mmax_;
+        std::size_t M_l = (l == 0) ? ((build_options_.new_node_degree == "M") ? M_ : M0_) : Mmax_;
 
-        std::vector<idx_t> selected_neighbors = select_neighbors_heuristic(vec_to_store, candidates, M_l, true);
+        std::vector<idx_t> selected_neighbors = select_neighbors_heuristic(vec_to_store, candidates, M_l, build_options_.keep_pruned);
 
         set_node_links(new_idx, l, selected_neighbors);
+        if (l == 0) {
+            for (idx_t nbr : selected_neighbors) {
+                if (nbr < in_degrees_l0_.size()) {
+                    in_degrees_l0_[nbr]++;
+                }
+            }
+        }
 
         for (idx_t nbr : selected_neighbors) {
             SpinLockGuard guard(get_stripe_lock(nbr));
@@ -472,6 +579,9 @@ void HNSWIndex::add(const float* vector, label_t label, const MetaMap* metadata)
                     if (count < M0_) {
                         links[count++] = new_idx;
                         *get_layer0_link_count_ptr(nbr) = count;
+                        if (new_idx < in_degrees_l0_.size()) {
+                            in_degrees_l0_[new_idx]++;
+                        }
                     } else {
                         overflow_reselection_calls_++;
                         std::vector<Candidate> nbr_candidates;
@@ -482,7 +592,63 @@ void HNSWIndex::add(const float* vector, label_t label, const MetaMap* metadata)
                         }
                         nbr_candidates.push_back({compute_dist_by_idx(nbr_vec, new_idx), new_idx});
 
-                        std::vector<idx_t> shrunk = select_neighbors_heuristic(nbr_vec, nbr_candidates, M0_, true);
+                        std::vector<idx_t> shrunk;
+                        if (build_options_.overflow_selection == "closest") {
+                            std::sort(nbr_candidates.begin(), nbr_candidates.end());
+                            for (size_t si = 0; si < std::min<size_t>(M0_, nbr_candidates.size()); ++si) {
+                                shrunk.push_back(nbr_candidates[si].idx);
+                            }
+                        } else {
+                            shrunk = select_neighbors_heuristic(nbr_vec, nbr_candidates, M0_, build_options_.keep_pruned);
+                        }
+
+                        if (build_options_.protect_last_in_edge) {
+                            std::unordered_set<idx_t> s_set(shrunk.begin(), shrunk.end());
+                            std::vector<idx_t> r_set;
+                            for (const auto& c : nbr_candidates) {
+                                if (s_set.find(c.idx) == s_set.end()) {
+                                    r_set.push_back(c.idx);
+                                }
+                            }
+
+                            for (idx_t x : r_set) {
+                                if (x < in_degrees_l0_.size() && in_degrees_l0_[x] == 1) {
+                                    int best_s_idx = -1;
+                                    float max_d = -1.0f;
+                                    for (size_t si = 0; si < shrunk.size(); ++si) {
+                                        idx_t y = shrunk[si];
+                                        if (y < in_degrees_l0_.size() && in_degrees_l0_[y] >= 2) {
+                                            float d = compute_dist_by_idx(nbr_vec, y);
+                                            if (d > max_d) {
+                                                max_d = d;
+                                                best_s_idx = static_cast<int>(si);
+                                            }
+                                        }
+                                    }
+                                    if (best_s_idx >= 0) {
+                                        idx_t evicted_y = shrunk[best_s_idx];
+                                        shrunk[best_s_idx] = x;
+                                        s_set.erase(evicted_y);
+                                        s_set.insert(x);
+                                    }
+                                }
+                            }
+                        }
+
+                        // Update in-degrees for changes between old links and new shrunk
+                        std::unordered_set<idx_t> old_links(links, links + count);
+                        std::unordered_set<idx_t> new_links(shrunk.begin(), shrunk.end());
+                        for (idx_t old_l : old_links) {
+                            if (new_links.find(old_l) == new_links.end() && old_l < in_degrees_l0_.size()) {
+                                if (in_degrees_l0_[old_l] > 0) in_degrees_l0_[old_l]--;
+                            }
+                        }
+                        for (idx_t new_l : new_links) {
+                            if (old_links.find(new_l) == old_links.end() && new_l < in_degrees_l0_.size()) {
+                                in_degrees_l0_[new_l]++;
+                            }
+                        }
+
                         *get_layer0_link_count_ptr(nbr) = static_cast<uint32_t>(shrunk.size());
                         std::memcpy(links, shrunk.data(), shrunk.size() * sizeof(uint32_t));
                     }
@@ -519,13 +685,21 @@ void HNSWIndex::add(const float* vector, label_t label, const MetaMap* metadata)
                         }
                         nbr_candidates.push_back({compute_dist_by_idx(nbr_vec, new_idx), new_idx});
 
-                        nbr_links = select_neighbors_heuristic(nbr_vec, nbr_candidates, Mmax_, true);
+                        nbr_links = select_neighbors_heuristic(nbr_vec, nbr_candidates, Mmax_, build_options_.keep_pruned);
                     }
                 }
             }
         }
 
         if (!candidates.empty()) {
+            enter_points.clear();
+            if (build_options_.layer_entry == "all") {
+                for (const auto& c : candidates) {
+                    enter_points.push_back(c.idx);
+                }
+            } else {
+                enter_points.push_back(candidates[0].idx);
+            }
             curr_obj = candidates[0].idx;
         }
     }
@@ -1480,4 +1654,58 @@ std::unique_ptr<HNSWIndex> HNSWIndex::load(const std::string& filename) {
     return index;
 }
 
+std::vector<idx_t> HNSWIndex::test_select_neighbors_heuristic(
+    const std::vector<float>& query_vec,
+    const std::vector<std::pair<float, idx_t>>& candidates_in,
+    std::size_t max_links,
+    bool keep_pruned) const {
+    std::vector<Candidate> cands;
+    cands.reserve(candidates_in.size());
+    for (const auto& p : candidates_in) {
+        cands.push_back({p.first, p.second});
+    }
+    return select_neighbors_heuristic(query_vec.data(), cands, max_links, keep_pruned);
+}
+
+std::vector<std::pair<float, idx_t>> HNSWIndex::test_search_layer(
+    const std::vector<float>& query_vec,
+    idx_t entry_point,
+    std::size_t ef,
+    int layer) const {
+    VisitedListGuard visited_guard(*visited_pool_);
+    auto cands = search_layer(query_vec.data(), entry_point, ef, layer, visited_guard.get(), false);
+    std::vector<std::pair<float, idx_t>> res;
+    res.reserve(cands.size());
+    for (const auto& c : cands) {
+        res.push_back({c.dist, c.idx});
+    }
+    return res;
+}
+
+std::vector<std::vector<idx_t>> HNSWIndex::export_layer0_graph() const {
+    std::shared_lock<std::shared_mutex> lock(structure_lock_);
+    std::size_t total = cur_element_count_.load();
+    std::vector<std::vector<idx_t>> graph(total);
+    for (std::size_t i = 0; i < total; ++i) {
+        uint32_t cnt = *get_layer0_link_count_ptr(static_cast<idx_t>(i));
+        const uint32_t* links = get_layer0_links_ptr(static_cast<idx_t>(i));
+        graph[i].assign(links, links + cnt);
+    }
+    return graph;
+}
+
+std::vector<uint32_t> HNSWIndex::get_in_degrees_l0() const {
+    return in_degrees_l0_;
+}
+
+std::size_t HNSWIndex::get_unreachable_count() const {
+    auto d = diagnostics();
+    auto it = d.find("unreachable_nodes_count");
+    if (it != d.end()) {
+        return static_cast<std::size_t>(it->second);
+    }
+    return 0;
+}
+
 } // namespace hnswdb
+

@@ -48,6 +48,14 @@ private:
     SpinLock& lock_;
 };
 
+struct BuildOptions {
+    std::string new_node_degree = "M";  // "M" (adopted default) vs "M0"
+    bool keep_pruned = false;           // false (adopted default) vs true
+    bool protect_last_in_edge = false;  // false (default) vs true
+    std::string overflow_selection = "heuristic"; // "heuristic" (default) vs "closest"
+    std::string layer_entry = "closest"; // "closest" (default) vs "all"
+};
+
 class HNSWIndex {
 public:
     HNSWIndex(std::size_t dim,
@@ -56,7 +64,8 @@ public:
               std::size_t M = 16,
               std::size_t ef_construction = 200,
               std::size_t ef_search = 50,
-              uint64_t seed = 42);
+              uint64_t seed = 42,
+              BuildOptions build_options = BuildOptions{});
 
     ~HNSWIndex() = default;
 
@@ -127,6 +136,26 @@ public:
     float compute_dist(const float* a, const float* b) const;
     float compute_dist_by_idx(const float* query, idx_t idx) const;
 
+    void set_build_options(const BuildOptions& options) { build_options_ = options; }
+    const BuildOptions& get_build_options() const { return build_options_; }
+
+    // Test and diagnostic hooks
+    std::vector<idx_t> test_select_neighbors_heuristic(
+        const std::vector<float>& query_vec,
+        const std::vector<std::pair<float, idx_t>>& candidates,
+        std::size_t max_links,
+        bool keep_pruned) const;
+
+    std::vector<std::pair<float, idx_t>> test_search_layer(
+        const std::vector<float>& query_vec,
+        idx_t entry_point,
+        std::size_t ef,
+        int layer) const;
+
+    std::vector<std::vector<idx_t>> export_layer0_graph() const;
+    std::vector<uint32_t> get_in_degrees_l0() const;
+    std::size_t get_unreachable_count() const;
+
 private:
     struct Candidate {
         float dist;
@@ -151,6 +180,14 @@ private:
     std::vector<Candidate> search_layer(
         const float* query_vec,
         idx_t entry_point,
+        std::size_t ef,
+        int layer,
+        VisitedList* visited,
+        bool is_build = false) const;
+
+    std::vector<Candidate> search_layer_multi(
+        const float* query_vec,
+        const std::vector<idx_t>& entry_points,
         std::size_t ef,
         int layer,
         VisitedList* visited,
@@ -227,6 +264,10 @@ private:
     mutable std::atomic<uint64_t> overflow_reselection_calls_{0};
     mutable std::atomic<uint64_t> distance_computations_build_{0};
     mutable std::atomic<uint64_t> distance_computations_query_{0};
+
+    // Build configuration & Layer 0 in-degree tracking
+    BuildOptions build_options_;
+    std::vector<uint32_t> in_degrees_l0_;
 };
 
 } // namespace hnswdb

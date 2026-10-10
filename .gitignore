@@ -8,4 +8,5 @@ results/*
 !results/raw/
 !results/raw/**
 .pytest_cache/
+reference/
 

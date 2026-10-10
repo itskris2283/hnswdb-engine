@@ -4,6 +4,7 @@ from hnswdb._version import __version__
 try:
     from hnswdb._core import (
         HNSWIndex,
+        BuildOptions,
         FlatIndex,
         HnswdbError,
         DimensionMismatch,
@@ -21,6 +22,7 @@ except ImportError:
 __all__ = [
     "__version__",
     "HNSWIndex",
+    "BuildOptions",
     "FlatIndex",
     "HnswdbError",
     "DimensionMismatch",

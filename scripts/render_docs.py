@@ -249,6 +249,77 @@ def format_recall_table(data: dict, table_name: str) -> str:
         for m, rec in data.get("h7_M_sensitivity", {}).items():
             lines.append(f"| {m} | {rec:.4f} |")
 
+    elif table_name == "seed_matrix":
+        lines.append("| Engine | 1T Recall (Mean +/- Std) | 1T Range [Min, Max] | 4T Recall (Mean +/- Std) | 4T Range [Min, Max] | Unreachable (Mean) |")
+        lines.append("| :--- | :--- | :--- | :--- | :--- | :--- |")
+        for eng, stats in data.get("engines", {}).items():
+            r1_m = stats.get("recall_1t_mean", 0.0)
+            r1_s = stats.get("recall_1t_std", 0.0)
+            r1_min = stats.get("recall_1t_min", 0.0)
+            r1_max = stats.get("recall_1t_max", 0.0)
+            r4_m = stats.get("recall_4t_mean", 0.0)
+            r4_s = stats.get("recall_4t_std", 0.0)
+            r4_min = stats.get("recall_4t_min", 0.0)
+            r4_max = stats.get("recall_4t_max", 0.0)
+            unreach = stats.get("unreachable_mean", None)
+            unreach_str = f"{unreach:.1f}" if unreach is not None else "N/A"
+            lines.append(
+                f"| **{eng}** | {r1_m:.4f} +/- {r1_s:.4f} | [{r1_min:.4f}, {r1_max:.4f}] | "
+                f"{r4_m:.4f} +/- {r4_s:.4f} | [{r4_min:.4f}, {r4_max:.4f}] | {unreach_str} |"
+            )
+
+    elif table_name == "seed_anova":
+        lines.append("| Engine | Data Seed SS Share | Build Seed SS Share | Residual SS Share | F-stat (Data Seed) | F-stat (Build Seed) |")
+        lines.append("| :--- | ---: | ---: | ---: | ---: | ---: |")
+        for eng, stats in data.get("engines", {}).items():
+            anova = stats.get("anova_1t", {})
+            d_share = anova.get("pct_ss_data", 0.0)
+            b_share = anova.get("pct_ss_build", 0.0)
+            r_share = anova.get("pct_ss_residual", 0.0)
+            f_data = anova.get("f_stat_data", 0.0)
+            f_build = anova.get("f_stat_build", 0.0)
+            lines.append(
+                f"| **{eng}** | {d_share:.1f}% | {b_share:.1f}% | {r_share:.1f}% | {f_data:.2f} | {f_build:.2f} |"
+            )
+
+    elif table_name == "ablations":
+        lines.append("| Configuration | Initial Degree | Keep Pruned | Protect Edge | Dataset B Recall@200 | Dataset B Build (s) | Dataset B Unreachable | F-MNIST Recall@100 | All Targets Pass |")
+        lines.append("| :--- | :--- | :--- | :--- | ---: | ---: | ---: | ---: | :--- |")
+        for cfg in data.get("configs", []):
+            name = cfg.get("name", "")
+            opts = cfg.get("options", {})
+            deg = opts.get("new_node_degree", "M")
+            kp = "True" if opts.get("keep_pruned") else "False"
+            prot = "True" if opts.get("protect_last_in_edge") else "False"
+            db = cfg.get("dataset_b", {})
+            rec200 = db.get("recalls", {}).get("recall_ef200", 0.0)
+            b_time = db.get("build_time_s", 0.0)
+            unreach = db.get("unreachable_nodes", 0)
+            fmn = cfg.get("fashion_mnist", {})
+            f_rec100 = fmn.get("recall_ef100", 0.0)
+            t_pass = "PASS" if cfg.get("targets_check", {}).get("all_passed") else "MISS"
+            lines.append(
+                f"| `{name}` | {deg} | {kp} | {prot} | {rec200:.4f} | {b_time:.2f}s | {unreach} | {f_rec100:.4f} | {t_pass} |"
+            )
+
+    elif table_name == "decomposition":
+        lines.append("| Elements (N) | Legacy Unreachable | Legacy Zero In-Degree | Legacy Reciprocal Links | Cured Unreachable | Cured Zero In-Degree | Cured Reciprocal Links | Cured Mean Degree |")
+        lines.append("| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |")
+        leg_traj = data.get("comparisons", {}).get("legacy", {}).get("trajectory", [])
+        cur_traj = data.get("comparisons", {}).get("cured", {}).get("trajectory", [])
+        for l_pt, c_pt in zip(leg_traj, cur_traj):
+            n = l_pt.get("elements", 0)
+            l_unr = l_pt.get("unreachable_nodes", 0)
+            l_zid = l_pt.get("zero_in_degree_nodes", 0)
+            l_rec = l_pt.get("reciprocal_links_fraction", 0.0) * 100.0
+            c_unr = c_pt.get("unreachable_nodes", 0)
+            c_zid = c_pt.get("zero_in_degree_nodes", 0)
+            c_rec = c_pt.get("reciprocal_links_fraction", 0.0) * 100.0
+            c_deg = c_pt.get("mean_layer0_degree", 0.0)
+            lines.append(
+                f"| {n} | {l_unr} | {l_zid} | {l_rec:.1f}% | {c_unr} | {c_zid} | {c_rec:.1f}% | {c_deg:.2f} |"
+            )
+
     elif table_name.startswith("hardware") or table_name.startswith("env"):
         env = data.get("env", {})
         cpu_model = env.get("cpu_model", "Intel(R) Core(TM) i7-8650U CPU @ 1.90GHz")

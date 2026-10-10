@@ -180,6 +180,20 @@ PYBIND11_MODULE(_core, m) {
     m.def("active_kernel_name", &distance::active_kernel_name, "Get name of currently active SIMD kernel ('avx2' or 'scalar')");
     m.def("set_force_scalar", &distance::set_force_scalar, py::arg("force"), "Force the scalar distance kernel");
 
+    // BuildOptions Binding
+    py::class_<BuildOptions>(m, "BuildOptions")
+        .def(py::init<std::string, bool, bool, std::string, std::string>(),
+             py::arg("new_node_degree") = "M",
+             py::arg("keep_pruned") = false,
+             py::arg("protect_last_in_edge") = false,
+             py::arg("overflow_selection") = "heuristic",
+             py::arg("layer_entry") = "closest")
+        .def_readwrite("new_node_degree", &BuildOptions::new_node_degree)
+        .def_readwrite("keep_pruned", &BuildOptions::keep_pruned)
+        .def_readwrite("protect_last_in_edge", &BuildOptions::protect_last_in_edge)
+        .def_readwrite("overflow_selection", &BuildOptions::overflow_selection)
+        .def_readwrite("layer_entry", &BuildOptions::layer_entry);
+
     // HNSWIndex Binding
     py::class_<HNSWIndex>(m, "HNSWIndex")
         .def(py::init([](std::size_t dim,
@@ -188,9 +202,10 @@ PYBIND11_MODULE(_core, m) {
                           std::size_t M,
                           std::size_t ef_construction,
                           std::size_t ef_search,
-                          uint64_t seed) {
+                          uint64_t seed,
+                          const BuildOptions& build_options) {
             Metric metric = string_to_metric(metric_str);
-            return std::make_unique<HNSWIndex>(dim, metric, max_elements, M, ef_construction, ef_search, seed);
+            return std::make_unique<HNSWIndex>(dim, metric, max_elements, M, ef_construction, ef_search, seed, build_options);
         }),
         py::arg("dim"),
         py::arg("metric") = "l2",
@@ -198,7 +213,8 @@ PYBIND11_MODULE(_core, m) {
         py::arg("M") = 16,
         py::arg("ef_construction") = 200,
         py::arg("ef_search") = 50,
-        py::arg("seed") = 42)
+        py::arg("seed") = 42,
+        py::arg("build_options") = BuildOptions{})
 
         .def("add", [](HNSWIndex& self,
                        py::array_t<float, py::array::c_style | py::array::forcecast> vectors,
@@ -398,7 +414,17 @@ PYBIND11_MODULE(_core, m) {
             const float* ptr = static_cast<const float*>(q_buf.ptr);
             py::gil_scoped_release release;
             return self.bench_search_latency(ptr, n_queries, k, ef);
-        }, py::arg("queries"), py::arg("k") = 10, py::arg("ef") = 0);
+        }, py::arg("queries"), py::arg("k") = 10, py::arg("ef") = 0)
+
+        .def("set_build_options", &HNSWIndex::set_build_options, py::arg("options"))
+        .def("get_build_options", &HNSWIndex::get_build_options)
+        .def("get_unreachable_count", &HNSWIndex::get_unreachable_count)
+        .def("get_in_degrees_l0", &HNSWIndex::get_in_degrees_l0)
+        .def("_test_export_layer0_graph", &HNSWIndex::export_layer0_graph)
+        .def("_test_select_neighbors_heuristic", &HNSWIndex::test_select_neighbors_heuristic,
+             py::arg("query_vec"), py::arg("candidates"), py::arg("max_links"), py::arg("keep_pruned") = true)
+        .def("_test_search_layer", &HNSWIndex::test_search_layer,
+             py::arg("query_vec"), py::arg("entry_point"), py::arg("ef"), py::arg("layer"));
 
     // FlatIndex Binding
     py::class_<FlatIndex>(m, "FlatIndex")
