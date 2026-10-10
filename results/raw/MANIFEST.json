@@ -132,6 +132,12 @@
       "size_bytes": 1946
     },
     {
+      "file": "check_claims_before.txt",
+      "sha256": "252f07bb71d92e69d31d0393297f6e77471936891f527cd3bb193345fa1ffc00",
+      "state": "raw_result",
+      "size_bytes": 14814
+    },
+    {
       "file": "claims_check_after.txt",
       "sha256": "08394dca5b10efb3c571ea648e00613f744c1813284518898a9e3f6c35ccf516",
       "commit": "72aad13",
@@ -146,6 +152,12 @@
       "dataset": "n/a",
       "state": "claim_audit",
       "size_bytes": 2564
+    },
+    {
+      "file": "claims_check_round4_before.txt",
+      "sha256": "7b420af8c0670afa3f377cc073a99aa630d548f20d5d976aa531f4a646805c51",
+      "state": "raw_result",
+      "size_bytes": 504
     },
     {
       "file": "decomposition_dataset_b.json",
@@ -186,12 +198,30 @@
       "size_bytes": 403
     },
     {
+      "file": "profile_build_work_counting_20261010_181658_811df090.txt",
+      "sha256": "092d31b5472901e347c49794179f6616b5e08f0b44f687f176f073ed9ed6bd73",
+      "state": "raw_result",
+      "size_bytes": 172
+    },
+    {
+      "file": "provenance_check_before.txt",
+      "sha256": "5894991197847d71bd6cd3b068a1d379d6bae26db6b237017387fc5729ffe6f5",
+      "state": "raw_result",
+      "size_bytes": 348
+    },
+    {
+      "file": "query_work_counting.json",
+      "sha256": "ffd07abd9924ddb2de1c9f1f35620cf4ea4f144f7607ea47439dc3b73d9692b9",
+      "state": "raw_result",
+      "size_bytes": 2337
+    },
+    {
       "file": "run_all_checks.txt",
-      "sha256": "5564346bba83da40c815e07428ec3beb6eceb4bc0c66cee8f5b1da060f26cf0d",
+      "sha256": "616973ab2014ee3a0fe5c1181063a6ddce28b0c9d0feca48dccde4fe76f2665b",
       "commit": "72aad13",
       "dataset": "n/a",
       "state": "test_suite_log",
-      "size_bytes": 6359
+      "size_bytes": 6870
     },
     {
       "file": "scorecard.json",
@@ -204,6 +234,18 @@
       "sha256": "0948cfd19f9c48a0a6959fcce98fa46d03f021360ed107dbebbf21f3331b067d",
       "state": "raw_result",
       "size_bytes": 25621
+    },
+    {
+      "file": "test_ceiling_before.txt",
+      "sha256": "1cd6e0cae091d98ec4225f5689a1312b9c68163fd6214dcab4e975d2130a4e8f",
+      "state": "raw_result",
+      "size_bytes": 2678
+    },
+    {
+      "file": "work_counting_build.json",
+      "sha256": "9e23db7b9beb529122394e191c51f18da521cd6fb299c0ba1f300cf1b5ea7a4d",
+      "state": "raw_result",
+      "size_bytes": 1152
     }
   ],
   "last_updated": "2026-10-10T17:57:08.503803+00:00"

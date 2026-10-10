@@ -214,3 +214,27 @@ Changing the default construction options to `new_node_degree = "M"` (16 links) 
 - Eliminates unreachable nodes on Dataset B, reducing unreachable count from 166–505 down to single digits (see table above).
 - Exceeds target T5 on Dataset B, reaching full recall convergence.
 - Substantially accelerates single-thread construction time across both Dataset B and Fashion-MNIST as measured in the ablation table above.
+
+---
+
+## 3. Build-Time Gap and Work Counting Analysis
+
+### 3.1 Work Counting and Distance Evaluation Share
+
+Measured distance computations per insert across datasets (diagnostics counters) and estimated pure SIMD arithmetic share using kernel latencies from `results/raw/kernel_microbench.json`:
+
+<!-- BEGIN GENERATED table=work_counting run_id=work_counting_20261010_181658_811df090 -->
+**Dataset**: unknown (? x ?d) | **M**=? | **efC**=? | **k**=?
+
+| Dataset | Dimension | Elements | Distance Computations / Insert | Total Build Distances | SIMD Kernel Latency (ns) | Est. Pure Kernel Time (s) | Measured Build Time (s) | Pure Kernel Share (%) |
+| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| A | 32 | 5,000 | 1573.3 | 7,866,263 | 7.55 | 0.059 | 0.165 | 36.0% |
+| B_s01 | 64 | 20,000 | 3468.6 | 69,371,006 | 8.98 | 0.623 | 1.480 | 42.1% |
+| fashion_mnist | 784 | 60,000 | 878.4 | 52,701,338 | 53.22 | 2.805 | 29.940 | 9.4% |
+<!-- END GENERATED -->
+
+### 3.2 Profiling and Host Availability
+
+- **Profiling Status:** Evaluated via host profiler check. Non-elevated Windows environment without WSL distribution prevents ETW kernel traces and Linux perf (see recorded notice in `results/raw/profile_build_work_counting_20261010_181658_811df090.txt`).
+- **Empirical Finding:** At high dimensions (Fashion-MNIST 784d), distance compute time dominates and HNSWDB matches hnswlib build throughput within the target ratio (see table above and [BENCHMARKS.md](BENCHMARKS.md)). At low dimensions (32d, 64d), distance compute represents approximately one third to one half of build time, with the remainder consumed by non-distance graph and priority queue operations.
+

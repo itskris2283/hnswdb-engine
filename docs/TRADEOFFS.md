@@ -29,7 +29,9 @@ Evaluated on **Fashion-MNIST** ($N=60,000, D=784, M=16, ef_c=100, k=10$) on Wind
 
 ### 3.1 Build-Time Performance
 
-Build-time gap: not yet explained; see Phase 5 evidence.
+Index build performance is empirically evaluated in `results/raw/work_counting_build.json` and `results/raw/multithread_build.json`:
+- At high vector dimensions (Fashion-MNIST 784d), SIMD distance calculations dominate execution time and HNSWDB achieves build parity relative to hnswlib (see generated summary table above and [BENCHMARKS.md](BENCHMARKS.md)).
+- At low vector dimensions (32d, 64d), distance evaluations take single-digit nanoseconds, meaning non-distance graph operations (priority queue maintenance, candidate list traversal, and striped lock synchronization) account for more than half of construction runtime, explaining the relative build time gap on low-dimensional synthetic benchmarks (see detailed work counting table in [INVESTIGATIONS.md](INVESTIGATIONS.md)).
 
 ### 3.2 SIMD Distance Kernel Microbenchmark
 

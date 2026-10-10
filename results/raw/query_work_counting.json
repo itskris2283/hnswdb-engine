@@ -1,0 +1,90 @@
+{
+  "run_id": "query_ef_semantics_20261010_181658_2464a233",
+  "timestamp": "2026-10-10T18:16:58.534526+00:00",
+  "query_analysis": [
+    {
+      "dataset": "A",
+      "ef_search": 10,
+      "hnswdb_dist_per_query": 336.3,
+      "faiss_dist_per_query": 340.8,
+      "ratio_hnswdb_vs_faiss": 0.99
+    },
+    {
+      "dataset": "A",
+      "ef_search": 50,
+      "hnswdb_dist_per_query": 949.8,
+      "faiss_dist_per_query": 977.9,
+      "ratio_hnswdb_vs_faiss": 0.97
+    },
+    {
+      "dataset": "A",
+      "ef_search": 100,
+      "hnswdb_dist_per_query": 1533.4,
+      "faiss_dist_per_query": 1567.7,
+      "ratio_hnswdb_vs_faiss": 0.98
+    },
+    {
+      "dataset": "A",
+      "ef_search": 200,
+      "hnswdb_dist_per_query": 2351.2,
+      "faiss_dist_per_query": 2380.2,
+      "ratio_hnswdb_vs_faiss": 0.99
+    },
+    {
+      "dataset": "B_s01",
+      "ef_search": 10,
+      "hnswdb_dist_per_query": 437.9,
+      "faiss_dist_per_query": 407.8,
+      "ratio_hnswdb_vs_faiss": 1.07
+    },
+    {
+      "dataset": "B_s01",
+      "ef_search": 50,
+      "hnswdb_dist_per_query": 1322.9,
+      "faiss_dist_per_query": 1255.4,
+      "ratio_hnswdb_vs_faiss": 1.05
+    },
+    {
+      "dataset": "B_s01",
+      "ef_search": 100,
+      "hnswdb_dist_per_query": 2260.6,
+      "faiss_dist_per_query": 2154.9,
+      "ratio_hnswdb_vs_faiss": 1.05
+    },
+    {
+      "dataset": "B_s01",
+      "ef_search": 200,
+      "hnswdb_dist_per_query": 3819.7,
+      "faiss_dist_per_query": 3647.0,
+      "ratio_hnswdb_vs_faiss": 1.05
+    },
+    {
+      "dataset": "fashion_mnist",
+      "ef_search": 10,
+      "hnswdb_dist_per_query": 222.8,
+      "faiss_dist_per_query": 212.6,
+      "ratio_hnswdb_vs_faiss": 1.05
+    },
+    {
+      "dataset": "fashion_mnist",
+      "ef_search": 50,
+      "hnswdb_dist_per_query": 501.8,
+      "faiss_dist_per_query": 491.4,
+      "ratio_hnswdb_vs_faiss": 1.02
+    },
+    {
+      "dataset": "fashion_mnist",
+      "ef_search": 100,
+      "hnswdb_dist_per_query": 763.7,
+      "faiss_dist_per_query": 751.4,
+      "ratio_hnswdb_vs_faiss": 1.02
+    },
+    {
+      "dataset": "fashion_mnist",
+      "ef_search": 200,
+      "hnswdb_dist_per_query": 1175.0,
+      "faiss_dist_per_query": 1159.5,
+      "ratio_hnswdb_vs_faiss": 1.01
+    }
+  ]
+}

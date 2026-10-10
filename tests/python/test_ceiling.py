@@ -17,7 +17,7 @@ def test_recall_monotonicity_dataset_a():
     dim = xb.shape[1]
 
     idx = HNSWIndex(dim=dim, metric="l2", max_elements=n_train, M=16, ef_construction=100, seed=42)
-    idx.add(xb, np.arange(n_train, dtype=np.int64))
+    idx.add(xb, np.arange(n_train, dtype=np.int64), num_threads=1)
 
     recalls = []
     for ef in [10, 20, 50, 100, 200]:

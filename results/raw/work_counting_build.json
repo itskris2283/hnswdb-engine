@@ -1,0 +1,39 @@
+{
+  "run_id": "work_counting_20261010_181658_811df090",
+  "timestamp": "2026-10-10T18:16:58.532530+00:00",
+  "build_analysis": [
+    {
+      "dataset": "A",
+      "elements": 5000,
+      "dimension": 32,
+      "total_distance_computations": 7866263,
+      "distance_computations_per_insert": 1573.3,
+      "kernel_ns_per_eval": 7.55,
+      "est_pure_kernel_time_s": 0.0594,
+      "measured_build_time_s": 0.165,
+      "kernel_share_pct": 36.0
+    },
+    {
+      "dataset": "B_s01",
+      "elements": 20000,
+      "dimension": 64,
+      "total_distance_computations": 69371006,
+      "distance_computations_per_insert": 3468.6,
+      "kernel_ns_per_eval": 8.98,
+      "est_pure_kernel_time_s": 0.623,
+      "measured_build_time_s": 1.48,
+      "kernel_share_pct": 42.1
+    },
+    {
+      "dataset": "fashion_mnist",
+      "elements": 60000,
+      "dimension": 784,
+      "total_distance_computations": 52701338,
+      "distance_computations_per_insert": 878.4,
+      "kernel_ns_per_eval": 53.22,
+      "est_pure_kernel_time_s": 2.8048,
+      "measured_build_time_s": 29.94,
+      "kernel_share_pct": 9.4
+    }
+  ]
+}

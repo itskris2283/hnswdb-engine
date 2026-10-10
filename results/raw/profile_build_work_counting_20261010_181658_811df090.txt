@@ -1,0 +1,1 @@
+not profiled: profiler (VTune / elevated ETW / perf under WSL) is not available on this non-elevated Windows host without WSL distribution. Attributed the gap to nothing.

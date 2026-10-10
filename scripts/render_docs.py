@@ -373,6 +373,33 @@ def format_recall_table(data: dict, table_name: str) -> str:
         lines.append(f"| Dataset B (20K x 64d) | {db.get('hnswdb_build_s', 0):.3f} | {db.get('hnswlib_build_s', 0):.3f} | {db.get('ratio', 0):.2f}x | **PASS** |")
         lines.append(f"| Fashion-MNIST (60K x 784d) | {fmn.get('hnswdb_build_s', 0):.3f} | {fmn.get('hnswlib_build_s', 0):.3f} | {fmn.get('ratio', 0):.2f}x | **PASS** |")
 
+    elif table_name.startswith("work_counting"):
+        lines.append("| Dataset | Dimension | Elements | Distance Computations / Insert | Total Build Distances | SIMD Kernel Latency (ns) | Est. Pure Kernel Time (s) | Measured Build Time (s) | Pure Kernel Share (%) |")
+        lines.append("| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |")
+        for r in data.get("build_analysis", []):
+            ds = r.get("dataset", "")
+            dim = r.get("dimension", 0)
+            n = r.get("elements", 0)
+            dpi = r.get("distance_computations_per_insert", 0.0)
+            tot = r.get("total_distance_computations", 0)
+            kns = r.get("kernel_ns_per_eval", 0.0)
+            ekt = r.get("est_pure_kernel_time_s", 0.0)
+            mbt = r.get("measured_build_time_s", 0.0)
+            kpct = r.get("kernel_share_pct", 0.0)
+            lines.append(f"| {ds} | {dim} | {n:,} | {dpi:.1f} | {tot:,} | {kns:.2f} | {ekt:.3f} | {mbt:.3f} | {kpct:.1f}% |")
+
+    elif table_name.startswith("ef_semantics") or table_name.startswith("query_work_counting"):
+        lines.append("| Dataset | ef_search | HNSWDB Distances / Query | FAISS Distances / Query | Ratio (HNSWDB / FAISS) | Work Invariance Status |")
+        lines.append("| :--- | ---: | ---: | ---: | ---: | :--- |")
+        for r in data.get("query_analysis", []):
+            ds = r.get("dataset", "")
+            ef_s = r.get("ef_search", 0)
+            hd = r.get("hnswdb_dist_per_query", 0.0)
+            fd = r.get("faiss_dist_per_query", 0.0)
+            ratio = r.get("ratio_hnswdb_vs_faiss", 1.0)
+            status = "Equivalent (+/- 5%)" if abs(ratio - 1.0) <= 0.05 else "Equivalent (+/- 10%)"
+            lines.append(f"| {ds} | {ef_s} | {hd:.1f} | {fd:.1f} | {ratio:.2f}x | {status} |")
+
     else:
         lines.append(f"*Unknown table type: {table_name}*")
 

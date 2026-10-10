@@ -27,6 +27,29 @@ All runs were executed on **Windows 11 x86_64** (Intel Core i7-8650U, MSVC 2022 
   - Batch QPS: multi-threaded batched queries with min/median/max reporting across 1, 2, 4 physical threads and 8 logical (HT).
   - Memory Tracking: Process RSS delta measured via `psutil`.
 
+### 1.1 ef Semantics: Distance Computations per Query (HNSWDB vs FAISS)
+
+Verifies whether identical $ef_{search}$ parameter implies equal algorithmic distance work:
+
+<!-- BEGIN GENERATED table=ef_semantics run_id=query_ef_semantics_20261010_181658_2464a233 -->
+**Dataset**: unknown (? x ?d) | **M**=? | **efC**=? | **k**=?
+
+| Dataset | ef_search | HNSWDB Distances / Query | FAISS Distances / Query | Ratio (HNSWDB / FAISS) | Work Invariance Status |
+| :--- | ---: | ---: | ---: | ---: | :--- |
+| A | 10 | 336.3 | 340.8 | 0.99x | Equivalent (+/- 5%) |
+| A | 50 | 949.8 | 977.9 | 0.97x | Equivalent (+/- 5%) |
+| A | 100 | 1533.4 | 1567.7 | 0.98x | Equivalent (+/- 5%) |
+| A | 200 | 2351.2 | 2380.2 | 0.99x | Equivalent (+/- 5%) |
+| B_s01 | 10 | 437.9 | 407.8 | 1.07x | Equivalent (+/- 10%) |
+| B_s01 | 50 | 1322.9 | 1255.4 | 1.05x | Equivalent (+/- 10%) |
+| B_s01 | 100 | 2260.6 | 2154.9 | 1.05x | Equivalent (+/- 10%) |
+| B_s01 | 200 | 3819.7 | 3647.0 | 1.05x | Equivalent (+/- 10%) |
+| fashion_mnist | 10 | 222.8 | 212.6 | 1.05x | Equivalent (+/- 10%) |
+| fashion_mnist | 50 | 501.8 | 491.4 | 1.02x | Equivalent (+/- 5%) |
+| fashion_mnist | 100 | 763.7 | 751.4 | 1.02x | Equivalent (+/- 5%) |
+| fashion_mnist | 200 | 1175.0 | 1159.5 | 1.01x | Equivalent (+/- 5%) |
+<!-- END GENERATED -->
+
 ---
 
 ## 2. Benchmark Results
