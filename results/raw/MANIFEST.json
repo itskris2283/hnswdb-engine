@@ -108,7 +108,14 @@
       "dataset": "B_s10",
       "label": "Synthetic B (20K x 64d, 50 clusters, \u03c3=1.0)",
       "created": "2026-10-10T10:10:03.950047+00:00"
+    },
+    {
+      "file": "bench_fashion_mnist_90c0d1d3.json",
+      "run_id": "fashion_mnist_20261010_113121_90c0d1d3",
+      "dataset": "fashion_mnist",
+      "label": "Fashion-MNIST (60K x 784d, Euclidean L2)",
+      "created": "2026-10-10T11:41:07.456159+00:00"
     }
   ],
-  "last_updated": "2026-10-10T10:10:03.951053+00:00"
+  "last_updated": "2026-10-10T11:41:07.481074+00:00"
 }

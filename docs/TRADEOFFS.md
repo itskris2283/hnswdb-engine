@@ -12,16 +12,16 @@ In direct comparison with reference benchmarks (**FAISS** and **hnswlib**), HNSW
 
 Evaluated on **Fashion-MNIST** ($N=60,000, D=784, M=16, ef_c=100, k=10$) on Windows 11 x86_64 (AVX2+FMA kernel, MSVC 2022 Release /O2):
 
-| Metric | HNSWDB (This Project) | FAISS HNSW | hnswlib | Analysis & Reason |
+<!-- BEGIN GENERATED table=summary_fashion_mnist run_id=fashion_mnist_20261010_113121_90c0d1d3 -->
+**Dataset**: fashion_mnist (60000 x 784d) | **M**=16 | **efC**=100 | **k**=10
+
+| Metric | HNSWDB | FAISS HNSW | hnswlib | Analysis & Notes |
 | :--- | :---: | :---: | :---: | :--- |
-| **Recall@10 ($ef=50$)** | 0.9972 | 0.9948 | 0.9950 | Algorithm 1/2/4 parity with heuristic pruning |
-| **Recall@10 ($ef=100$)** | 0.9987 | 0.9978 | 0.9978 | High graph connectivity after deduplication fix |
-| **Recall@10 ($ef=200$)** | 0.9991 | 0.9990 | 0.9992 | Full parity on continuous manifold data |
-| **Approximation Ratio ($k=10$)** | 1.000 | 1.000 | 1.000 | True Euclidean distance ratio |
-| **Sequential Latency (p50)** | 0.220 ms | 0.195 ms | 0.251 ms | Fast greedy graph descent with AVX2+FMA |
-| **Build Time (60,000 vectors)** | 20.02 s | 9.66 s | 8.51 s | hnswlib contiguous memory layout & template SIMD |
-| **Index Size on Disk** | 187.85 MB | 187.70 MB | 187.94 MB | Compact layer 0 + upper links format |
-| **Process RSS Delta** | 194.09 MB | 189.11 MB | 203.17 MB | Compact flat buffer allocations |
+| **Recall@10 (ef=50)** | 0.9978 | 0.9948 | 0.9951 | Competitive parity |
+| **p50 Latency (ef=50)** | 0.452 ms | 0.365 ms | 0.813 ms | Sub-millisecond graph search |
+| **Build Time** | 102.60 s | 38.21 s | 78.72 s | Single-thread build |
+| **Process RSS Delta** | 195.1 MB | 189.2 MB | 202.1 MB | Memory footprint |
+<!-- END GENERATED -->
 
 ---
 
@@ -44,7 +44,7 @@ Evaluated on **Fashion-MNIST** ($N=60,000, D=784, M=16, ef_c=100, k=10$) on Wind
 ### 3.3 Lock Granularity During Parallel Graph Construction
 - **hnswlib:** Uses fine-grained `std::mutex` per node array.
 - **FAISS:** Uses OpenMP static work-sharing loops for batch operations.
-- **HNSWDB:** Uses 1,024 striped spinlocks and a dedicated `std::mutex` for label mapping (`label_to_idx_`). Striped spinlocks keep latency low, but parallel insertion throughput experiences lock contention when thread count exceeds physical core count.
+- **HNSWDB:** Uses 1,024 striped spinlocks and a dedicated `std::mutex` for label mapping (`label_to_idx_`). Striped spinlocks keep latency low, but parallel insertion throughput experiences lock contention when thread count is greater than physical core count.
 
 ---
 

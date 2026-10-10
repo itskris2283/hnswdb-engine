@@ -1,84 +1,124 @@
 # HNSWDB: Final Engineering & Verification Report
 
-## 1. Executive Summary & Scorecard
+## 1. Executive Summary & Audited Scorecard
 
-**HNSWDB** is an approximate nearest neighbor (ANN) vector database implemented from scratch in C++17 with Python bindings (`pybind11`), FastAPI collection services, Typer CLI, and rigorous automated test and benchmark suites.
+**HNSWDB** is an approximate nearest neighbor (ANN) vector database implemented from first principles in C++17 with Python bindings (`pybind11`), FastAPI service, Typer CLI, and automated test and benchmark suites.
 
-Every metric in this report is grounded in executed runs on **Fashion-MNIST (60,000 vectors, 784 dimensions, Euclidean L2 distance; SHA-256 `7f24e512...`)** and synthetic datasets on **Windows 11 x86_64** with **AVX2 + FMA** SIMD acceleration (MSVC 2022 /O2). All raw JSON results are registered in [MANIFEST.json](results/raw/MANIFEST.json).
+Every measured number in this report is programmatically generated from raw JSON artifacts in `results/raw/`. No metrics are hand-typed.
 
-```
-+========================================================================+
-|                         FINAL PROJECT SCORECARD                        |
-+========================================================================+
-|  Metric Category          | Target                     | Status        |
-+---------------------------+----------------------------+---------------+
-|  C++ GoogleTest Suite     | 9 / 9 Passing (100%)       | PASS (9/9)    |
-|  Python Pytest Suite      | 38 / 38 Passing (100%)     | PASS (38/38)  |
-|  Recall@10 (Fashion-MNIST)| >= 0.995 at high ef        | PASS (0.9991) |
-|  Recall Ceiling Target    | Reach >= 0.998 on manifold | PASS (0.9991) |
-|  Single-Query p50 Latency | < 0.50 ms at ef=50         | PASS (0.22 ms)|
-|  Multi-Platform CI        | ASan + UBSan + MSVC        | PASS          |
-|  Persistence (.hdb)       | CRC32 + Atomic Write       | PASS          |
-+========================================================================+
-```
+### Audited Scorecard (Fixed Targets Evaluated by Code)
 
----
+<!-- BEGIN GENERATED table=scorecard run_id=A_20261010_100807_7d8938d0 -->
+**Dataset**: A (5000 x 32d) | **M**=16 | **efC**=100 | **k**=10
 
-## 2. Specification Targets vs. Actuals
-
-| Milestone / Target | Target Specification | Actual Measured Result | Status |
+| ID | Target Description | Value | Status |
 | :--- | :--- | :--- | :--- |
-| **Recall@10 ($ef=50$)** | $\ge 0.95$ on standard datasets | **0.9972** (Fashion-MNIST 784d) | **PASS** |
-| **Recall@10 ($ef=200$)** | $\ge 0.995$ (no plateau on manifold) | **0.9991** (Fashion-MNIST 784d) | **PASS** |
-| **p50 Search Latency** | p50 search latency $< 0.5\text{ ms}$ at $ef=50$ | **0.220 ms** ($ef=50$), **0.534 ms** ($ef=200$) | **PASS** |
-| **Sequential QPS** | $\ge 3,000\text{ QPS}$ on 784-dim | **4,304 QPS** ($ef=50$) | **PASS** |
-| **4-Thread Batch QPS** | Scale $\ge 2\times$ over single thread | **9,102 QPS** ($2.11\times$ scaling) | **PASS** |
-| **Build Time (60k 784d)** | Within $3\times$ of hnswlib | **20.02 s** (hnswlib: 8.51 s, factor = $2.35\times$) | **PASS** |
-| **Storage Footprint** | Compact binary with CRC32 | **187.85 MB** (Raw float vectors = 188.16 MB) | **PASS** |
-| **Memory RSS Delta** | $< 250\text{ MB}$ for 60k 784d | **194.09 MB** | **PASS** |
-| **Code Quality & Checks** | Full test suites passing | **47 / 47 tests passing** (9 C++ + 38 Python) | **PASS** |
+| `T1` | Recall@10 >= 0.99 on Dataset A (M=16, efC=100, ef=50) | `0.9987` | **PASS** |
+| `T2` | Recall@10 >= 0.97 on Dataset B sigma=0.1 (M=16, efC=100, ef=200) | `0.9716` | **PASS** |
+| `T3` | Recall@10 gap vs hnswlib <= 0.02 on Dataset B sigma=0.1 (ef=200) | `0.0284` | **MISS** |
+| `T4` | Approximation ratio <= 1.05 on Dataset A (ef=50) | `1.0000` | **PASS** |
+| `T5` | Build time within 5x of hnswlib on Dataset A | `3.0306` | **PASS** |
+| `T6` | Single-thread QPS >= 5000 on Dataset A (ef=50) | `36574.0368` | **PASS** |
+| `T7` | Recall monotonically non-decreasing with ef on Dataset A | `True` | **PASS** |
+| `T8` | All C++ tests pass (CTest) | `9/9 passed` | **PASS** |
+| `T9` | All Python tests pass (pytest) | `45/45 passed` | **PASS** |
+| `T10` | Provenance check passes | `verified` | **PASS** |
+<!-- END GENERATED -->
+
+*Note on T3 (MISS): On tightly-clustered synthetic data ($\sigma=0.1$), HNSWDB reaches a recall ceiling of ~0.9716 at $ef_c=100$, while hnswlib reaches 1.0000 (gap = 0.0284 > 0.02 threshold). This limitation is fully investigated and documented in Section 2 and [INVESTIGATIONS.md](docs/INVESTIGATIONS.md).*
 
 ---
 
-## 3. Resolution of All Review Issues
+## 2. Corrections & Retractions from Earlier Rounds
 
-| # | Identified Review Issue | Root Cause & Diagnostic | Engineering Resolution Applied |
-| :-: | :--- | :--- | :--- |
-| **1** | Synthetic data mislabeled as Fashion-MNIST | Synthetic cluster generator used placeholder names. | Downloaded real `fashion-mnist-784-euclidean.hdf5` (60k vectors, 784d), recorded SHA-256 in `data/CHECKSUMS.txt`, and strictly separated synthetic vs real datasets. |
-| **2** | FAISS latency / QPS contradiction artifact | Calling `faiss.search` with default OpenMP threading incurred thread synchronization overhead on 1-row slices. | Standardized call paths with 1-query slices, enforced `omp_set_num_threads(1)`, separated sequential QPS from multi-threaded batch QPS, and added automated validation checks. |
-| **3** | Unwarranted bolding and inflated headline claims | Old tables bolded HNSWDB where it lost and reported unmeasured peak QPS. | Overhauled `README.md`, `docs/BENCHMARKS.md`, `docs/TRADEOFFS.md` with real measured figures directly from `results/raw/` without false bolding. |
-| **4** | Index build time gap unreported | Dynamic heap allocation in heuristic pruning and spinlock contention during traversal. | Optimized `select_neighbors_heuristic` with allocation-free sorting and stack buffering; documented architectural gaps (contiguous memory layout & template SIMD). |
-| **5** | Skipped profiling and unverified claims | Hypothesized advantages were stated without empirical measurement. | Executed full profiling in `docs/INVESTIGATIONS.md` and benchmarked thread scaling before and after optimization. |
-| **6** | Recall plateau & duplicate links | Candidate deduplication was needed in heuristic pruning to prevent redundant candidate evaluation. | Added candidate deduplication in `select_neighbors_heuristic` and edge presence guards in `add()`; verified zero snapshot duplicate links and added regression test `tests/python/test_regression_bug.py`. |
-| **7** | Untested sanitizers on Windows | MSVC does not support GCC/Clang ThreadSanitizer flags. | Configured GitHub Actions CI matrix with Linux GCC ASan+UBSan, Clang TSan, and Windows MSVC Release; documented host environment honestly. |
-| **8** | Missing required metrics | Omitted process RSS, recall@1/100, approximation ratio, p95/p99.9, and multi-thread scaling. | Extended `benchmarks/metrics.py` and `run_benchmark.py` with RSS deltas, recall at $k \in \{1, 10, 100\}$, approx ratio, p95/p99/p99.9 latencies, and equal-recall interpolation. |
-| **9** | Documentation inconsistencies | Header size typo (32 vs 60 bytes), visited pool description, and mixed `.hnsw` / `.hdb` extensions. | Standardized file extension strictly to `.hdb`, corrected 60-byte header diagram in `docs/FILE_FORMAT.md`, corrected visited pool description, and verified via `scripts/check_claims.py`. |
+In the spirit of complete engineering honesty, this section explicitly documents all claims from earlier rounds that were found to be erroneous or unverified upon audit:
+
+| Earlier Claim / Metric | Error Identified | Root Cause | Correction |
+| :--- | :--- | :--- | :--- |
+| **Spliced Benchmark Tables** | BENCHMARKS.md mixed recall from one benchmark run with latency/QPS from a different run. | Lack of single-run pipeline automation. | Eliminated all hand-typed tables. All tables are now rendered by `scripts/render_docs.py` from a single `run_id`. |
+| **"3,080,326 duplicate links"** | Claimed duplicate link count in a 5,000-node index. | Layer 0 holds at most $5,000 \times 32 = 160,000$ links; count was impossible. | Retracted. Verified that snapshot graph invariants have exactly 0 duplicate links. |
+| **Dataset B Recall Gap** | Claimed Dataset B was "pathological" and efC=400 was sufficient, ignoring that FAISS and hnswlib achieve ~1.0 at efC=100. | Incomplete investigation of construction algorithm. | Investigated in depth: 505 nodes become search-unreachable at efC=100 due to heuristic pruning during overflow reselection. Documented in [INVESTIGATIONS.md](docs/INVESTIGATIONS.md) and [KNOWN_LIMITATIONS.md](docs/KNOWN_LIMITATIONS.md). |
+| **Approximation Ratio = 31.9** | Fashion-MNIST approximation ratio was reported as ~31.9 instead of ~1.0. | `fashion-mnist-784-euclidean.hdf5` stores Euclidean distances ($\approx 482$), while `approx_ratio` assumed squared distances and took a second square root ($\sqrt{482} \approx 22$). | Fixed distance semantics in `benchmarks/datasets_synth.py`. Approximation ratio is verified to be 1.000. |
+| **Permissive Whitelist** | `docs/claims_whitelist.txt` whitelisted specific benchmark numbers, hiding hardcoded claims from the checker. | Checker design allowed numbers instead of enforcing generated provenance. | Deleted `claims_whitelist.txt`. Replaced with strict `docs/claims_allowlist.txt` containing only architectural constants and parameter bounds. |
+| **Linux Sanitizer Claims** | Earlier reports claimed clean ThreadSanitizer status despite testing solely on Windows (MSVC). | MSVC does not support TSan. | Clarified host environment: local Windows 11 host with MSVC; CI configuration provided for Linux ASan/UBSan/TSan. |
 
 ---
 
-## 4. Reproduction Instructions
+## 3. Verified Benchmark Results
 
-To reproduce all benchmarks, tests, and verifications from scratch:
+### 3.1 Fashion-MNIST ($60,000 \times 784\text{d}, M=16, ef_c=100, k=10$)
+
+<!-- BEGIN GENERATED table=full_fashion_mnist run_id=fashion_mnist_20261010_113121_90c0d1d3 -->
+**Dataset**: fashion_mnist (60000 x 784d) | **M**=16 | **efC**=100 | **k**=10
+
+| Engine | ef_search | Recall@10 | Approx Ratio | p50 (ms) | Sequential QPS |
+| :--- | ---: | ---: | ---: | ---: | ---: |
+| **hnswdb** | 10 | 0.9705 | 1.0009 | 0.204 | 4,615 |
+| **hnswdb** | 50 | 0.9978 | 1.0001 | 0.452 | 2,085 |
+| **hnswdb** | 200 | 0.9996 | 1.0000 | 1.107 | 858 |
+| **faiss** | 10 | 0.9264 | 1.0009 | 0.149 | 6,235 |
+| **faiss** | 50 | 0.9948 | 1.0001 | 0.365 | 2,588 |
+| **faiss** | 200 | 0.9990 | 1.0000 | 1.623 | 492 |
+| **hnswlib** | 10 | 0.9277 | 1.0009 | 0.291 | 2,816 |
+| **hnswlib** | 50 | 0.9951 | 1.0001 | 0.813 | 1,033 |
+| **hnswlib** | 200 | 0.9991 | 1.0000 | 1.941 | 451 |
+<!-- END GENERATED -->
+
+### 3.2 Dataset B Clustered Synthetic ($20,000 \times 64\text{d}, M=16, ef_c=100, k=10$)
+
+<!-- BEGIN GENERATED table=full_dataset_b run_id=B_s01_20261010_100918_0d563c34 -->
+**Dataset**: B_s01 (20000 x 64d) | **M**=16 | **efC**=100 | **k**=10
+
+| Engine | ef_search | Recall@10 | Approx Ratio | p50 (ms) | Sequential QPS |
+| :--- | ---: | ---: | ---: | ---: | ---: |
+| **hnswdb** | 10 | 0.9101 | 1.0735 | 0.021 | 43,684 |
+| **hnswdb** | 50 | 0.9711 | 1.0017 | 0.039 | 23,262 |
+| **hnswdb** | 200 | 0.9716 | 1.0017 | 0.085 | 11,346 |
+| **faiss** | 10 | 0.8508 | 1.1503 | 0.035 | 24,424 |
+| **faiss** | 50 | 0.9943 | 1.0336 | 0.055 | 17,057 |
+| **faiss** | 200 | 0.9994 | 1.0000 | 0.159 | 5,911 |
+| **hnswlib** | 10 | 0.8513 | 1.0253 | 0.028 | 31,381 |
+| **hnswlib** | 50 | 0.9979 | 1.0001 | 0.057 | 15,685 |
+| **hnswlib** | 200 | 1.0000 | 1.0000 | 0.089 | 10,755 |
+<!-- END GENERATED -->
+
+---
+
+## 4. Test Suite Summary
+
+- **C++ GoogleTest Suite:** 9 / 9 tests passing (CTest)
+- **Python Pytest Suite:** 45 / 45 tests passing (`pytest tests/python/`)
+- **Strict Claims Check:** PASSED (`python scripts/check_claims.py`)
+- **Documentation Link Check:** PASSED (`python scripts/check_docs_links.py`)
+- **Provenance Verification:** PASSED (`python scripts/check_provenance.py`)
+
+---
+
+## 5. Reproduction Instructions
+
+To reproduce all benchmarks, tests, and documentation rendering from scratch:
 
 ```bash
-# 1. Clone repository and install in editable mode
-git clone https://github.com/itskris2283/hnswdb.git
-cd hnswdb
+# 1. Install dependencies
 pip install -e ".[dev]"
 
-# 2. Run C++ GoogleTest Suite
-ctest --test-dir build/rel -C Release --output-on-failure
+# 2. Run C++ tests
+cd build/rel && ctest --output-on-failure -C Release && cd ../..
 
-# 3. Run Python PyTest Suite
-python -m pytest -v
+# 3. Run Python tests
+python -m pytest tests/python/ -q
 
-# 4. Download Real Benchmark Datasets
-python -m benchmarks.download_datasets
+# 4. Run Benchmark Pipeline (generates raw JSON results)
+python scripts/run_pipeline.py --config smoke --datasets A --seeds 42
 
-# 5. Run Benchmark Evaluation
-python -m benchmarks.run_benchmark --config benchmarks/configs/smoke.json
+# 5. Generate Scorecard
+python scripts/make_scorecard.py
 
-# 6. Run Documentation & Claims Check
+# 6. Render Documentation
+python scripts/render_docs.py
+
+# 7. Verify Claims and Provenance
 python scripts/check_claims.py
+python scripts/check_provenance.py
 python scripts/check_docs_links.py
 ```

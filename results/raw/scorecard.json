@@ -1,0 +1,81 @@
+{
+  "targets": [
+    {
+      "id": "T1",
+      "description": "Recall@10 >= 0.99 on Dataset A (M=16, efC=100, ef=50)",
+      "threshold": 0.99,
+      "run_id": "A_20261010_100807_7d8938d0",
+      "value": 0.9987,
+      "status": "PASS"
+    },
+    {
+      "id": "T2",
+      "description": "Recall@10 >= 0.97 on Dataset B sigma=0.1 (M=16, efC=100, ef=200)",
+      "threshold": 0.97,
+      "run_id": "B_s01_20261010_100918_0d563c34",
+      "value": 0.9716,
+      "status": "PASS"
+    },
+    {
+      "id": "T3",
+      "description": "Recall@10 gap vs hnswlib <= 0.02 on Dataset B sigma=0.1 (ef=200)",
+      "threshold": 0.02,
+      "run_id": "B_s01_20261010_100918_0d563c34",
+      "value": 0.02839999999999998,
+      "status": "MISS"
+    },
+    {
+      "id": "T4",
+      "description": "Approximation ratio <= 1.05 on Dataset A (ef=50)",
+      "threshold": 1.05,
+      "run_id": "A_20261010_100807_7d8938d0",
+      "value": 1.000049,
+      "status": "PASS"
+    },
+    {
+      "id": "T5",
+      "description": "Build time within 5x of hnswlib on Dataset A",
+      "threshold": 5.0,
+      "run_id": "A_20261010_100807_7d8938d0",
+      "value": 3.030617540217955,
+      "status": "PASS"
+    },
+    {
+      "id": "T6",
+      "description": "Single-thread QPS >= 5000 on Dataset A (ef=50)",
+      "threshold": 5000,
+      "run_id": "A_20261010_100807_7d8938d0",
+      "value": 36574.0368,
+      "status": "PASS"
+    },
+    {
+      "id": "T7",
+      "description": "Recall monotonically non-decreasing with ef on Dataset A",
+      "threshold": true,
+      "run_id": "A_20261010_100807_7d8938d0",
+      "value": true,
+      "status": "PASS"
+    },
+    {
+      "id": "T8",
+      "description": "All C++ tests pass (CTest)",
+      "threshold": true,
+      "value": "9/9 passed",
+      "status": "PASS"
+    },
+    {
+      "id": "T9",
+      "description": "All Python tests pass (pytest)",
+      "threshold": true,
+      "value": "45/45 passed",
+      "status": "PASS"
+    },
+    {
+      "id": "T10",
+      "description": "Provenance check passes",
+      "threshold": true,
+      "value": "verified",
+      "status": "PASS"
+    }
+  ]
+}

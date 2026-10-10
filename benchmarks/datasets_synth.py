@@ -96,5 +96,7 @@ def get_dataset_c():
         xb = np.array(f["train"], dtype=np.float32)
         xq = np.array(f["test"], dtype=np.float32)
         gt_nbrs = np.array(f["neighbors"]) if "neighbors" in f else None
-        gt_dists = np.array(f["distances"], dtype=np.float32) if "distances" in f else None
+        # Note: ann-benchmarks HDF5 stores Euclidean distances; square them so gt_dists
+        # consistently holds squared L2 distance, matching compute_ground_truth_bruteforce
+        gt_dists = (np.array(f["distances"], dtype=np.float32) ** 2) if "distances" in f else None
     return xb, xq, gt_nbrs, gt_dists, "l2"

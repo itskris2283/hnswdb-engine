@@ -100,17 +100,16 @@ curl -X POST http://localhost:8000/collections/products/query \
 
 Evaluated on **Fashion-MNIST** (60,000 train vectors, 10,000 test vectors, 784 dimensions, Euclidean L2 distance; SHA-256 `7f24e512...`):
 
-| Metric | HNSWDB | FAISS HNSW | hnswlib |
-| :--- | :---: | :---: | :---: |
-| **Recall@10 (ef=50)** | 0.9972 | 0.9948 | 0.9950 |
-| **Recall@10 (ef=200)** | 0.9991 | 0.9990 | 0.9992 |
-| **p50 Latency (ef=50)** | 0.220 ms | 0.195 ms | 0.251 ms |
-| **p99 Latency (ef=50)** | 0.442 ms | 0.459 ms | 0.416 ms |
-| **Sequential QPS (ef=50)** | 4,304 | 4,696 | 3,899 |
-| **4-Thread Batch QPS (ef=50)** | 9,102 | 11,249 | 10,044 |
-| **Build Time (60k items)** | 20.02 s | 9.66 s | 8.51 s |
-| **Index Disk Size** | 187.85 MB | 187.70 MB | 187.94 MB |
-| **Process RSS Delta** | 194.09 MB | 189.11 MB | 203.17 MB |
+<!-- BEGIN GENERATED table=summary_fashion_mnist run_id=fashion_mnist_20261010_113121_90c0d1d3 -->
+**Dataset**: fashion_mnist (60000 x 784d) | **M**=16 | **efC**=100 | **k**=10
+
+| Metric | HNSWDB | FAISS HNSW | hnswlib | Analysis & Notes |
+| :--- | :---: | :---: | :---: | :--- |
+| **Recall@10 (ef=50)** | 0.9978 | 0.9948 | 0.9951 | Competitive parity |
+| **p50 Latency (ef=50)** | 0.452 ms | 0.365 ms | 0.813 ms | Sub-millisecond graph search |
+| **Build Time** | 102.60 s | 38.21 s | 78.72 s | Single-thread build |
+| **Process RSS Delta** | 195.1 MB | 189.2 MB | 202.1 MB | Memory footprint |
+<!-- END GENERATED -->
 
 For detailed analysis, investigations, and trade-offs, see [TRADEOFFS.md](docs/TRADEOFFS.md), [BENCHMARKS.md](docs/BENCHMARKS.md), and [INVESTIGATIONS.md](docs/INVESTIGATIONS.md).
 

@@ -140,9 +140,68 @@ def format_recall_table(data: dict, table_name: str) -> str:
                     )
                     break
 
+    elif table_name.startswith("full") or table_name.startswith("ann"):
+        lines.append("| Engine | ef_search | Recall@10 | Approx Ratio | p50 (ms) | Sequential QPS |")
+        lines.append("| :--- | ---: | ---: | ---: | ---: | ---: |")
+        for eng_name in engines:
+            eng_data = engines[eng_name]
+            for seed_key, seed_data in eng_data.items():
+                if isinstance(seed_data, dict) and "ef_results" in seed_data:
+                    for ef_r in seed_data["ef_results"]:
+                        ef = ef_r["ef_search"]
+                        rec = ef_r["recall_at_k"]
+                        ar = ef_r["approx_ratio"]
+                        lat = ef_r.get("latency", {})
+                        p50 = lat.get("p50", 0.0)
+                        qps = lat.get("sequential_qps", 0.0)
+                        lines.append(f"| **{eng_name}** | {ef} | {rec:.4f} | {ar:.4f} | {p50:.3f} | {qps:,.0f} |")
+                    break
+
     elif table_name.startswith("scorecard"):
-        # Delegated to make_scorecard.py
-        lines.append("*Scorecard rendered by make_scorecard.py*")
+        scorecard_path = os.path.join(RAW_DIR, "scorecard.json")
+        if os.path.exists(scorecard_path):
+            with open(scorecard_path, "r", encoding="utf-8") as sc_f:
+                sc_data = json.load(sc_f)
+            lines.append("| ID | Target Description | Value | Status |")
+            lines.append("| :--- | :--- | :--- | :--- |")
+            for t in sc_data.get("targets", []):
+                val = f"{t['value']:.4f}" if isinstance(t["value"], float) else str(t["value"])
+                status_badge = f"**{t['status']}**"
+                lines.append(f"| `{t['id']}` | {t['description']} | `{val}` | {status_badge} |")
+        else:
+            lines.append("*Scorecard not yet generated*")
+
+    elif table_name.startswith("summary"):
+        lines.append("| Metric | HNSWDB | FAISS HNSW | hnswlib | Analysis & Notes |")
+        lines.append("| :--- | :---: | :---: | :---: | :--- |")
+        # Extract ef=50 metrics
+        h_rec = fa_rec = hl_rec = "N/A"
+        h_lat = fa_lat = hl_lat = "N/A"
+        h_bld = fa_bld = hl_bld = "N/A"
+        h_rss = fa_rss = hl_rss = "N/A"
+
+        for eng_name in ["hnswdb", "faiss", "hnswlib"]:
+            eng_data = engines.get(eng_name, {})
+            for sk, sd in eng_data.items():
+                if isinstance(sd, dict):
+                    bld = f"{sd.get('build_time_s', 0):.2f} s"
+                    rss = f"{sd.get('rss_delta_mb', 0):.1f} MB"
+                    if eng_name == "hnswdb": h_bld, h_rss = bld, rss
+                    elif eng_name == "faiss": fa_bld, fa_rss = bld, rss
+                    elif eng_name == "hnswlib": hl_bld, hl_rss = bld, rss
+
+                    for ef_r in sd.get("ef_results", []):
+                        if ef_r.get("ef_search") == 50:
+                            rec = f"{ef_r.get('recall_at_k', 0):.4f}"
+                            lat = f"{ef_r.get('latency', {}).get('p50', 0):.3f} ms"
+                            if eng_name == "hnswdb": h_rec, h_lat = rec, lat
+                            elif eng_name == "faiss": fa_rec, fa_lat = rec, lat
+                            elif eng_name == "hnswlib": hl_rec, hl_lat = rec, lat
+
+        lines.append(f"| **Recall@10 (ef=50)** | {h_rec} | {fa_rec} | {hl_rec} | Competitive parity |")
+        lines.append(f"| **p50 Latency (ef=50)** | {h_lat} | {fa_lat} | {hl_lat} | Sub-millisecond graph search |")
+        lines.append(f"| **Build Time** | {h_bld} | {fa_bld} | {hl_bld} | Single-thread build |")
+        lines.append(f"| **Process RSS Delta** | {h_rss} | {fa_rss} | {hl_rss} | Memory footprint |")
 
     else:
         lines.append(f"*Unknown table type: {table_name}*")

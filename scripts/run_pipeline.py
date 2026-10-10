@@ -37,6 +37,7 @@ from benchmarks.metrics import (
 from benchmarks.datasets_synth import (
     get_dataset_a,
     get_dataset_b,
+    get_dataset_c,
     compute_ground_truth_bruteforce,
 )
 
@@ -314,6 +315,13 @@ DATASET_CONFIGS = {
         "efC": 100,
         "label": "Synthetic B (20K x 64d, 50 clusters, σ=1.0)",
     },
+    "fashion_mnist": {
+        "fn": get_dataset_c,
+        "kwargs": {},
+        "M": 16,
+        "efC": 100,
+        "label": "Fashion-MNIST (60K x 784d, Euclidean L2)",
+    },
 }
 
 SMOKE_DATASETS = ["A"]
@@ -364,7 +372,10 @@ def main():
         cfg = DATASET_CONFIGS[ds_name]
 
         def ds_fn(seed=42, _cfg=cfg):
-            return _cfg["fn"](seed=seed, **_cfg["kwargs"]) if _cfg["kwargs"] else _cfg["fn"](seed=seed)
+            try:
+                return _cfg["fn"](seed=seed, **_cfg["kwargs"]) if _cfg["kwargs"] else _cfg["fn"](seed=seed)
+            except TypeError:
+                return _cfg["fn"]()
 
         result = run_dataset_benchmark(
             dataset_name=ds_name,
