@@ -121,3 +121,57 @@ def test_corruption_detection():
 
         with pytest.raises(CorruptFile):
             HNSWIndex.load(bad_path3)
+
+
+def test_binary_format_struct_offsets_and_crc():
+    """Verify that saved .hdb files match the 64-byte header struct and CRC trailer."""
+    import struct
+    import zlib
+
+    dim = 8
+    n = 25
+    rng = np.random.default_rng(42)
+    vecs = rng.standard_normal((n, dim)).astype(np.float32)
+    ids = np.arange(n, dtype=np.int64)
+
+    idx = HNSWIndex(dim=dim, metric="l2", max_elements=50, M=16, ef_construction=100, seed=42)
+    idx.add(vecs, ids)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        path = os.path.join(tmpdir, "format_test.hdb")
+        idx.save(path)
+
+        with open(path, "rb") as f:
+            data = f.read()
+
+        assert len(data) >= 68  # 64-byte header + sections + 4-byte CRC trailer
+
+        # 1. Magic check (first 8 bytes)
+        assert data[:8] == b"HNSWDB01"
+
+        # 2. 64-byte header unpack:
+        # 8s (magic), 3x I (version, metric, dim), 2x Q (count, max_elements),
+        # 4x I (M, efc, efs, ep), 1x i (max_lvl), 1x Q (seed)
+        # Total: 8 + 12 + 16 + 16 + 4 + 8 = 64 bytes
+        header_fmt = "<8sIIIQQIIIIiQ"
+        assert struct.calcsize(header_fmt) == 64
+
+        (magic, version, metric, d, count, max_el,
+         M, efc, efs, ep, max_lvl, seed) = struct.unpack(header_fmt, data[:64])
+
+        assert magic == b"HNSWDB01"
+        assert version == 1
+        assert metric == 0  # L2
+        assert d == dim
+        assert count == n
+        assert max_el == 50
+        assert M == 16
+        assert efc == 100
+        assert seed == 42
+
+        # 3. CRC trailer check (last 4 bytes, IEEE 802.3 CRC32)
+        stored_crc = struct.unpack("<I", data[-4:])[0]
+        payload = data[:-4]
+        computed_crc = zlib.crc32(payload) & 0xFFFFFFFF
+        assert stored_crc == computed_crc
+

@@ -121,3 +121,55 @@ TEST(HnswInvariants, RecallGate20KSyntheticAtEf100) {
     std::cout << "[INFO] 20K Synthetic dataset Mean Recall@10 at ef=100: " << mean_recall << std::endl;
     EXPECT_GE(mean_recall, 0.95);
 }
+
+TEST(HnswInvariants, DuplicateAndSelfLinksZero) {
+    constexpr std::size_t n = 500;
+    constexpr std::size_t d = 16;
+    auto centers = make_centers(5, d, 99);
+    auto data = sample_clustered(centers, n, d, 99);
+
+    hnswdb::HNSWIndex idx(d, hnswdb::Metric::L2, n, 16, 100, 50, 42);
+    for (std::size_t i = 0; i < n; ++i) {
+        idx.add(data.data() + i * d, static_cast<hnswdb::label_t>(i));
+    }
+
+    auto diag = idx.diagnostics();
+    EXPECT_EQ(diag["duplicate_links_count"], 0.0);
+    EXPECT_EQ(diag["self_links_count"], 0.0);
+    EXPECT_TRUE(idx.validate_graph());
+}
+
+TEST(HnswInvariants, ParameterSafetyM) {
+    constexpr std::size_t n = 100;
+    constexpr std::size_t d = 8;
+    auto data = sample_clustered(make_centers(2, d, 1), n, d, 1);
+
+    for (std::size_t m_val : {8, 16, 64, 128}) {
+        hnswdb::HNSWIndex idx(d, hnswdb::Metric::L2, n, m_val, /*efc=*/50, /*efs=*/20, /*seed=*/42);
+        for (std::size_t i = 0; i < n; ++i) {
+            idx.add(data.data() + i * d, static_cast<hnswdb::label_t>(i));
+        }
+        EXPECT_EQ(idx.size(), n);
+        EXPECT_TRUE(idx.validate_graph());
+        auto res = idx.search(data.data(), 5);
+        EXPECT_EQ(res.ids.size(), 5);
+        EXPECT_EQ(res.ids[0], 0);
+    }
+}
+
+TEST(HnswInvariants, HandBuiltGraphReachability) {
+    // Tests reachability logic: on a well-connected graph of 50 nodes, unreachable count is 0
+    constexpr std::size_t n = 50;
+    constexpr std::size_t d = 4;
+    auto data = sample_clustered(make_centers(2, d, 42), n, d, 42);
+
+    hnswdb::HNSWIndex idx(d, hnswdb::Metric::L2, n, 16, 100, 50, 42);
+    for (std::size_t i = 0; i < n; ++i) {
+        idx.add(data.data() + i * d, static_cast<hnswdb::label_t>(i));
+    }
+
+    auto diag = idx.diagnostics();
+    EXPECT_EQ(diag["unreachable_nodes_count"], 0.0);
+    EXPECT_EQ(diag["weakly_connected_components"], 1.0);
+}
+

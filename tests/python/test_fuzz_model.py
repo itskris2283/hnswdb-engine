@@ -95,3 +95,57 @@ def test_fuzz_operations():
     for l, v in model.items():
         assert hnsw.contains(l)
         assert np.allclose(v, hnsw.get_vector(l), atol=1e-5)
+
+
+def test_churn_delete_20pct_insert_20pct_recall():
+    """Churn test: delete 20%, insert 20% new vectors, verify recall vs recomputed exact truth."""
+    dim = 32
+    n = 1000
+    k = 10
+    nq = 100
+    rng = np.random.default_rng(42)
+
+    xb = rng.standard_normal((n, dim)).astype(np.float32)
+    ids = np.arange(n, dtype=np.int64)
+    xq = rng.standard_normal((nq, dim)).astype(np.float32)
+
+    idx = HNSWIndex(dim=dim, metric="l2", max_elements=1500, M=16, ef_construction=100, seed=42)
+    idx.add(xb, ids, num_threads=1)
+
+    # 1. Delete 20% (200 random IDs)
+    del_count = 200
+    del_ids = rng.choice(ids, size=del_count, replace=False).tolist()
+    idx.delete(del_ids)
+    del_set = set(del_ids)
+
+    # 2. Insert 20% (200 new vectors with new IDs)
+    new_xb = rng.standard_normal((del_count, dim)).astype(np.float32)
+    new_ids = np.arange(n, n + del_count, dtype=np.int64)
+    idx.add(new_xb, new_ids, num_threads=1)
+
+    # 3. Construct current active dataset and recompute exact brute force truth
+    active_mask = ~np.isin(ids, del_ids)
+    active_xb = np.vstack([xb[active_mask], new_xb])
+    active_ids = np.concatenate([ids[active_mask], new_ids])
+
+    gt_nbrs = np.zeros((nq, k), dtype=np.int64)
+    for q in range(nq):
+        diff = active_xb - xq[q]
+        dists = np.sum(diff * diff, axis=1)
+        top_k = np.argsort(dists)[:k]
+        gt_nbrs[q] = active_ids[top_k]
+
+    # 4. Search HNSWDB at ef_search=100
+    found_ids, _ = idx.search(xq, k=k, ef_search=100, num_threads=1)
+
+    # 5. Assertions:
+    # A) No deleted IDs returned
+    for row in found_ids:
+        for found_id in row:
+            assert found_id not in del_set, f"Deleted ID {found_id} returned in search results!"
+
+    # B) Recall vs recomputed exact truth >= 0.98
+    recalls = [len(set(f) & set(t)) / k for f, t in zip(found_ids, gt_nbrs)]
+    mean_recall = float(np.mean(recalls))
+    assert mean_recall >= 0.98, f"Post-churn recall {mean_recall:.4f} < 0.98"
+

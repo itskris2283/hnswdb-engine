@@ -148,9 +148,9 @@ def test_ef_search_monotonicity():
     assert recalls[-1] >= 0.95
 
 
-def test_recall_ceiling_regression():
-    """Regression test for Issue #6: Recall plateau caused by duplicate links.
-    Ensures that with M=16, ef_c=100, at ef_search=100, recall >= 0.995.
+def test_clustered_dataset_recall_floor():
+    """Guards recall floor on clustered synthetic dataset (N=5000, d=32, 20 clusters)
+    under default construction options (M=16, ef_c=100, ef_search=100).
     """
     n = 5000
     d = 32
@@ -176,6 +176,6 @@ def test_recall_ceiling_regression():
         found_set = set(hnsw_ids[i])
         recalls.append(len(gt_set & found_set) / k)
     mean_recall = float(np.mean(recalls))
-    assert mean_recall >= 0.990, f"Recall@10 ceiling regression: achieved {mean_recall:.4f}, expected >= 0.990"
+    assert mean_recall >= 0.990, f"Clustered dataset recall floor: achieved {mean_recall:.4f}, expected >= 0.990"
 
 
