@@ -69,7 +69,7 @@
     {
       "id": "T12",
       "description": "All C++ and Python tests pass (counts from run output)",
-      "value": "9 C++ / 50 Python passed",
+      "value": "9 C++ / 57 Python passed",
       "status": "PASS"
     },
     {

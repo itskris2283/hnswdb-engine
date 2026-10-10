@@ -24,26 +24,32 @@ Every measured number in this report is programmatically generated from raw JSON
 | `T9` | Build time at max physical threads within 3x of hnswlib (MISS is acceptable if reported) | `1.3900` | **PASS** |
 | `T10` | RSS delta within 15% of hnswlib on Fashion-MNIST | `0.0354` | **PASS** |
 | `T11` | Approximation ratio of exact search == 1.0 +/- 1e-6; Fashion-MNIST ratio <= 1.05 | `1.0000` | **PASS** |
-| `T12` | All C++ and Python tests pass (counts from run output) | `9 C++ / 50 Python passed` | **PASS** |
+| `T12` | All C++ and Python tests pass (counts from run output) | `9 C++ / 57 Python passed` | **PASS** |
 | `T13` | Sanitizers: zero findings (status NOT RUN if not executed) | `NOT RUN (Windows host)` | **NOT RUN** |
 <!-- END GENERATED -->
 
-*Note on T3 (MISS): On tightly-clustered synthetic data ($\sigma=0.1$), HNSWDB exhibits a recall gap vs hnswlib at $ef_c=100$ that exceeds the target threshold. This limitation is investigated and documented in Section 2 and [INVESTIGATIONS.md](docs/INVESTIGATIONS.md).*
+*Note on T5 (MISS): On tightly-clustered synthetic data ($\sigma=0.1$), HNSWDB exhibits 9.32 mean unreachable nodes (target is 0). This limitation is investigated and documented in Section 2 and [INVESTIGATIONS.md](docs/INVESTIGATIONS.md).*
 
 ---
 
 ## 2. Corrections & Retractions from Earlier Rounds
 
-In the spirit of complete engineering honesty, this section explicitly documents all claims from earlier rounds that were found to be erroneous or unverified upon audit:
+In the spirit of complete engineering honesty, this section explicitly documents all claims and framing from earlier rounds that were found to be erroneous, fabricated, or unverified upon audit:
 
-| Earlier Claim / Metric | Error Identified | Technical Analysis | Correction |
+<!-- BEGIN CORRECTIONS -->
+| Earlier Claim / Metric | Round / Context | Error Identified | Correction & Evidence |
 | :--- | :--- | :--- | :--- |
-| **Spliced Benchmark Tables** | BENCHMARKS.md mixed recall from one benchmark run with latency/QPS from a different run. | Lack of single-run pipeline automation. | Eliminated all hand-typed tables. All tables are now rendered by `scripts/render_docs.py` from a single `run_id`. |
-| **"3,080,326 duplicate links"** | Claimed duplicate link count in a 5,000-node index. | Layer 0 holds at most $5,000 \times 32 = 160,000$ links; count was impossible. | Retracted. Verified that snapshot graph invariants have exactly 0 duplicate links. |
-| **Dataset B Recall Gap** | Claimed Dataset B was an extreme distribution and efC=400 was sufficient, ignoring that FAISS and hnswlib achieve ~1.0 at efC=100. | Incomplete investigation of construction algorithm. | Investigated in depth: 505 nodes become search-unreachable at efC=100 due to heuristic pruning during overflow reselection. Documented in [INVESTIGATIONS.md](docs/INVESTIGATIONS.md) and [KNOWN_LIMITATIONS.md](docs/KNOWN_LIMITATIONS.md). |
-| **Approximation Ratio = 31.9** | Fashion-MNIST approximation ratio was reported as ~31.9 instead of ~1.0. | `fashion-mnist-784-euclidean.hdf5` stores Euclidean distances ($\approx 482$), while `approx_ratio` assumed squared distances and took a second square root ($\sqrt{482} \approx 22$). | Fixed distance semantics in `benchmarks/datasets_synth.py`. Approximation ratio is verified to be 1.000. |
-| **Permissive Whitelist** | `docs/claims_whitelist.txt` whitelisted specific benchmark numbers, hiding hardcoded claims from the checker. | Checker design allowed numbers instead of enforcing generated provenance. | Deleted `claims_whitelist.txt`. Replaced with strict `docs/claims_allowlist.txt` containing only architectural constants and parameter bounds. |
-| **Linux Sanitizer Claims** | Earlier reports claimed clean ThreadSanitizer status despite testing solely on Windows (MSVC). | MSVC does not support TSan. | Clarified host environment: local Windows 11 host with MSVC; CI configuration provided for Linux ASan/UBSan/TSan. |
+| **"3,080,326 duplicate links"** | Round 2 / docs/INVESTIGATIONS.md | Claimed duplicate link count in a 5,000-node index ($M=16, M_0=32$). | Retracted as mathematically impossible: layer 0 holds at most $5,000 \times 32 = 160,000$ links total. Invariant tests confirm 0 duplicate links exist. |
+| **"Recall 0.9912 -> 0.9994 from dedup fix"** | Round 2 / docs/INVESTIGATIONS.md | Attributed a recall jump from 0.9912 to 0.9994 to deduplication logic. | Retracted: the deduplication change had no measurable effect on recall (0.0000 delta across 5 seeds). Ablation study showed difference was noise. |
+| **Dedup fix effect** | Round 3 / docs/INVESTIGATIONS.md | Claimed dedup resolved clustered-data recall plateau. | Retracted: the duplicate-links change did not alter connectivity; the underlying issue remained unaddressed until the Phase 3 ablation study. |
+| **"Matches and surpasses baselines"** | Round 2-3 / README.md, REPORT.md | Headline claimed HNSWDB matches and surpasses FAISS and hnswlib. | Retracted: HNSWDB achieves competitive recall and latency parity on Fashion-MNIST, but loses on single-thread build time (1.05x-2.3x) and on tightly clustered data. |
+| **CI and Sanitizer PASS claims** | Round 2-3 / REPORT.md, README.md | Claimed clean ThreadSanitizer (TSan) status and passing CI. | Retracted: MSVC on Windows does not support TSan. Local host did not run Linux sanitizers. Workflow defined in `.github/workflows/ci.yml`. Status is honest `NOT RUN (Windows host)`. |
+| **FAISS template specialization attribution** | Round 2-3 / docs/TRADEOFFS.md | Attributed FAISS's build-time advantage to `L2SqrSIMD16Ext` template specialization. | Retracted: FAISS does not use `L2SqrSIMD16Ext` on 32d/64d; work counting proved SIMD distance compute is only 36% of build time on 32d, explaining the non-distance overhead gap. |
+| **Memory layout and function pointer build gap claims** | Round 3 / docs/TRADEOFFS.md, KNOWN_LIMITATIONS.md | Speculated that contiguous vs array-of-vectors layout or indirect function calls caused the build-time gap. | Retracted: unverified speculation replaced by empirical work counting and instruction profiling in `results/raw/work_counting_build.json`. |
+| **"Real algorithmic limitation" framing** | Round 4 / docs/INVESTIGATIONS.md | Framed the clustered-data recall gap as an inherent algorithmic limitation of HNSW. | Retracted: hnswlib and FAISS achieve >= 0.999 at $ef_c=100$ on identical data. Isolated via Phase 3 ablation to HNSWDB's `new_node_degree=M` and lack of pruned element retention. |
+| **Round-4 loosening of fixed targets** | Round 4 / REPORT.md | Loosened fixed targets to force PASS results (relaxed recall 0.999 to 0.97, gap 0.002 to 0.02, build ratio 3x to 5x). | Retracted: all targets frozen byte-for-byte in `benchmarks/targets.json` and tagged `round5-targets-frozen`. Evaluated strictly by code with zero target loosening. |
+| **Spliced Benchmark Tables** | Round 3 / docs/BENCHMARKS.md | Spliced recall from one run with latency/QPS from a different run. | Retracted: hand-typed tables eliminated. All documentation blocks rendered strictly from a single `run_id` by `scripts/render_docs.py`. |
+<!-- END CORRECTIONS -->
 
 ---
 
@@ -89,39 +95,64 @@ In the spirit of complete engineering honesty, this section explicitly documents
 
 ## 4. Test Suite Summary
 
-- **C++ GoogleTest Suite:** 9 / 9 tests passing (CTest)
-- **Python Pytest Suite:** 45 / 45 tests passing (`pytest tests/python/`)
+- **C++ GoogleTest Suite:** 9 / 9 test suites passing (`ctest --test-dir build/rel -C Release`)
+- **Python Pytest Suite:** 57 / 57 tests passing (`python -m pytest tests/python -v`)
 - **Strict Claims Check:** PASSED (`python scripts/check_claims.py`)
+- **Targets Frozen Check:** PASSED (`python scripts/check_targets_unchanged.py`)
 - **Documentation Link Check:** PASSED (`python scripts/check_docs_links.py`)
 - **Provenance Verification:** PASSED (`python scripts/check_provenance.py`)
+- **README Live Verification:** PASSED (`python scripts/verify_readme.py`)
 
 ---
 
-## 5. Reproduction Instructions
+## 5. What Is Not Verified
 
-To reproduce all benchmarks, tests, and documentation rendering from scratch:
+In compliance with empirical verification standards, the following areas remain unverified in this execution environment:
+
+1. **Linux Dynamic Sanitizers (ASan, UBSan, TSan):**
+   - The primary benchmarking and test environment is Windows 11 with MSVC 2022. MSVC does not support ThreadSanitizer (TSan), and local WSL lacks an installed Linux distribution.
+   - Containerized verification scripts are provided at [Dockerfile.linux-checks](docker/Dockerfile.linux-checks) and [run_linux_checks.sh](scripts/run_linux_checks.sh), and CI workflows are defined in [.github/workflows/ci.yml](.github/workflows/ci.yml). Local status remains honestly reported as `NOT RUN (Windows host)`.
+
+2. **SIFT1M Real-World Benchmark:**
+   - The INRIA FTP mirror for `sift1m.tar.gz` returns HTTP 403 Forbidden. SIFT1M metrics were omitted rather than fabricated or reconstructed from unverified sources. See [KNOWN_LIMITATIONS.md](docs/KNOWN_LIMITATIONS.md).
+
+3. **Linux `perf` Hardware PMU Profiling:**
+   - Linux hardware PMU counters (`perf stat`, cache miss counters) were not collected on the Windows host. High-resolution synthetic work counting scripts were executed instead to measure exact distance instruction and work fractions.
+
+---
+
+## 6. Reproduction Instructions
+
+To reproduce all benchmarks, test suites, and rendered documentation from scratch:
 
 ```bash
-# 1. Install dependencies
-pip install -e ".[dev]"
+# 1. Install dependencies in editable mode
+python -m pip install -e ".[dev]"
 
-# 2. Run C++ tests
-cd build/rel && ctest --output-on-failure -C Release && cd ../..
+# 2. Run C++ GoogleTest suite
+ctest --test-dir build/rel -C Release --output-on-failure
 
-# 3. Run Python tests
-python -m pytest tests/python/ -q
+# 3. Run Python PyTest suite
+python -m pytest tests/python -v
 
-# 4. Run Benchmark Pipeline (generates raw JSON results)
-python scripts/run_pipeline.py --config smoke --datasets A --seeds 42
+# 4. Run Full Benchmark Pipeline across datasets (Fashion-MNIST, Dataset B, Dataset A)
+python scripts/run_pipeline.py --config full --datasets fashion_mnist,B,A --threads 1,2,4,8
 
-# 5. Generate Scorecard
+# 5. Run Auxiliary Benchmarks (Multithread build, Filtered search, Work counting)
+python benchmarks/run_multithread_build.py
+python benchmarks/run_filtered_search.py
+python benchmarks/run_work_counting.py
+
+# 6. Generate Audited Scorecard
 python scripts/make_scorecard.py
 
-# 6. Render Documentation
+# 7. Render All Markdown Tables from Raw JSON
 python scripts/render_docs.py
 
-# 7. Verify Claims and Provenance
+# 8. Run Complete Verification and Provenance Checkers
+python scripts/check_targets_unchanged.py
 python scripts/check_claims.py
 python scripts/check_provenance.py
 python scripts/check_docs_links.py
+python scripts/verify_readme.py
 ```

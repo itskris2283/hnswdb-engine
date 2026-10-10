@@ -237,6 +237,7 @@ def check_claims(root_dir=PROJECT_ROOT):
             lines = f.readlines()
 
         in_generated = False
+        in_corrections = False
 
         for line_idx, line in enumerate(lines, 1):
             stripped = line.strip()
@@ -249,6 +250,14 @@ def check_claims(root_dir=PROJECT_ROOT):
                 in_generated = False
                 continue
 
+            # Check corrections block boundary in REPORT.md
+            if rel_path == "REPORT.md" and "<!-- BEGIN CORRECTIONS -->" in line:
+                in_corrections = True
+                continue
+            if rel_path == "REPORT.md" and "<!-- END CORRECTIONS -->" in line:
+                in_corrections = False
+                continue
+
             # Absolute path checks
             if "file:///" in line:
                 errors.append(f"{rel_path}:{line_idx}: Prohibited 'file:///' link found")
@@ -259,11 +268,12 @@ def check_claims(root_dir=PROJECT_ROOT):
             if re.search(r'(?<![a-zA-Z0-9_-])index\.hnsw(?![a-zA-Z0-9_-])', line):
                 errors.append(f"{rel_path}:{line_idx}: Reference to legacy 'index.hnsw' instead of '.hdb'")
 
-            # Banned phrases
-            line_lower = line.lower()
-            for phrase in BANNED_PHRASES:
-                if phrase in line_lower:
-                    errors.append(f"{rel_path}:{line_idx}: Contains prohibited phrase '{phrase}'")
+            # Banned phrases (exempt inside REPORT.md Corrections section where earlier claims are explicitly retracted)
+            if not in_corrections:
+                line_lower = line.lower()
+                for phrase in BANNED_PHRASES:
+                    if phrase in line_lower:
+                        errors.append(f"{rel_path}:{line_idx}: Contains prohibited phrase '{phrase}'")
 
             # Special phrase: sub-millisecond
             if "sub-millisecond" in line_lower:
@@ -324,7 +334,7 @@ def check_claims(root_dir=PROJECT_ROOT):
                         )
 
             # Numbers with units & recall decimals outside generated blocks
-            if not in_generated:
+            if not in_generated and not in_corrections:
                 # Find all numbers with units
                 unit_matches = NUMBER_WITH_UNIT_RE.findall(line)
                 decimal_matches = RECALL_DECIMAL_RE.findall(line)

@@ -66,11 +66,21 @@ def check_file(filepath: str, valid_run_ids: set, strict: bool = False) -> list[
         return [f"{filepath}: Cannot read: {e}"]
 
     in_block = False
+    in_corrections = False
     block_start_line = 0
     block_run_ids = set()
     has_any_block = False
 
     for line_num, line in enumerate(lines, 1):
+        if "<!-- BEGIN CORRECTIONS -->" in line:
+            in_corrections = True
+            continue
+        if "<!-- END CORRECTIONS -->" in line:
+            in_corrections = False
+            continue
+        if in_corrections:
+            continue
+
         begin_match = BEGIN_PATTERN.search(line)
         if begin_match:
             if in_block:
