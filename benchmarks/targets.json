@@ -1,0 +1,92 @@
+{
+  "targets": [
+    {
+      "id": "T1",
+      "description": "Fashion-MNIST (M=16, efC=100): recall@10 >= 0.99 at some ef <= 100 and >= 0.999 at some ef <= 400",
+      "dataset": "fashion_mnist",
+      "threshold_low_ef": 0.99,
+      "max_ef_low": 100,
+      "threshold_high_ef": 0.999,
+      "max_ef_high": 400
+    },
+    {
+      "id": "T2",
+      "description": "Dataset B (sigma=0.1, efC=100): recall@10 at ef=200, mean over 5 data seeds x 5 build seeds, >= 0.999",
+      "dataset": "dataset_b",
+      "ef_search": 200,
+      "threshold": 0.999,
+      "direction": ">="
+    },
+    {
+      "id": "T3",
+      "description": "Dataset B: mean recall gap vs hnswlib (same seeds) <= 0.002",
+      "dataset": "dataset_b",
+      "threshold": 0.002,
+      "direction": "<="
+    },
+    {
+      "id": "T4",
+      "description": "Corrected self-retrieval rate >= 0.999 on Dataset B and on Fashion-MNIST",
+      "datasets": ["dataset_b", "fashion_mnist"],
+      "threshold": 0.999,
+      "direction": ">="
+    },
+    {
+      "id": "T5",
+      "description": "Unreachable nodes == 0 (Dataset B mean, Fashion-MNIST)",
+      "datasets": ["dataset_b", "fashion_mnist"],
+      "threshold": 0,
+      "direction": "=="
+    },
+    {
+      "id": "T6",
+      "description": "HNSWDB single-thread vs multi-thread build recall difference < 0.003",
+      "threshold": 0.003,
+      "direction": "<"
+    },
+    {
+      "id": "T7",
+      "description": "Sequential QPS at recall@10 = 0.99 within 3x of hnswlib (Fashion-MNIST, equal-recall interpolation)",
+      "dataset": "fashion_mnist",
+      "threshold": 3.0,
+      "direction": "<="
+    },
+    {
+      "id": "T8",
+      "description": "Build time, 1 thread, within 3x of hnswlib on Fashion-MNIST and Dataset B",
+      "datasets": ["fashion_mnist", "dataset_b"],
+      "threshold": 3.0,
+      "direction": "<="
+    },
+    {
+      "id": "T9",
+      "description": "Build time at max physical threads within 3x of hnswlib (MISS is acceptable if reported)",
+      "threshold": 3.0,
+      "direction": "<="
+    },
+    {
+      "id": "T10",
+      "description": "RSS delta within 15% of hnswlib on Fashion-MNIST",
+      "dataset": "fashion_mnist",
+      "threshold": 0.15,
+      "direction": "<="
+    },
+    {
+      "id": "T11",
+      "description": "Approximation ratio of exact search == 1.0 +/- 1e-6; Fashion-MNIST ratio <= 1.05",
+      "dataset": "fashion_mnist",
+      "exact_ratio_tolerance": 1e-6,
+      "fashion_mnist_threshold": 1.05
+    },
+    {
+      "id": "T12",
+      "description": "All C++ and Python tests pass (counts from run output)",
+      "threshold": "all_pass"
+    },
+    {
+      "id": "T13",
+      "description": "Sanitizers: zero findings (status NOT RUN if not executed)",
+      "threshold": 0
+    }
+  ]
+}

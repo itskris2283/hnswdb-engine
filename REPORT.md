@@ -13,16 +13,19 @@ Every measured number in this report is programmatically generated from raw JSON
 
 | ID | Target Description | Value | Status |
 | :--- | :--- | :--- | :--- |
-| `T1` | Recall@10 >= 0.99 on Dataset A (M=16, efC=100, ef=50) | `0.9987` | **PASS** |
-| `T2` | Recall@10 >= 0.97 on Dataset B sigma=0.1 (M=16, efC=100, ef=200) | `0.9716` | **PASS** |
-| `T3` | Recall@10 gap vs hnswlib <= 0.02 on Dataset B sigma=0.1 (ef=200) | `0.0284` | **MISS** |
-| `T4` | Approximation ratio <= 1.05 on Dataset A (ef=50) | `1.0000` | **PASS** |
-| `T5` | Build time within 5x of hnswlib on Dataset A | `3.0306` | **PASS** |
-| `T6` | Single-thread QPS >= 5000 on Dataset A (ef=50) | `36574.0368` | **PASS** |
-| `T7` | Recall monotonically non-decreasing with ef on Dataset A | `True` | **PASS** |
-| `T8` | All C++ tests pass (CTest) | `9/9 passed` | **PASS** |
-| `T9` | All Python tests pass (pytest) | `45/45 passed` | **PASS** |
-| `T10` | Provenance check passes | `verified` | **PASS** |
+| `T1` | Fashion-MNIST (M=16, efC=100): recall@10 >= 0.99 at some ef <= 100 and >= 0.999 at some ef <= 400 | `0.9996` | **PASS** |
+| `T2` | Dataset B (sigma=0.1, efC=100): recall@10 at ef=200, mean over 5 data seeds x 5 build seeds, >= 0.999 | `0.9716` | **MISS** |
+| `T3` | Dataset B: mean recall gap vs hnswlib (same seeds) <= 0.002 | `0.0284` | **MISS** |
+| `T4` | Corrected self-retrieval rate >= 0.999 on Dataset B and on Fashion-MNIST | `0.9748` | **MISS** |
+| `T5` | Unreachable nodes == 0 (Dataset B mean, Fashion-MNIST) | `505` | **MISS** |
+| `T6` | HNSWDB single-thread vs multi-thread build recall difference < 0.003 | `None` | **NOT RUN** |
+| `T7` | Sequential QPS at recall@10 = 0.99 within 3x of hnswlib (Fashion-MNIST, equal-recall interpolation) | `0.5000` | **PASS** |
+| `T8` | Build time, 1 thread, within 3x of hnswlib on Fashion-MNIST and Dataset B | `2.5200` | **PASS** |
+| `T9` | Build time at max physical threads within 3x of hnswlib (MISS is acceptable if reported) | `None` | **NOT RUN** |
+| `T10` | RSS delta within 15% of hnswlib on Fashion-MNIST | `0.0348` | **PASS** |
+| `T11` | Approximation ratio of exact search == 1.0 +/- 1e-6; Fashion-MNIST ratio <= 1.05 | `1.0000` | **PASS** |
+| `T12` | All C++ and Python tests pass (counts from run output) | `9 C++ / 50 Python passed` | **PASS** |
+| `T13` | Sanitizers: zero findings (status NOT RUN if not executed) | `NOT RUN (Windows host)` | **NOT RUN** |
 <!-- END GENERATED -->
 
 *Note on T3 (MISS): On tightly-clustered synthetic data ($\sigma=0.1$), HNSWDB exhibits a recall gap vs hnswlib at $ef_c=100$ that exceeds the target threshold. This limitation is investigated and documented in Section 2 and [INVESTIGATIONS.md](docs/INVESTIGATIONS.md).*
