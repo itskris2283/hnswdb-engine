@@ -12,15 +12,15 @@ Across all evaluated workloads, every measured figure is rendered directly from 
 
 Evaluated on **Fashion-MNIST** ($N=60,000, D=784, M=16, ef_c=100, k=10$) on Windows 11 x86_64 (AVX2+FMA kernel, MSVC 2022 Release /O2):
 
-<!-- BEGIN GENERATED table=summary_fashion_mnist run_id=fashion_mnist_20261010_113121_90c0d1d3 -->
+<!-- BEGIN GENERATED table=summary_fashion_mnist run_id=fashion_mnist_20261010_174828_0a9f92db -->
 **Dataset**: fashion_mnist (60000 x 784d) | **M**=16 | **efC**=100 | **k**=10
 
 | Metric | HNSWDB | FAISS HNSW | hnswlib | Analysis & Notes |
 | :--- | :---: | :---: | :---: | :--- |
-| **Recall@10 (ef=50)** | 0.9978 | 0.9948 | 0.9951 | Competitive parity |
-| **p50 Latency (ef=50)** | 0.452 ms | 0.365 ms | 0.813 ms | Sub-millisecond graph search |
-| **Build Time** | 102.60 s | 38.21 s | 78.72 s | Single-thread build |
-| **Process RSS Delta** | 195.1 MB | 189.2 MB | 202.1 MB | Memory footprint |
+| **Recall@10 (ef=50)** | 0.9951 | 0.9948 | 0.9951 | Competitive parity |
+| **p50 Latency (ef=50)** | 0.220 ms | 0.230 ms | 0.296 ms | Sub-millisecond graph search |
+| **Build Time** | 29.94 s | 28.23 s | 28.42 s | Single-thread build |
+| **Process RSS Delta** | 194.8 MB | 188.9 MB | 201.9 MB | Memory footprint |
 <!-- END GENERATED -->
 
 ---

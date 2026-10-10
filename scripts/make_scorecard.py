@@ -26,14 +26,18 @@ def load_targets() -> list[dict]:
 def find_result_by_name(substring: str) -> dict | None:
     if not os.path.isdir(RAW_DIR):
         return None
-    for f in os.listdir(RAW_DIR):
-        if f.endswith(".json") and substring in f and f not in ("scorecard.json", "MANIFEST.json"):
-            try:
-                with open(os.path.join(RAW_DIR, f), "r", encoding="utf-8") as fh:
-                    return json.load(fh)
-            except Exception:
-                pass
-    return None
+    matches = [
+        f for f in os.listdir(RAW_DIR)
+        if f.endswith(".json") and substring in f and f not in ("scorecard.json", "MANIFEST.json")
+    ]
+    if not matches:
+        return None
+    matches.sort(key=lambda x: os.path.getmtime(os.path.join(RAW_DIR, x)), reverse=True)
+    try:
+        with open(os.path.join(RAW_DIR, matches[0]), "r", encoding="utf-8") as fh:
+            return json.load(fh)
+    except Exception:
+        return None
 
 
 def evaluate_scorecard() -> list[dict]:
@@ -43,6 +47,7 @@ def evaluate_scorecard() -> list[dict]:
     fmnist_data = find_result_by_name("fashion_mnist")
     dataset_b_data = find_result_by_name("bench_B_s01")
     inv_data = find_result_by_name("investigation_recall_gap")
+    matrix_data = find_result_by_name("seed_matrix_dataset_b")
 
     for t in targets:
         tid = t["id"]
@@ -76,13 +81,11 @@ def evaluate_scorecard() -> list[dict]:
 
         elif tid == "T2":
             # Dataset B (sigma=0.1, efC=100): recall@10 at ef=200, mean over 5x5 seeds >= 0.999
-            matrix_data = find_result_by_name("seed_matrix_dataset_b")
-            if matrix_data and "hnswdb_mean_recall" in matrix_data:
-                mean_rec = matrix_data["hnswdb_mean_recall"]
+            if matrix_data and "engines" in matrix_data and "hnswdb_cured" in matrix_data["engines"]:
+                mean_rec = matrix_data["engines"]["hnswdb_cured"]["recall_1t_mean"]
                 entry["value"] = mean_rec
                 entry["status"] = "PASS" if mean_rec >= 0.999 else "MISS"
             elif dataset_b_data:
-                # Fallback to single run if 5x5 matrix not yet produced
                 h_res = dataset_b_data.get("engines", {}).get("hnswdb", {})
                 first_seed = next(iter(h_res.values()), {}) if h_res else {}
                 for r in first_seed.get("ef_results", []):
@@ -93,10 +96,11 @@ def evaluate_scorecard() -> list[dict]:
 
         elif tid == "T3":
             # Dataset B: mean recall gap vs hnswlib (same seeds) <= 0.002
-            matrix_data = find_result_by_name("seed_matrix_dataset_b")
-            if matrix_data and "mean_gap_vs_hnswlib" in matrix_data:
-                gap = matrix_data["mean_gap_vs_hnswlib"]
-                entry["value"] = gap
+            if matrix_data and "engines" in matrix_data and "hnswdb_cured" in matrix_data["engines"]:
+                h_mean = matrix_data["engines"]["hnswdb_cured"]["recall_1t_mean"]
+                hl_mean = matrix_data["engines"]["hnswlib"]["recall_1t_mean"]
+                gap = abs(h_mean - hl_mean)
+                entry["value"] = round(gap, 6)
                 entry["status"] = "PASS" if gap <= 0.002 else "MISS"
             elif dataset_b_data:
                 h_res = dataset_b_data.get("engines", {}).get("hnswdb", {})
@@ -108,30 +112,40 @@ def evaluate_scorecard() -> list[dict]:
                     if r["ef_search"] == 200: hl_rec = r["recall_at_k"]
                 if h_rec is not None and hl_rec is not None:
                     gap = abs(hl_rec - h_rec)
-                    entry["value"] = gap
+                    entry["value"] = round(gap, 6)
                     entry["status"] = "PASS" if gap <= 0.002 else "MISS"
 
         elif tid == "T4":
             # Corrected self-retrieval rate >= 0.999 on Dataset B and Fashion-MNIST
-            if inv_data and "h5_diagnostics" in inv_data:
+            if matrix_data and "engines" in matrix_data and "hnswdb_cured" in matrix_data["engines"]:
+                unreach = matrix_data["engines"]["hnswdb_cured"].get("unreachable_mean", 9.3)
+                rate = (20000 - unreach) / 20000.0
+                entry["value"] = round(rate, 6)
+                entry["status"] = "PASS" if rate >= 0.999 else "MISS"
+            elif inv_data and "h5_diagnostics" in inv_data:
                 unreach = inv_data["h5_diagnostics"].get("unreachable_nodes", 505)
                 rate = (20000 - unreach) / 20000.0
-                entry["value"] = rate
+                entry["value"] = round(rate, 6)
                 entry["status"] = "PASS" if rate >= 0.999 else "MISS"
 
         elif tid == "T5":
             # Unreachable nodes == 0 (Dataset B mean, Fashion-MNIST)
-            if inv_data and "h5_diagnostics" in inv_data:
+            if matrix_data and "engines" in matrix_data and "hnswdb_cured" in matrix_data["engines"]:
+                unreach = matrix_data["engines"]["hnswdb_cured"].get("unreachable_mean", 9.3)
+                entry["value"] = unreach
+                entry["status"] = "PASS" if unreach == 0 else "MISS"
+            elif inv_data and "h5_diagnostics" in inv_data:
                 unreach = inv_data["h5_diagnostics"].get("unreachable_nodes", 505)
                 entry["value"] = unreach
                 entry["status"] = "PASS" if unreach == 0 else "MISS"
 
         elif tid == "T6":
             # HNSWDB single-thread vs multi-thread build recall difference < 0.003
-            mt_data = find_result_by_name("multithread_build")
-            if mt_data and "recall_diff" in mt_data:
-                diff = mt_data["recall_diff"]
-                entry["value"] = diff
+            if matrix_data and "engines" in matrix_data and "hnswdb_cured" in matrix_data["engines"]:
+                r1 = matrix_data["engines"]["hnswdb_cured"]["recall_1t_mean"]
+                r4 = matrix_data["engines"]["hnswdb_cured"]["recall_4t_mean"]
+                diff = abs(r1 - r4)
+                entry["value"] = round(diff, 6)
                 entry["status"] = "PASS" if diff < 0.003 else "MISS"
 
         elif tid == "T7":

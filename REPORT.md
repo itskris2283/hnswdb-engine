@@ -8,21 +8,21 @@ Every measured number in this report is programmatically generated from raw JSON
 
 ### Audited Scorecard (Fixed Targets Evaluated by Code)
 
-<!-- BEGIN GENERATED table=scorecard run_id=A_20261010_100807_7d8938d0 -->
+<!-- BEGIN GENERATED table=scorecard run_id=A_20261010_174754_a9f1a6f6 -->
 **Dataset**: A (5000 x 32d) | **M**=16 | **efC**=100 | **k**=10
 
 | ID | Target Description | Value | Status |
 | :--- | :--- | :--- | :--- |
-| `T1` | Fashion-MNIST (M=16, efC=100): recall@10 >= 0.99 at some ef <= 100 and >= 0.999 at some ef <= 400 | `0.9996` | **PASS** |
-| `T2` | Dataset B (sigma=0.1, efC=100): recall@10 at ef=200, mean over 5 data seeds x 5 build seeds, >= 0.999 | `0.9716` | **MISS** |
-| `T3` | Dataset B: mean recall gap vs hnswlib (same seeds) <= 0.002 | `0.0284` | **MISS** |
-| `T4` | Corrected self-retrieval rate >= 0.999 on Dataset B and on Fashion-MNIST | `0.9748` | **MISS** |
-| `T5` | Unreachable nodes == 0 (Dataset B mean, Fashion-MNIST) | `505` | **MISS** |
-| `T6` | HNSWDB single-thread vs multi-thread build recall difference < 0.003 | `None` | **NOT RUN** |
-| `T7` | Sequential QPS at recall@10 = 0.99 within 3x of hnswlib (Fashion-MNIST, equal-recall interpolation) | `0.5000` | **PASS** |
-| `T8` | Build time, 1 thread, within 3x of hnswlib on Fashion-MNIST and Dataset B | `2.5200` | **PASS** |
-| `T9` | Build time at max physical threads within 3x of hnswlib (MISS is acceptable if reported) | `None` | **NOT RUN** |
-| `T10` | RSS delta within 15% of hnswlib on Fashion-MNIST | `0.0348` | **PASS** |
+| `T1` | Fashion-MNIST (M=16, efC=100): recall@10 >= 0.99 at some ef <= 100 and >= 0.999 at some ef <= 400 | `0.9992` | **PASS** |
+| `T2` | Dataset B (sigma=0.1, efC=100): recall@10 at ef=200, mean over 5 data seeds x 5 build seeds, >= 0.999 | `0.9998` | **PASS** |
+| `T3` | Dataset B: mean recall gap vs hnswlib (same seeds) <= 0.002 | `0.0005` | **PASS** |
+| `T4` | Corrected self-retrieval rate >= 0.999 on Dataset B and on Fashion-MNIST | `0.9995` | **PASS** |
+| `T5` | Unreachable nodes == 0 (Dataset B mean, Fashion-MNIST) | `9.3200` | **MISS** |
+| `T6` | HNSWDB single-thread vs multi-thread build recall difference < 0.003 | `0.0014` | **PASS** |
+| `T7` | Sequential QPS at recall@10 = 0.99 within 3x of hnswlib (Fashion-MNIST, equal-recall interpolation) | `0.7300` | **PASS** |
+| `T8` | Build time, 1 thread, within 3x of hnswlib on Fashion-MNIST and Dataset B | `1.0500` | **PASS** |
+| `T9` | Build time at max physical threads within 3x of hnswlib (MISS is acceptable if reported) | `1.3900` | **PASS** |
+| `T10` | RSS delta within 15% of hnswlib on Fashion-MNIST | `0.0354` | **PASS** |
 | `T11` | Approximation ratio of exact search == 1.0 +/- 1e-6; Fashion-MNIST ratio <= 1.05 | `1.0000` | **PASS** |
 | `T12` | All C++ and Python tests pass (counts from run output) | `9 C++ / 50 Python passed` | **PASS** |
 | `T13` | Sanitizers: zero findings (status NOT RUN if not executed) | `NOT RUN (Windows host)` | **NOT RUN** |
@@ -51,38 +51,38 @@ In the spirit of complete engineering honesty, this section explicitly documents
 
 ### 3.1 Fashion-MNIST ($60,000 \times 784\text{d}, M=16, ef_c=100, k=10$)
 
-<!-- BEGIN GENERATED table=full_fashion_mnist run_id=fashion_mnist_20261010_113121_90c0d1d3 -->
+<!-- BEGIN GENERATED table=full_fashion_mnist run_id=fashion_mnist_20261010_174828_0a9f92db -->
 **Dataset**: fashion_mnist (60000 x 784d) | **M**=16 | **efC**=100 | **k**=10
 
 | Engine | ef_search | Recall@10 | Approx Ratio | p50 (ms) | Sequential QPS |
 | :--- | ---: | ---: | ---: | ---: | ---: |
-| **hnswdb** | 10 | 0.9705 | 1.0009 | 0.204 | 4,615 |
-| **hnswdb** | 50 | 0.9978 | 1.0001 | 0.452 | 2,085 |
-| **hnswdb** | 200 | 0.9996 | 1.0000 | 1.107 | 858 |
-| **faiss** | 10 | 0.9264 | 1.0009 | 0.149 | 6,235 |
-| **faiss** | 50 | 0.9948 | 1.0001 | 0.365 | 2,588 |
-| **faiss** | 200 | 0.9990 | 1.0000 | 1.623 | 492 |
-| **hnswlib** | 10 | 0.9277 | 1.0009 | 0.291 | 2,816 |
-| **hnswlib** | 50 | 0.9951 | 1.0001 | 0.813 | 1,033 |
-| **hnswlib** | 200 | 0.9991 | 1.0000 | 1.941 | 451 |
+| **hnswdb** | 10 | 0.9278 | 1.0034 | 0.103 | 9,071 |
+| **hnswdb** | 50 | 0.9951 | 1.0003 | 0.220 | 4,259 |
+| **hnswdb** | 200 | 0.9992 | 1.0000 | 0.478 | 2,048 |
+| **faiss** | 10 | 0.9264 | 1.0032 | 0.110 | 8,357 |
+| **faiss** | 50 | 0.9948 | 1.0003 | 0.230 | 4,125 |
+| **faiss** | 200 | 0.9990 | 1.0001 | 0.614 | 1,519 |
+| **hnswlib** | 10 | 0.9277 | 1.0030 | 0.111 | 8,577 |
+| **hnswlib** | 50 | 0.9951 | 1.0002 | 0.296 | 3,118 |
+| **hnswlib** | 200 | 0.9991 | 1.0000 | 0.706 | 1,346 |
 <!-- END GENERATED -->
 
 ### 3.2 Dataset B Clustered Synthetic ($20,000 \times 64\text{d}, M=16, ef_c=100, k=10$)
 
-<!-- BEGIN GENERATED table=full_dataset_b run_id=B_s01_20261010_100918_0d563c34 -->
+<!-- BEGIN GENERATED table=full_dataset_b run_id=B_s01_20261010_174800_8a2302be -->
 **Dataset**: B_s01 (20000 x 64d) | **M**=16 | **efC**=100 | **k**=10
 
 | Engine | ef_search | Recall@10 | Approx Ratio | p50 (ms) | Sequential QPS |
 | :--- | ---: | ---: | ---: | ---: | ---: |
-| **hnswdb** | 10 | 0.9101 | 1.0735 | 0.021 | 43,684 |
-| **hnswdb** | 50 | 0.9711 | 1.0017 | 0.039 | 23,262 |
-| **hnswdb** | 200 | 0.9716 | 1.0017 | 0.085 | 11,346 |
-| **faiss** | 10 | 0.8508 | 1.1503 | 0.035 | 24,424 |
-| **faiss** | 50 | 0.9943 | 1.0336 | 0.055 | 17,057 |
-| **faiss** | 200 | 0.9994 | 1.0000 | 0.159 | 5,911 |
-| **hnswlib** | 10 | 0.8513 | 1.0253 | 0.028 | 31,381 |
-| **hnswlib** | 50 | 0.9979 | 1.0001 | 0.057 | 15,685 |
-| **hnswlib** | 200 | 1.0000 | 1.0000 | 0.089 | 10,755 |
+| **hnswdb** | 10 | 0.8461 | 1.0539 | 0.018 | 55,211 |
+| **hnswdb** | 50 | 0.9978 | 1.0001 | 0.069 | 14,263 |
+| **hnswdb** | 200 | 1.0000 | 1.0000 | 0.090 | 11,029 |
+| **faiss** | 10 | 0.8508 | 1.1503 | 0.084 | 2,905 |
+| **faiss** | 50 | 0.9943 | 1.0336 | 0.290 | 2,186 |
+| **faiss** | 200 | 0.9994 | 1.0000 | 0.387 | 1,571 |
+| **hnswlib** | 10 | 0.8513 | 1.0253 | 0.030 | 27,869 |
+| **hnswlib** | 50 | 0.9979 | 1.0001 | 0.056 | 17,846 |
+| **hnswlib** | 200 | 1.0000 | 1.0000 | 0.106 | 9,258 |
 <!-- END GENERATED -->
 
 ---

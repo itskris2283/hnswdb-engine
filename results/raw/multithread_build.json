@@ -1,0 +1,17 @@
+{
+  "run_id": "multithread_build_20261010_180617_73c07096",
+  "timestamp": "2026-10-10T18:06:17.790186+00:00",
+  "num_threads": 4,
+  "repeats": 3,
+  "dataset_b": {
+    "hnswdb_build_s": 2.522,
+    "hnswlib_build_s": 1.809,
+    "ratio": 1.39
+  },
+  "fashion_mnist": {
+    "hnswdb_build_s": 9.162,
+    "hnswlib_build_s": 10.456,
+    "ratio": 0.88
+  },
+  "max_threads_ratio_hnswlib": 1.39
+}

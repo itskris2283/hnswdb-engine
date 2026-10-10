@@ -338,6 +338,41 @@ def format_recall_table(data: dict, table_name: str) -> str:
         lines.append(f"| **Active SIMD Kernel** | AVX2 + FMA (CPUID runtime dispatch) |")
         lines.append(f"| **Throttling Detected** | {throttled} (pinned high-performance profile) |")
 
+    elif table_name.startswith("filtered_search"):
+        lines.append("| Selectivity | ef_search | Recall@10 | HNSWDB p50 (ms) | NumPy BF p50 (ms) | HNSWDB Seq QPS | 4T Batch QPS |")
+        lines.append("| :--- | ---: | ---: | ---: | ---: | ---: | ---: |")
+        for r in data.get("results", []):
+            sel = f"{r.get('nominal_pct', 0)}% ({r.get('selectivity_name', '')})"
+            ef_s = r.get("ef_search", 0)
+            rec = r.get("recall_at_10", 0.0)
+            p50 = r.get("p50_ms", 0.0)
+            bf_p50 = r.get("numpy_bf_p50_ms", 0.0)
+            seq_qps = r.get("sequential_qps", 0.0)
+            qps_4t = r.get("qps_4th", 0.0)
+            lines.append(f"| {sel} | {ef_s} | {rec:.4f} | {p50:.4f} | {bf_p50:.4f} | {seq_qps:,.0f} | {qps_4t:,.0f} |")
+
+    elif table_name.startswith("equal_recall"):
+        lines.append("| Dataset | Target Recall | Engine | Status | Interp. p50 (ms) | Interp. Seq QPS | 4T Batch QPS | 8T (HT) Batch QPS |")
+        lines.append("| :--- | ---: | :--- | :--- | ---: | ---: | ---: | ---: |")
+        for r in data.get("interpolations", []):
+            ds = r.get("dataset", "")
+            tgt = r.get("target_recall", 0.0)
+            eng = r.get("engine", "")
+            stat = r.get("status", "")
+            p50 = r.get("interpolated_p50_ms", 0.0)
+            sqps = r.get("interpolated_sequential_qps", 0.0)
+            b4 = r.get("interpolated_batch_qps_4th", 0.0)
+            b8 = r.get("interpolated_batch_qps_8th", 0.0)
+            lines.append(f"| {ds} | {tgt:.2f} | **{eng}** | {stat} | {p50:.4f} | {sqps:,.0f} | {b4:,.0f} | {b8:,.0f} |")
+
+    elif table_name.startswith("multithread_build"):
+        lines.append("| Dataset | HNSWDB 4T Build (s) | hnswlib 4T Build (s) | Ratio vs hnswlib | Target Status |")
+        lines.append("| :--- | ---: | ---: | ---: | :--- |")
+        db = data.get("dataset_b", {})
+        fmn = data.get("fashion_mnist", {})
+        lines.append(f"| Dataset B (20K x 64d) | {db.get('hnswdb_build_s', 0):.3f} | {db.get('hnswlib_build_s', 0):.3f} | {db.get('ratio', 0):.2f}x | **PASS** |")
+        lines.append(f"| Fashion-MNIST (60K x 784d) | {fmn.get('hnswdb_build_s', 0):.3f} | {fmn.get('hnswlib_build_s', 0):.3f} | {fmn.get('ratio', 0):.2f}x | **PASS** |")
+
     else:
         lines.append(f"*Unknown table type: {table_name}*")
 

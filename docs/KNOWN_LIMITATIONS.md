@@ -6,22 +6,16 @@ This document transparently records verified engineering limitations, dataset se
 
 ## 1. Clustered Distribution Weakness (Implementation-Specific Construction Weakness)
 
-- **Symptom:** On synthetic distributions with tight, well-separated Gaussian clusters (50 clusters, standard deviation $\sigma=0.1$ across 20,000 vectors in 64 dimensions, Dataset B), HNSW graph construction with standard $ef_{construction}=100$ reaches an early recall ceiling at $ef_{search}=200$ (see generated tables in [INVESTIGATIONS.md](INVESTIGATIONS.md)).
-- **Baseline Context:** This is an implementation-specific construction weakness in HNSWDB; reference baselines (`hnswlib` and `FAISS`) do not exhibit this problem on the identical dataset, reaching higher recall at the same parameters.
-- **Leading Hypotheses (Not Yet Isolated):**
-  - *Hypothesis A (Neighbor Degree Pressure):* In HNSWDB, new nodes select up to $M_0=32$ neighbors at layer 0 upon insertion, whereas hnswlib selects $M=16$ neighbors for a new element at all layers (allowing existing neighbors to expand up to $M_0$). Selecting 32 links immediately may double reverse-link pruning pressure on existing nodes.
-  - *Hypothesis B (Discarded Candidate Back-fill):* HNSWDB's heuristic selection retains discarded candidates to back-fill up to $M$ connections (`keepPrunedConnections`), whereas hnswlib's `getNeighborsByHeuristic2` does not back-fill when candidates exceed $M$.
-  - *Hypothesis C (Unprotected In-Edges):* When neighbor lists overflow, links to early-inserted nodes may be evicted without verifying if the evicted node retains at least one incoming edge, causing nodes to become search-unreachable.
-- **Workarounds:**
-  - Increasing $ef_{construction}$ to 400 provides a broader candidate pool during build, restoring full recall on the exact same dataset (see [INVESTIGATIONS.md](INVESTIGATIONS.md)).
-  - On continuous manifold datasets (such as Fashion-MNIST $784$-d), standard $ef_{construction}=100$ achieves target recall at $ef_{search}=200$ (see generated tables in [BENCHMARKS.md](BENCHMARKS.md)).
+- **Symptom:** On synthetic distributions with tight, well-separated Gaussian clusters (50 clusters, standard deviation $\sigma=0.1$ across 20,000 vectors in 64 dimensions, Dataset B), legacy HNSW graph construction with standard $ef_{construction}=100$ reached an early recall ceiling at $ef_{search}=200$ (see generated tables in [INVESTIGATIONS.md](INVESTIGATIONS.md)).
+- **Isolation & Resolution:** In Phase 3 ablations (`results/raw/ablations_study.json`), the issue was isolated to initial layer-0 degree over-allocation (`new_node_degree="M0"`, 32 links) combined with retaining pruned candidates (`keep_pruned=true`), which crowded out inter-cluster bridges. Setting defaults to `new_node_degree="M"` (16 links) and `keep_pruned=false` cured the recall gap, achieving 1.0000 recall at $ef=200$.
+- **Residual Limitation:** Unreachable nodes are reduced from over five hundred to single digits, but non-zero on clustered distributions (see generated seed matrix and ablation tables in [INVESTIGATIONS.md](INVESTIGATIONS.md)), causing target T5 to be reported as a MISS.
 
 ---
 
 ## 2. Build-Time Gap vs hnswlib/FAISS: Causes Not Yet Isolated
 
-- **Observation:** HNSWDB single-thread index construction is slower than `hnswlib` and `FAISS`.
-- **Status:** Causes not yet isolated. Early speculations regarding cache lines and function pointers have been removed until Phase 5 empirical work-counting and profiling provide concrete evidence.
+- **Observation:** HNSWDB single-thread index construction was slower than `hnswlib` and `FAISS` on small-dimensional datasets. Under cured defaults, build times meet the target ratio relative to hnswlib on Fashion-MNIST and Dataset B (see generated benchmark tables in [BENCHMARKS.md](BENCHMARKS.md)).
+- **Status:** Detailed work counting and profiling in Phase 5 examine remaining distance-computation shares and lock overheads.
 
 ---
 
@@ -36,3 +30,11 @@ This document transparently records verified engineering limitations, dataset se
 
 - **Host Platform:** Development and validation were performed on Windows 11 (MSVC 2022 Release /O2, AVX2+FMA SIMD kernel).
 - **Sanitizers:** Sanitizers were not executed locally on Windows MSVC. A CI workflow for Linux (GCC ASan/UBSan, Clang TSan) is provided in `.github/workflows/ci.yml`.
+
+---
+
+## 5. Upstream Dataset Availability (SIFT1M)
+
+- **Observation:** Direct automated download of `sift-128-euclidean.hdf5` from `http://ann-benchmarks.com` fails with HTTP 403 Forbidden.
+- **Status:** Per Rule 0, SIFT1M is not evaluated in local benchmarks, and all benchmark claims rely strictly on locally verified datasets: Fashion-MNIST (60K $\times$ 784d), Dataset B ($\sigma=0.1$, $\sigma=0.3$, $\sigma=1.0$), and Dataset A (5K $\times$ 32d).
+

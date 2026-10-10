@@ -66,5 +66,6 @@
       "faiss": "1.15.1",
       "hnswlib": "0.8.0"
     }
-  }
+  },
+  "run_id": "kernel_microbench"
 }

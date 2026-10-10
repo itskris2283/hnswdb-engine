@@ -182,7 +182,7 @@ def run_dataset_benchmark(
     if seeds is None:
         seeds = [42]
     if search_threads_list is None:
-        search_threads_list = [1, 4, 8]
+        search_threads_list = [1, 2, 4, 8]
     if engines is None:
         engines = ["hnswdb", "faiss", "hnswlib"]
 
@@ -336,7 +336,7 @@ def main():
     parser.add_argument("--ef-values", nargs="+", type=int, default=None, help="ef_search values")
     parser.add_argument("--repeats", type=int, default=5, help="QPS measurement repeats")
     parser.add_argument("--build-threads", type=int, default=1, help="Build thread count")
-    parser.add_argument("--search-threads", nargs="+", type=int, default=[1, 4, 8])
+    parser.add_argument("--search-threads", nargs="+", type=int, default=[1, 2, 4, 8])
     parser.add_argument("--engines", nargs="+", default=["hnswdb", "faiss", "hnswlib"])
     parser.add_argument("--skip-render", action="store_true", help="Skip doc rendering after benchmarks")
     args = parser.parse_args()

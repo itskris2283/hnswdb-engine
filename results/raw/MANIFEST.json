@@ -1,6 +1,81 @@
 {
   "runs": [
     {
+      "file": "ablations_dataset_b.json",
+      "sha256": "48aaa9aeb37a86d3db018f49d99a0c999474edacecf73488aa346a8b176965ea",
+      "state": "raw_result",
+      "size_bytes": 15188
+    },
+    {
+      "file": "bench_A_7d8938d0.json",
+      "sha256": "46731373b1435726969bf29ef430af3af16f8c1c72ad28af525efcdb28e8a976",
+      "state": "raw_result",
+      "size_bytes": 9361
+    },
+    {
+      "file": "bench_A_a9f1a6f6.json",
+      "run_id": "A_20261010_174754_a9f1a6f6",
+      "dataset": "A",
+      "label": "Synthetic A (5K x 32d, 20 clusters, \u03c3=0.1)",
+      "created": "2026-10-10T17:48:00.661142+00:00",
+      "sha256": "e5f60f4e33020cc417b0a679ad20806528aa8881f8e67517e409b1ba71893bee",
+      "size_bytes": 19234
+    },
+    {
+      "file": "bench_B_s01_0d563c34.json",
+      "run_id": "B_s01_20261010_100918_0d563c34",
+      "dataset": "B_s01",
+      "label": "Synthetic B (20K x 64d, 50 clusters, \u03c3=0.1)",
+      "created": "2026-10-10T10:09:31.773031+00:00",
+      "sha256": "458161f2efdf459567e09b3fe4d3d43788f3d190861a5a3c52689ee2c60501ef",
+      "size_bytes": 8846
+    },
+    {
+      "file": "bench_B_s01_8a2302be.json",
+      "run_id": "B_s01_20261010_174800_8a2302be",
+      "dataset": "B_s01",
+      "label": "Synthetic B (20K x 64d, 50 clusters, \u03c3=0.1)",
+      "created": "2026-10-10T17:48:28.665143+00:00",
+      "sha256": "9958db925f2127465b65b32eb5524d952b258051ba59776014e17610f1596df7",
+      "size_bytes": 19226
+    },
+    {
+      "file": "bench_B_s03_4323eef4.json",
+      "run_id": "B_s03_20261010_100931_4323eef4",
+      "dataset": "B_s03",
+      "label": "Synthetic B (20K x 64d, 50 clusters, \u03c3=0.3)",
+      "created": "2026-10-10T10:09:46.705169+00:00",
+      "sha256": "b4c3101ba4ad29b56a6ab5bfa60203715531ca8f2e200529c4058023c858394b",
+      "size_bytes": 8833
+    },
+    {
+      "file": "bench_B_s10_7efd78e0.json",
+      "run_id": "B_s10_20261010_100946_7efd78e0",
+      "dataset": "B_s10",
+      "label": "Synthetic B (20K x 64d, 50 clusters, \u03c3=1.0)",
+      "created": "2026-10-10T10:10:03.950047+00:00",
+      "sha256": "0356ca2a058236a8f14e1ef17b3c4e9871bd9aab62c55132ce1ca2bc77490837",
+      "size_bytes": 8839
+    },
+    {
+      "file": "bench_fashion_mnist_0a9f92db.json",
+      "run_id": "fashion_mnist_20261010_174828_0a9f92db",
+      "dataset": "fashion_mnist",
+      "label": "Fashion-MNIST (60K x 784d, Euclidean L2)",
+      "created": "2026-10-10T17:57:08.502804+00:00",
+      "sha256": "05ea5f38c1956122025a9285c853bed953bd2d361202847eeab02985c4c27078",
+      "size_bytes": 19121
+    },
+    {
+      "file": "bench_fashion_mnist_90c0d1d3.json",
+      "run_id": "fashion_mnist_20261010_113121_90c0d1d3",
+      "dataset": "fashion_mnist",
+      "label": "Fashion-MNIST (60K x 784d, Euclidean L2)",
+      "created": "2026-10-10T11:41:07.456159+00:00",
+      "sha256": "d2d4366a163b5a4534aa2c24ef5ba84847b223dbecb9c259b8553903ad43c7d4",
+      "size_bytes": 8836
+    },
+    {
       "file": "bench_smoke_synthetic_5000_32.json",
       "sha256": "74400022f9d32be5833369c845cc25e0d9fd31292100f915638e573358d076c1",
       "commit": "72aad13",
@@ -73,12 +148,42 @@
       "size_bytes": 2564
     },
     {
+      "file": "decomposition_dataset_b.json",
+      "sha256": "77d4cadea253bbe1e867f8cbee3ed9d8d6d5133c8a1877c57c2713243422b4e2",
+      "state": "raw_result",
+      "size_bytes": 4256
+    },
+    {
+      "file": "equal_recall_grid.json",
+      "sha256": "ae5f413fa0c1284496600648578e1db9fd0b0671857001d2c825b06f60abf977",
+      "state": "raw_result",
+      "size_bytes": 18878
+    },
+    {
+      "file": "filtered_search_benchmark.json",
+      "sha256": "6eeb3cd0278ead5b275348a055db949fec16b86d8f61b81026556266f38635ee",
+      "state": "raw_result",
+      "size_bytes": 9685
+    },
+    {
+      "file": "investigation_recall_gap.json",
+      "sha256": "0d5186b423f9ade531e1b7486303b525722e1067479eb9583023c80f7bcdcb68",
+      "state": "raw_result",
+      "size_bytes": 1670
+    },
+    {
       "file": "kernel_microbench.json",
-      "sha256": "546b6f840d90f333499d5ad38323776b9d5e63cf8cbf97370421d9db3c50cd6e",
+      "sha256": "33ed80287088d1dae7e74ba1db39988d0a247537af3883b366014d04ff166327",
       "commit": "bde8cd2e25e857c8355847520b7cbdcd34ebacce",
       "dataset": "kernel_microbench",
       "state": "raw_result",
-      "size_bytes": 1674
+      "size_bytes": 1708
+    },
+    {
+      "file": "multithread_build.json",
+      "sha256": "09e0f0a8f0faddf9f8bed87e6ad7766f564e6c226240ffe8aaa13337cf0ba2a4",
+      "state": "raw_result",
+      "size_bytes": 403
     },
     {
       "file": "run_all_checks.txt",
@@ -89,33 +194,17 @@
       "size_bytes": 6359
     },
     {
-      "file": "bench_B_s01_0d563c34.json",
-      "run_id": "B_s01_20261010_100918_0d563c34",
-      "dataset": "B_s01",
-      "label": "Synthetic B (20K x 64d, 50 clusters, \u03c3=0.1)",
-      "created": "2026-10-10T10:09:31.773031+00:00"
+      "file": "scorecard.json",
+      "sha256": "542f15b5f723003ed3bef21012a813b4b7e6f96211c2dfd2d5e72eaab65a1c21",
+      "state": "raw_result",
+      "size_bytes": 2427
     },
     {
-      "file": "bench_B_s03_4323eef4.json",
-      "run_id": "B_s03_20261010_100931_4323eef4",
-      "dataset": "B_s03",
-      "label": "Synthetic B (20K x 64d, 50 clusters, \u03c3=0.3)",
-      "created": "2026-10-10T10:09:46.705169+00:00"
-    },
-    {
-      "file": "bench_B_s10_7efd78e0.json",
-      "run_id": "B_s10_20261010_100946_7efd78e0",
-      "dataset": "B_s10",
-      "label": "Synthetic B (20K x 64d, 50 clusters, \u03c3=1.0)",
-      "created": "2026-10-10T10:10:03.950047+00:00"
-    },
-    {
-      "file": "bench_fashion_mnist_90c0d1d3.json",
-      "run_id": "fashion_mnist_20261010_113121_90c0d1d3",
-      "dataset": "fashion_mnist",
-      "label": "Fashion-MNIST (60K x 784d, Euclidean L2)",
-      "created": "2026-10-10T11:41:07.456159+00:00"
+      "file": "seed_matrix_dataset_b.json",
+      "sha256": "0948cfd19f9c48a0a6959fcce98fa46d03f021360ed107dbebbf21f3331b067d",
+      "state": "raw_result",
+      "size_bytes": 25621
     }
   ],
-  "last_updated": "2026-10-10T11:41:07.481074+00:00"
+  "last_updated": "2026-10-10T17:57:08.503803+00:00"
 }
