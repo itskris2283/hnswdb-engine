@@ -32,7 +32,7 @@ def load_vectors(path: str) -> np.ndarray:
 @app.command()
 def build(
     input: str = typer.Option(..., "--input", "-i", help="Input vector file (.npy or .fvecs)"),
-    out: str = typer.Option(..., "--out", "-o", help="Output index file path (.hnsw)"),
+    out: str = typer.Option(..., "--out", "-o", help="Output index file path (.hdb)"),
     dim: Optional[int] = typer.Option(None, "--dim", "-d", help="Vector dimension"),
     metric: str = typer.Option("l2", "--metric", "-m", help="Distance metric: l2, ip, cosine"),
     M: int = typer.Option(16, "--M", help="HNSW M parameter (2..128)"),
@@ -69,7 +69,7 @@ def build(
 
 @app.command()
 def query(
-    index: str = typer.Option(..., "--index", help="Index file path (.hnsw)"),
+    index: str = typer.Option(..., "--index", help="Index file path (.hdb)"),
     query_file: str = typer.Option(..., "--query", help="Query vector file (.npy or .fvecs)"),
     k: int = typer.Option(10, "--k", "-k", help="Number of nearest neighbors to retrieve"),
     ef_search: Optional[int] = typer.Option(None, "--ef-search", help="Search expansion factor ef"),
@@ -98,7 +98,7 @@ def query(
 
 @app.command()
 def info(
-    index: str = typer.Option(..., "--index", help="Index file path (.hnsw)"),
+    index: str = typer.Option(..., "--index", help="Index file path (.hdb)"),
 ):
     """Display detailed JSON statistics of an index."""
     idx = HNSWIndex.load(index)
@@ -108,7 +108,7 @@ def info(
 
 @app.command()
 def bench(
-    index: str = typer.Option(..., "--index", help="Index file path (.hnsw)"),
+    index: str = typer.Option(..., "--index", help="Index file path (.hdb)"),
     queries_file: str = typer.Option(..., "--queries", help="Query vector file (.npy or .fvecs)"),
     k: int = typer.Option(10, "--k", "-k", help="Top-k neighbors"),
     ef_search: int = typer.Option(50, "--ef-search", help="ef_search parameter"),

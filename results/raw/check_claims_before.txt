@@ -1,0 +1,115 @@
+﻿Running Strict Claims and Consistency Checker (Round 5)...
+
+FAILED: Found 112 issue(s):
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:12: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 64 bytes # File header size (from FILE_FORMAT.md spec)
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:13: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 8 bytes # Size of uint64 fields
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:14: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 4 bytes # Size of uint32/CRC32 fields
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:15: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 1 byte # Size of uint8 fields
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:18: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 1,024 # Striped spinlock count (compile-time constant)
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:19: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 1024 # Striped spinlock count (compile-time constant)
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:20: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 4096 # Maximum dimension limit
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:23: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 16 # M parameter (standard default)
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:24: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 32 # M0 = 2*M
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:25: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 128 # Max M parameter
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:26: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 200 # ef_construction default
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:27: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 100 # ef_construction value
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:28: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 50 # ef_search default
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:29: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 10 # Top-k value
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:32: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 5,000 # Dataset A vector count
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:33: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 5000 # Dataset A vector count
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:34: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 20,000 # Dataset B vector count
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:35: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 20000 # Dataset B vector count
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:36: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 1000 # Test query count
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:37: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 1,000 # Test query count
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:40: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 784 # Fashion-MNIST dimension
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:41: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 60,000 # Fashion-MNIST train count
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:42: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 60000 # Fashion-MNIST train count
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:43: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 10,000 # Fashion-MNIST test count
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:44: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 10000 # Fashion-MNIST test count
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:47: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 1 # Single thread
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:48: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 2 # Thread count
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:49: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 4 # Thread count
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:50: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 8 # Thread count
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:53: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 0.1.0 # Package version
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:54: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): C++17 # C++ standard
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:55: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 3.20 # CMake minimum
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:56: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 3.10 # Python minimum version
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:59: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 8000 # Default server port
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:60: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 0.0.0.0 # Default server host
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:63: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 0.99 # Target threshold
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:64: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 0.97 # Target threshold
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:65: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 0.95 # Target threshold
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:66: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 1.05 # Approx ratio target
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt:67: Malformed entry (expected '<file>:<line-regex> | <value> | <reason>'): 5.0 # Build ratio target
+  FAIL: D:\MERN\CustomVecDB\docs\claims_allowlist.txt: Allowlist exceeds 25-entry cap (found 40 entries)
+  FAIL: README.md:20: Contains prohibited phrase 'production persistence'
+  FAIL: REPORT.md:28: Unverified number/metric outside generated block: '0.9716' (not in scoped allowlist)
+  FAIL: REPORT.md:28: Unverified number/metric outside generated block: '0.0284' (not in scoped allowlist)
+  FAIL: REPORT.md:36: Protected phrase 'root cause' allowed only in docs/INVESTIGATIONS.md
+  FAIL: REPORT.md:40: Contains prohibited phrase 'pathological'
+  FAIL: docs/DESIGN.md:56: Unverified number/metric outside generated block: '80%' (not in scoped allowlist)
+  FAIL: docs/DESIGN.md:100: Unverified number/metric outside generated block: '100%' (not in scoped allowlist)
+  FAIL: docs/INTERVIEW_PREP.md:14: 'sub-millisecond' allowed only inside generated block with ef and percentile
+  FAIL: docs/INTERVIEW_PREP.md:14: Unverified number/metric outside generated block: '0.9996' (not in scoped allowlist)
+  FAIL: docs/INTERVIEW_PREP.md:56: Unverified number/metric outside generated block: '0.9716' (not in scoped allowlist)
+  FAIL: docs/INTERVIEW_PREP.md:57: Protected phrase 'root cause' allowed only in docs/INVESTIGATIONS.md
+  FAIL: docs/INTERVIEW_PREP.md:60: Unverified number/metric outside generated block: '2.5%' (not in scoped allowlist)
+  FAIL: docs/INTERVIEW_PREP.md:67: Unverified number/metric outside generated block: '2.4x' (not in scoped allowlist)
+  FAIL: docs/INTERVIEW_PREP.md:76: Unverified number/metric outside generated block: '0.056 ms' (not in scoped allowlist)
+  FAIL: docs/INTERVIEW_PREP.md:76: Unverified number/metric outside generated block: '0.162 ms' (not in scoped allowlist)
+  FAIL: docs/INTERVIEW_PREP.md:89: Unverified number/metric outside generated block: '95%' (not in scoped allowlist)
+  FAIL: docs/INTERVIEW_PREP.md:89: Unverified number/metric outside generated block: '0.5 ms' (not in scoped allowlist)
+  FAIL: docs/INTERVIEW_PREP.md:109: Unverified number/metric outside generated block: '20%' (not in scoped allowlist)
+  FAIL: docs/INTERVIEW_PREP.md:112: Unverified number/metric outside generated block: '100%' (not in scoped allowlist)
+  FAIL: docs/INTERVIEW_PREP.md:115: Unverified number/metric outside generated block: '100%' (not in scoped allowlist)
+  FAIL: docs/INTERVIEW_PREP.md:136: Unverified number/metric outside generated block: '3x' (not in scoped allowlist)
+  FAIL: docs/INTERVIEW_PREP.md:138: Unverified number/metric outside generated block: '30x' (not in scoped allowlist)
+  FAIL: docs/INTERVIEW_PREP.md:146: 'sub-millisecond' allowed only inside generated block with ef and percentile
+  FAIL: docs/INTERVIEW_PREP.md:146: Unverified number/metric outside generated block: '0.9996' (not in scoped allowlist)
+  FAIL: docs/INVESTIGATIONS.md:9: Unverified number/metric outside generated block: '0.8120' (not in scoped allowlist)
+  FAIL: docs/INVESTIGATIONS.md:9: Unverified number/metric outside generated block: '0.9240' (not in scoped allowlist)
+  FAIL: docs/INVESTIGATIONS.md:13: Unverified number/metric outside generated block: '0.9912' (not in scoped allowlist)
+  FAIL: docs/INVESTIGATIONS.md:40: Unverified number/metric outside generated block: '0.9638' (not in scoped allowlist)
+  FAIL: docs/INVESTIGATIONS.md:41: Unverified number/metric outside generated block: '0.9716' (not in scoped allowlist)
+  FAIL: docs/INVESTIGATIONS.md:42: Unverified number/metric outside generated block: '0.9804' (not in scoped allowlist)
+  FAIL: docs/INVESTIGATIONS.md:52: Unverified number/metric outside generated block: '0.9992' (not in scoped allowlist)
+  FAIL: docs/INVESTIGATIONS.md:53: Unverified number/metric outside generated block: '0.9990' (not in scoped allowlist)
+  FAIL: docs/INVESTIGATIONS.md:54: Unverified number/metric outside generated block: '0.9987' (not in scoped allowlist)
+  FAIL: docs/INVESTIGATIONS.md:55: Unverified number/metric outside generated block: '0.9857' (not in scoped allowlist)
+  FAIL: docs/INVESTIGATIONS.md:56: Unverified number/metric outside generated block: '0.9716' (not in scoped allowlist)
+  FAIL: docs/INVESTIGATIONS.md:57: Unverified number/metric outside generated block: '0.9999' (not in scoped allowlist)
+  FAIL: docs/INVESTIGATIONS.md:58: Unverified number/metric outside generated block: '0.9843' (not in scoped allowlist)
+  FAIL: docs/INVESTIGATIONS.md:60: Unverified number/metric outside generated block: '0.9716' (not in scoped allowlist)
+  FAIL: docs/INVESTIGATIONS.md:60: Unverified number/metric outside generated block: '0.9999' (not in scoped allowlist)
+  FAIL: docs/INVESTIGATIONS.md:60: Unverified number/metric outside generated block: '0.0101' (not in scoped allowlist)
+  FAIL: docs/INVESTIGATIONS.md:65: Unverified number/metric outside generated block: '0.9681' (not in scoped allowlist)
+  FAIL: docs/INVESTIGATIONS.md:66: Unverified number/metric outside generated block: '0.9716' (not in scoped allowlist)
+  FAIL: docs/INVESTIGATIONS.md:67: Unverified number/metric outside generated block: '0.9750' (not in scoped allowlist)
+  FAIL: docs/INVESTIGATIONS.md:71: Unverified number/metric outside generated block: '0.9918' (not in scoped allowlist)
+  FAIL: docs/INVESTIGATIONS.md:79: Unverified number/metric outside generated block: '98%' (not in scoped allowlist)
+  FAIL: docs/INVESTIGATIONS.md:81: Unverified number/metric outside generated block: '2.5%' (not in scoped allowlist)
+  FAIL: docs/INVESTIGATIONS.md:93: Unverified number/metric outside generated block: '0.9847' (not in scoped allowlist)
+  FAIL: docs/INVESTIGATIONS.md:94: Unverified number/metric outside generated block: '0.9716' (not in scoped allowlist)
+  FAIL: docs/INVESTIGATIONS.md:95: Unverified number/metric outside generated block: '0.9944' (not in scoped allowlist)
+  FAIL: docs/INVESTIGATIONS.md:96: Unverified number/metric outside generated block: '0.9860' (not in scoped allowlist)
+  FAIL: docs/INVESTIGATIONS.md:97: Unverified number/metric outside generated block: '0.9997' (not in scoped allowlist)
+  FAIL: docs/INVESTIGATIONS.md:101: 'root cause' must be followed by 'evidence: <path>' line pointing to an existing file
+  FAIL: docs/INVESTIGATIONS.md:125: Contains prohibited phrase 'pathological'
+  FAIL: docs/INVESTIGATIONS.md:136: Contains prohibited phrase 'real algorithmic limitation'
+  FAIL: docs/INVESTIGATIONS.md:147: 'root cause' must be followed by 'evidence: <path>' line pointing to an existing file
+  FAIL: docs/KNOWN_LIMITATIONS.md:9: Unverified number/metric outside generated block: '0.9716' (not in scoped allowlist)
+  FAIL: docs/KNOWN_LIMITATIONS.md:10: Unverified number/metric outside generated block: '2.5%' (not in scoped allowlist)
+  FAIL: docs/KNOWN_LIMITATIONS.md:14: Unverified number/metric outside generated block: '0.9996' (not in scoped allowlist)
+  FAIL: docs/KNOWN_LIMITATIONS.md:21: Protected phrase 'root cause' allowed only in docs/INVESTIGATIONS.md
+  FAIL: docs/KNOWN_LIMITATIONS.md:23: 'L2SqrSIMD16Ext' allowed only when stating it is hnswlib's with no performance claim
+  FAIL: docs/TRADEOFFS.md:5: Contains prohibited phrase 'under 0.3 ms'
+  FAIL: docs/TRADEOFFS.md:5: Unverified number/metric outside generated block: '97.0%' (not in scoped allowlist)
+  FAIL: docs/TRADEOFFS.md:5: Unverified number/metric outside generated block: '99.9%' (not in scoped allowlist)
+  FAIL: docs/TRADEOFFS.md:5: Unverified number/metric outside generated block: '0.3 ms' (not in scoped allowlist)
+  FAIL: docs/TRADEOFFS.md:28: Contains prohibited phrase 'outperform'
+  FAIL: docs/TRADEOFFS.md:35: 'L2SqrSIMD16Ext' allowed only when stating it is hnswlib's with no performance claim
+  FAIL: docs/TRADEOFFS.md:37: Unverified number/metric outside generated block: '8.0 ns' (not in scoped allowlist)
+  FAIL: docs/TRADEOFFS.md:38: Unverified number/metric outside generated block: '7.5 ns' (not in scoped allowlist)
+  FAIL: docs/TRADEOFFS.md:39: Unverified number/metric outside generated block: '9.0 ns' (not in scoped allowlist)
+  FAIL: docs/TRADEOFFS.md:40: Unverified number/metric outside generated block: '12.7 ns' (not in scoped allowlist)
+  FAIL: docs/TRADEOFFS.md:41: Unverified number/metric outside generated block: '53.2 ns' (not in scoped allowlist)

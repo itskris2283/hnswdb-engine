@@ -53,18 +53,18 @@ The design strictly implements the Hierarchical Navigable Small World (HNSW) gra
 
 ## 3. Distance Kernels & SIMD Acceleration
 
-Distance computation accounts for >80% of execution time in ANN graph traversal. HNSWDB implements dual kernels with automatic runtime CPUID dispatch:
+Distance computation is the primary inner-loop operation in ANN graph traversal. HNSWDB implements dual kernels with automatic runtime CPUID dispatch:
 
 1. **AVX2 + FMA Kernel:**
    - Processes 8 `float32` elements per vector register using `_mm256_loadu_ps`, `_mm256_fmadd_ps`, `_mm256_sub_ps`, and `_mm256_mul_ps`.
-   - Uses 4-way register accumulation unrolling to maximize execution port utilization (FMA throughput of 2 instructions/cycle on Haswell/Zen+).
-   - Horizontal reduction combines 256-bit registers into a scalar float in 4 cycles.
+   - Uses 4-way register accumulation unrolling to maximize CPU vector pipeline throughput.
+   - Horizontal reduction combines 256-bit registers into a scalar float using vector shuffling.
 2. **Scalar Portable Fallback:**
    - Unrolled 4-wide scalar loop handling any hardware architecture or legacy CPU.
 3. **Tail Loop:**
-   - Arbitrary vector dimensions (e.g. 1, 7, 15, 33, 960) execute SIMD vector chunks followed by a remainder scalar tail.
+   - Arbitrary vector dimensions execute SIMD vector chunks followed by a remainder scalar tail.
 4. **Software Prefetching:**
-   - The greedy search loop issues `_mm_prefetch` (`_MM_HINT_T0`) on the neighbor vector's memory block before distance calculation, hiding L3/DRAM cache latency.
+   - The greedy search loop issues `_mm_prefetch` (`_MM_HINT_T0`) on the neighbor vector's memory block before distance calculation.
 
 ---
 
@@ -97,5 +97,5 @@ HNSWDB supports expressive JSON/AST metadata queries (`$eq`, `$ne`, `$gt`, `$gte
 1. **Selectivity Estimation:**
    - The query AST evaluates matching candidate count using inverted postings lists (`field -> value -> sorted vector<idx_t>`).
 2. **Hybrid Execution Path:**
-   - **Highly Selective ($\le 2\%$ matches or $\le 5,000$ candidates):** Falls back to exact brute-force search over the filtered subset. Graph search in disconnected or sparse subgraphs suffers from topological disconnects; exact subset scanning is faster and delivers 100% recall.
-   - **Mildly Selective ($> 2\%$ matches):** Executes HNSW graph traversal with dynamic expansion: $ef_{\text{effective}} = \min(ef / \text{selectivity}, 10 \cdot ef)$. Non-matching nodes are traversed to maintain connectivity, but only matching nodes enter the candidate result set.
+   - **Highly Selective ($\le 0.02$ match fraction or $\le 5,000$ candidates):** Falls back to exact brute-force search over the filtered subset. Graph search in disconnected or sparse subgraphs suffers from topological disconnects; exact subset scanning is faster and delivers exact recall.
+   - **Mildly Selective ($> 0.02$ match fraction):** Executes HNSW graph traversal with dynamic expansion: $ef_{\text{effective}} = \min(ef / \text{selectivity}, 10 \cdot ef)$. Non-matching nodes are traversed to maintain connectivity, but only matching nodes enter the candidate result set.

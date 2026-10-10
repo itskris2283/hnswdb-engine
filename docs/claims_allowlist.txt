@@ -1,67 +1,12 @@
-# Claims Allowlist for check_claims.py (Round 4)
-# 
-# RULES:
-# 1. Only structural constants, spec parameters, and version numbers go here
-# 2. Measured benchmark numbers MUST NOT be allowlisted — they go in generated blocks
-# 3. Each entry needs a justification comment
-# 4. Review this file before every commit
+# Scoped Claims Allowlist (Round 5)
+# Format: <file>:<line-regex> | <value> | <reason>
+# Maximum 25 entries.
+# Constraints:
+# 1. Scoped to one file and line-regex (never global)
+# 2. No bare small integers
+# 3. No target thresholds copied from benchmarks/targets.json
+# 4. Must not match any metric value from results/raw/*.json
 #
-# Format: <value> # justification
-
-# File format constants
-64 bytes # File header size (from FILE_FORMAT.md spec)
-8 bytes # Size of uint64 fields
-4 bytes # Size of uint32/CRC32 fields
-1 byte # Size of uint8 fields
-
-# Architecture constants
-1,024 # Striped spinlock count (compile-time constant)
-1024 # Striped spinlock count (compile-time constant)
-4096 # Maximum dimension limit
-
-# Standard HNSW parameters used in examples
-16 # M parameter (standard default)
-32 # M0 = 2*M
-128 # Max M parameter
-200 # ef_construction default
-100 # ef_construction value
-50 # ef_search default
-10 # Top-k value
-
-# Dataset sizes (deterministic, from datasets_synth.py)
-5,000 # Dataset A vector count
-5000 # Dataset A vector count
-20,000 # Dataset B vector count
-20000 # Dataset B vector count
-1000 # Test query count
-1,000 # Test query count
-
-# Fashion-MNIST dimensions (from ann-benchmarks)
-784 # Fashion-MNIST dimension
-60,000 # Fashion-MNIST train count
-60000 # Fashion-MNIST train count
-10,000 # Fashion-MNIST test count
-10000 # Fashion-MNIST test count
-
-# Thread counts in examples
-1 # Single thread
-2 # Thread count
-4 # Thread count
-8 # Thread count
-
-# Version numbers
-0.1.0 # Package version
-C++17 # C++ standard
-3.20 # CMake minimum
-3.10 # Python minimum version
-
-# Server defaults
-8000 # Default server port
-0.0.0.0 # Default server host
-
-# Target thresholds (these ARE allowed as they are targets, not measurements)
-0.99 # Target threshold
-0.97 # Target threshold
-0.95 # Target threshold
-1.05 # Approx ratio target
-5.0 # Build ratio target
+# Currently, all benchmark numbers and metrics are strictly contained within
+# programmatically generated blocks (<!-- BEGIN GENERATED ... -->), requiring
+# zero manual metric exceptions.

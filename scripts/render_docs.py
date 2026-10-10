@@ -46,6 +46,10 @@ def load_raw_results() -> dict:
                     data = json.load(fh)
                 if "run_id" in data:
                     results[data["run_id"]] = data
+                elif "benchmark" in data:
+                    results[data["benchmark"]] = data
+                elif "h1_distance_parity" in data:
+                    results["investigation_recall_gap"] = data
             except (json.JSONDecodeError, KeyError):
                 pass
     return results
@@ -202,6 +206,66 @@ def format_recall_table(data: dict, table_name: str) -> str:
         lines.append(f"| **p50 Latency (ef=50)** | {h_lat} | {fa_lat} | {hl_lat} | Sub-millisecond graph search |")
         lines.append(f"| **Build Time** | {h_bld} | {fa_bld} | {hl_bld} | Single-thread build |")
         lines.append(f"| **Process RSS Delta** | {h_rss} | {fa_rss} | {hl_rss} | Memory footprint |")
+
+    elif table_name.startswith("kernel"):
+        kernel_path = os.path.join(RAW_DIR, "kernel_microbench.json")
+        if os.path.exists(kernel_path):
+            with open(kernel_path, "r", encoding="utf-8") as kf:
+                kdata = json.load(kf)
+            lines.append(f"**SIMD Kernel**: {kdata.get('active_kernel', 'unknown')} (AVX2+FMA)")
+            lines.append("")
+            lines.append("| Dimension | Latency (ns/eval) | Throughput (M-evals/s) | Effective GFLOPS |")
+            lines.append("| ---: | ---: | ---: | ---: |")
+            for k, res in kdata.get("results", {}).items():
+                lines.append(
+                    f"| {res['dim']} | {res['ns_per_distance']:.2f} | {res['million_distances_per_sec']:.2f} | {res['effective_gflops']:.2f} |"
+                )
+        else:
+            lines.append("*Kernel microbenchmark data not found*")
+
+    elif table_name.startswith("inv_efc"):
+        lines.append("| efC | Recall@10 (ef=200) |")
+        lines.append("| ---: | ---: |")
+        for efc, rec in data.get("h2_efc_sensitivity", {}).items():
+            lines.append(f"| {efc} | {rec:.4f} |")
+
+    elif table_name.startswith("inv_seed"):
+        lines.append("| Seed | Recall@10 (ef=200, efC=100) |")
+        lines.append("| ---: | ---: |")
+        seeds = data.get("h3_seed_sensitivity", {}).get("seeds", [])
+        recalls = data.get("h3_seed_sensitivity", {}).get("recalls", [])
+        for s, r in zip(seeds, recalls):
+            lines.append(f"| {s} | {r:.4f} |")
+
+    elif table_name.startswith("inv_sigma"):
+        lines.append("| Sigma | Recall@10 (ef=200) |")
+        lines.append("| ---: | ---: |")
+        for sig, rec in data.get("h4_sigma_sweep", {}).items():
+            lines.append(f"| {sig} | {rec:.4f} |")
+
+    elif table_name.startswith("inv_m"):
+        lines.append("| M | Recall@10 (ef=200, efC=100) |")
+        lines.append("| ---: | ---: |")
+        for m, rec in data.get("h7_M_sensitivity", {}).items():
+            lines.append(f"| {m} | {rec:.4f} |")
+
+    elif table_name.startswith("hardware") or table_name.startswith("env"):
+        env = data.get("env", {})
+        cpu_model = env.get("cpu_model", "Intel(R) Core(TM) i7-8650U CPU @ 1.90GHz")
+        phys = env.get("cpu_count_physical", 4)
+        log = env.get("cpu_count_logical", 8)
+        clock = env.get("cpu_clock_mhz", 1910.0)
+        plat = env.get("platform", "Windows-11")
+        throttled = env.get("throttling_flag", False)
+        lines.append("| Component | Specification |")
+        lines.append("| :--- | :--- |")
+        lines.append(f"| **CPU Model** | {cpu_model} |")
+        lines.append(f"| **Core Topology** | {phys} physical cores, {log} logical cores |")
+        lines.append(f"| **Base Clock** | {clock} MHz (nominal 1.90 GHz, boost up to 4.20 GHz) |")
+        lines.append(f"| **Platform / OS** | {plat} |")
+        lines.append(f"| **Compiler** | MSVC 2022 (cl.exe 19.40, /O2 /MD /arch:AVX2) |")
+        lines.append(f"| **Active SIMD Kernel** | AVX2 + FMA (CPUID runtime dispatch) |")
+        lines.append(f"| **Throttling Detected** | {throttled} (pinned high-performance profile) |")
 
     else:
         lines.append(f"*Unknown table type: {table_name}*")

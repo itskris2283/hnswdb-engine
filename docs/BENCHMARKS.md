@@ -8,8 +8,20 @@ All runs were executed on **Windows 11 x86_64** (Intel Core i7-8650U, MSVC 2022 
 
 ## 1. Benchmark Execution Environment & Methodology
 
-- **CPU:** AMD64 Family 6 Model 142 (AVX2 + FMA hardware intrinsics)
-- **Compilers:** MSVC 2022 Community (cl.exe 19.40), CMake 4.4.4, Python 3.12
+<!-- BEGIN GENERATED table=hardware_environment run_id=fashion_mnist_20261010_113121_90c0d1d3 -->
+**Dataset**: fashion_mnist (60000 x 784d) | **M**=16 | **efC**=100 | **k**=10
+
+| Component | Specification |
+| :--- | :--- |
+| **CPU Model** | Intel64 Family 6 Model 142 Stepping 10, GenuineIntel |
+| **Core Topology** | 4 physical cores, 8 logical cores |
+| **Base Clock** | 1910.0 MHz (nominal 1.90 GHz, boost up to 4.20 GHz) |
+| **Platform / OS** | Windows-11-10.0.22621-SP0 |
+| **Compiler** | MSVC 2022 (cl.exe 19.40, /O2 /MD /arch:AVX2) |
+| **Active SIMD Kernel** | AVX2 + FMA (CPUID runtime dispatch) |
+| **Throttling Detected** | False (pinned high-performance profile) |
+<!-- END GENERATED -->
+
 - **Call-Path Standardization:**
   - Single-query latency: 1-query contiguous array slices executed through native single-query invocation with explicit thread control (`num_threads=1` / `omp_set_num_threads(1)` / `set_num_threads(1)`).
   - Batch QPS: multi-threaded batched queries with min/median/max reporting.

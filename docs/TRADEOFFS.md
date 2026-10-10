@@ -2,9 +2,9 @@
 
 ## 1. Executive Summary
 
-HNSWDB was engineered from first principles in C++17 as an approximate nearest neighbor (ANN) vector database. Across synthetic and real-world datasets, HNSWDB achieves **97.0% – 99.9% Recall@10**, p50 search latency under 0.3 ms at $ef=50$, and consistent throughput across sequential and multi-threaded queries.
+HNSWDB was engineered from first principles in C++17 as an approximate nearest neighbor (ANN) vector database.
 
-In direct comparison with reference benchmarks (**FAISS** and **hnswlib**), HNSWDB demonstrates competitive search latency and memory efficiency, while exhibiting defensible differences in index build throughput and SIMD specialization.
+Across all evaluated workloads, every measured figure is rendered directly from verified raw run JSON artifacts. In direct comparison with reference baselines (FAISS and hnswlib), HNSWDB demonstrates competitive search latency and memory efficiency, alongside documented gaps in index build throughput and tightly-clustered graph construction.
 
 ---
 
@@ -25,23 +25,32 @@ Evaluated on **Fashion-MNIST** ($N=60,000, D=784, M=16, ef_c=100, k=10$) on Wind
 
 ---
 
-## 3. Deep Dive: Where & Why FAISS / hnswlib Outperform HNSWDB
+## 3. Deep Dive: Architectural Comparisons
 
-### 3.1 Memory Layout (Interleaved vs. Split Flat Arrays)
-- **hnswlib:** Stores each element's vector data and link headers in a contiguous memory block (`char* data_level0_memory_`). Traversing a node fetches its links and vector in a single cache line.
-- **HNSWDB:** Maintains separate `vectors_` and `layer0_links_` flat arrays. Traversing a node requires two independent memory accesses (one for vector distance computation, one for link traversal), increasing L3/DRAM cache miss frequency during graph traversal.
+### 3.1 Build-Time Performance
 
-### 3.2 SIMD Kernel Dispatch vs. Template Specialization
-- **FAISS & hnswlib:** Compile dimension-specialized template instantiations (e.g. `L2SqrSIMD16Ext`), allowing compiler loop unrolling and zero-overhead direct inlining.
-- **HNSWDB:** Implements dynamic vector dimensions with runtime CPUID kernel dispatch (`DistFunc dist_func_`) and scalar tail loops. As measured in [kernel_microbench.json](../results/raw/kernel_microbench.json), HNSWDB AVX2+FMA kernels achieve high throughput:
-  - **16-dim:** 8.0 ns/eval (124.6 M-evals/s)
-  - **32-dim:** 7.5 ns/eval (132.5 M-evals/s)
-  - **64-dim:** 9.0 ns/eval (111.4 M-evals/s)
-  - **128-dim:** 12.7 ns/eval (78.8 M-evals/s)
-  - **784-dim:** 53.2 ns/eval (18.8 M-evals/s, 44.2 GFLOPS)
-  However, calling distance functions via function pointer introduces minor call indirection relative to direct inlined templates.
+Build-time gap: not yet explained; see Phase 5 evidence.
+
+### 3.2 SIMD Distance Kernel Microbenchmark
+
+Distance computation throughput measured across vector dimensions on host CPU (AVX2+FMA):
+
+<!-- BEGIN GENERATED table=kernel_microbench run_id=kernel_microbench -->
+**Dataset**: unknown (? x ?d) | **M**=? | **efC**=? | **k**=?
+
+**SIMD Kernel**: avx2 (AVX2+FMA)
+
+| Dimension | Latency (ns/eval) | Throughput (M-evals/s) | Effective GFLOPS |
+| ---: | ---: | ---: | ---: |
+| 16 | 8.02 | 124.65 | 5.98 |
+| 32 | 7.55 | 132.52 | 12.72 |
+| 64 | 8.98 | 111.38 | 21.38 |
+| 128 | 12.69 | 78.79 | 30.26 |
+| 784 | 53.22 | 18.79 | 44.20 |
+<!-- END GENERATED -->
 
 ### 3.3 Lock Granularity During Parallel Graph Construction
+
 - **hnswlib:** Uses fine-grained `std::mutex` per node array.
 - **FAISS:** Uses OpenMP static work-sharing loops for batch operations.
 - **HNSWDB:** Uses 1,024 striped spinlocks and a dedicated `std::mutex` for label mapping (`label_to_idx_`). Striped spinlocks keep latency low, but parallel insertion throughput experiences lock contention when thread count is greater than physical core count.
@@ -50,6 +59,6 @@ Evaluated on **Fashion-MNIST** ($N=60,000, D=784, M=16, ef_c=100, k=10$) on Wind
 
 ## 4. Where HNSWDB Excels Over FAISS / hnswlib
 
-1. **Embedded Metadata Filtering:** Unlike libraries that rely on external callback wrappers, HNSWDB includes an integrated JSON-like AST engine with inverted index acceleration, automatically switching between exact subset brute-force ($\le 2\%$) and expanded graph traversal ($> 2\%$).
+1. **Embedded Metadata Filtering:** Unlike libraries that rely on external callback wrappers, HNSWDB includes an integrated JSON-like AST engine with inverted index acceleration, automatically switching between exact subset scan ($\le 2\%$) and expanded graph traversal ($> 2\%$).
 2. **Crash-Safe Persistence:** HNSWDB includes IEEE 802.3 CRC32 checksum trailers and atomic write-rename guarantees (`.hdb`), catching silent bit flips and partial writes.
 3. **Ergonomic Full-Stack Ecosystem:** Includes native Python bindings (zero-copy NumPy buffers, GIL release), FastAPI REST server with collection management, and Typer CLI.

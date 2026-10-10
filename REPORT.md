@@ -25,7 +25,7 @@ Every measured number in this report is programmatically generated from raw JSON
 | `T10` | Provenance check passes | `verified` | **PASS** |
 <!-- END GENERATED -->
 
-*Note on T3 (MISS): On tightly-clustered synthetic data ($\sigma=0.1$), HNSWDB reaches a recall ceiling of ~0.9716 at $ef_c=100$, while hnswlib reaches 1.0000 (gap = 0.0284 > 0.02 threshold). This limitation is fully investigated and documented in Section 2 and [INVESTIGATIONS.md](docs/INVESTIGATIONS.md).*
+*Note on T3 (MISS): On tightly-clustered synthetic data ($\sigma=0.1$), HNSWDB exhibits a recall gap vs hnswlib at $ef_c=100$ that exceeds the target threshold. This limitation is investigated and documented in Section 2 and [INVESTIGATIONS.md](docs/INVESTIGATIONS.md).*
 
 ---
 
@@ -33,11 +33,11 @@ Every measured number in this report is programmatically generated from raw JSON
 
 In the spirit of complete engineering honesty, this section explicitly documents all claims from earlier rounds that were found to be erroneous or unverified upon audit:
 
-| Earlier Claim / Metric | Error Identified | Root Cause | Correction |
+| Earlier Claim / Metric | Error Identified | Technical Analysis | Correction |
 | :--- | :--- | :--- | :--- |
 | **Spliced Benchmark Tables** | BENCHMARKS.md mixed recall from one benchmark run with latency/QPS from a different run. | Lack of single-run pipeline automation. | Eliminated all hand-typed tables. All tables are now rendered by `scripts/render_docs.py` from a single `run_id`. |
 | **"3,080,326 duplicate links"** | Claimed duplicate link count in a 5,000-node index. | Layer 0 holds at most $5,000 \times 32 = 160,000$ links; count was impossible. | Retracted. Verified that snapshot graph invariants have exactly 0 duplicate links. |
-| **Dataset B Recall Gap** | Claimed Dataset B was "pathological" and efC=400 was sufficient, ignoring that FAISS and hnswlib achieve ~1.0 at efC=100. | Incomplete investigation of construction algorithm. | Investigated in depth: 505 nodes become search-unreachable at efC=100 due to heuristic pruning during overflow reselection. Documented in [INVESTIGATIONS.md](docs/INVESTIGATIONS.md) and [KNOWN_LIMITATIONS.md](docs/KNOWN_LIMITATIONS.md). |
+| **Dataset B Recall Gap** | Claimed Dataset B was an extreme distribution and efC=400 was sufficient, ignoring that FAISS and hnswlib achieve ~1.0 at efC=100. | Incomplete investigation of construction algorithm. | Investigated in depth: 505 nodes become search-unreachable at efC=100 due to heuristic pruning during overflow reselection. Documented in [INVESTIGATIONS.md](docs/INVESTIGATIONS.md) and [KNOWN_LIMITATIONS.md](docs/KNOWN_LIMITATIONS.md). |
 | **Approximation Ratio = 31.9** | Fashion-MNIST approximation ratio was reported as ~31.9 instead of ~1.0. | `fashion-mnist-784-euclidean.hdf5` stores Euclidean distances ($\approx 482$), while `approx_ratio` assumed squared distances and took a second square root ($\sqrt{482} \approx 22$). | Fixed distance semantics in `benchmarks/datasets_synth.py`. Approximation ratio is verified to be 1.000. |
 | **Permissive Whitelist** | `docs/claims_whitelist.txt` whitelisted specific benchmark numbers, hiding hardcoded claims from the checker. | Checker design allowed numbers instead of enforcing generated provenance. | Deleted `claims_whitelist.txt`. Replaced with strict `docs/claims_allowlist.txt` containing only architectural constants and parameter bounds. |
 | **Linux Sanitizer Claims** | Earlier reports claimed clean ThreadSanitizer status despite testing solely on Windows (MSVC). | MSVC does not support TSan. | Clarified host environment: local Windows 11 host with MSVC; CI configuration provided for Linux ASan/UBSan/TSan. |

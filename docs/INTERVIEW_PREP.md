@@ -11,7 +11,7 @@ This guide is designed for technical deep-dive interviews in **AI Infrastructure
 >
 > I built it to master the systems challenges of vector search engines: low-level AVX2+FMA SIMD vector intrinsics, cache locality across large graph structures, concurrent thread synchronization with fine-grained striped spinlocks, and crash-safe binary persistence.
 >
-> On standard benchmarks like **Fashion-MNIST (784 dimensions, 60,000 vectors)**, HNSWDB achieves **0.9996 Recall@10** at sub-millisecond p50 search latency. In empirical head-to-head evaluations against **FAISS** and **hnswlib**, HNSWDB delivers matching search accuracy and competitive query throughput, while incorporating features that standalone index libraries omit: **hybrid inverted-index metadata filtering**, **atomic IEEE 802.3 CRC32 persistence (`.hdb`)**, and **zero-copy Python integration**."
+> On standard benchmarks like **Fashion-MNIST (784 dimensions, 60,000 vectors)**, HNSWDB achieves competitive Recall@10 at low latency (see generated tables in [BENCHMARKS.md](BENCHMARKS.md)). In empirical head-to-head evaluations against **FAISS** and **hnswlib**, HNSWDB delivers matching search accuracy and competitive query throughput, while incorporating features that standalone index libraries omit: **hybrid inverted-index metadata filtering**, **atomic IEEE 802.3 CRC32 persistence (`.hdb`)**, and **zero-copy Python integration**."
 
 ---
 
@@ -45,35 +45,35 @@ This guide is designed for technical deep-dive interviews in **AI Infrastructure
 | **Visited Nodes** | Epoch-based Tag Pool (`uint16_t` epoch ring) | `std::unordered_set<idx_t>` or dynamic `std::vector<bool>` | Resetting `unordered_set` requires $O(ef)$ heap allocations per query; resetting bitsets requires $O(N)$ memory writes. Epoch tag pool achieves $O(1)$ reset by incrementing a counter. |
 | **Concurrency** | 1,024 striped spinlocks + Reader-Writer `std::shared_mutex` | Global mutex OR per-node `std::mutex` | Reader-writer lock allows concurrent reader searches while guarding resize/compaction. Striped spinlocks prevent false sharing without consuming 40 bytes of `std::mutex` per node. |
 | **Memory Layout** | Split flat arrays (`vectors_` contiguous float array, `layer0_links_` contiguous array) | Interleaved buffer per node (`char* data_level0_memory_`) | Split arrays allow zero-copy vector loading and straightforward NumPy memory-mapping; requires two cache-line fetches during neighbor traversal rather than one. |
-| **Metadata Filter** | Selectivity estimation: exact subset scan if $\le 2\%$, graph expansion if $> 2\%$ | Post-filtering only OR pre-filtering only | Post-filtering fails when selectivity is low ($< 1\%$ match rate yields empty results); pre-filtering on graphs suffers from graph fragmentation. Hybrid path guarantees high recall and throughput. |
+| **Metadata Filter** | Selectivity estimation: exact subset scan if selective, graph expansion otherwise | Post-filtering only OR pre-filtering only | Post-filtering fails when selectivity is low; pre-filtering on graphs suffers from graph fragmentation. Hybrid path guarantees high recall and throughput. |
 | **Persistence** | Little-endian binary with 64-byte header, section blocks, CRC32 trailer, atomic write-rename (`.hdb`) | Unchecked raw dump OR Protobuf/JSON | Binary stream maximizes read/write speed; CRC32 detects silent bit rot; atomic rename prevents corrupted indices on unexpected crashes. |
 
 ---
 
 ## 3. Deep-Dive Debugging Narratives (STAR Stories)
 
-### Story 1: The Root-Cause Hunt for the Clustered-Data Recall Gap
-- **Situation:** On synthetic Dataset B ($20,000 \times 64\text{d}$, 50 Gaussian clusters, $\sigma=0.1$), HNSWDB reached a recall ceiling of ~0.9716 at $ef_c=100$, while hnswlib reached 1.0000 on the identical dataset. Earlier rounds had prematurely attributed this to "cluster pathology" without investigating why reference engines succeeded.
-- **Task:** Formulate testable hypotheses, isolate the failure mechanism, and determine whether the root cause was distance precision, search traversal, or graph topology.
+### Story 1: Investigating the Clustered-Data Recall Gap
+- **Situation:** On synthetic Dataset B ($20,000 \times 64\text{d}$, 50 Gaussian clusters, $\sigma=0.1$), HNSWDB reached an early recall ceiling at $ef_c=100$, while hnswlib reached higher recall on the identical dataset. Earlier rounds had prematurely attributed this to external distribution effects without investigating why reference engines succeeded.
+- **Task:** Formulate testable hypotheses, isolate the failure mechanism, and determine whether the issue was distance precision, search traversal, or graph topology.
 - **Action:** 
   1. Verified distance kernel parity against NumPy brute-force (max relative error $1.87 \times 10^{-7}$).
-  2. Implemented exhaustive 1-NN self-retrieval diagnostics across all 20,000 elements. Discovered that **505 nodes (2.5%) were search-unreachable** in HNSWDB, compared to only 7 in hnswlib.
-  3. Correlated per-query recall with unreachable nodes: all 33 queries with recall $< 0.5$ had ground-truth nearest neighbors belonging to the unreachable set.
+  2. Implemented exhaustive 1-NN self-retrieval diagnostics across all 20,000 elements. Discovered that 505 nodes were search-unreachable in HNSWDB, compared to only 7 in hnswlib (see `results/raw/investigation_recall_gap.json`).
+  3. Correlated per-query recall with unreachable nodes: all 33 queries with low recall had ground-truth nearest neighbors belonging to the unreachable set.
   4. Traced the mechanism to `select_neighbors_heuristic` during overflow reselection: in tight clusters, intra-cluster distances are nearly identical, causing aggressive heuristic pruning to starve early-inserted nodes of incoming edges.
-  5. Tested $ef_c$ scaling: increasing $ef_c$ to 400 reduced unreachable nodes to 0 and restored recall to 1.0000.
+  5. Tested $ef_c$ scaling: increasing $ef_c$ to 400 reduced unreachable nodes to 0 and restored full recall.
 - **Result:** Turned an unexplained recall plateau into a proven graph-topology finding; documented the limitation transparently in `docs/INVESTIGATIONS.md` and `docs/KNOWN_LIMITATIONS.md`.
 
 ### Story 2: Profiling the Index Build-Time Gap
-- **Situation:** Early builds of HNSWDB took over 20 seconds on 60,000 Fashion-MNIST vectors, lagging hnswlib's 8.5 seconds by ~2.4x.
+- **Situation:** Early builds of HNSWDB lagged hnswlib on 60,000 Fashion-MNIST vectors.
 - **Task:** Profile the build pipeline to identify hotspots, eliminate unnecessary allocations, and document the remaining architectural gap.
 - **Action:** 
-  1. Profiling revealed that `select_neighbors_heuristic` was performing heap allocations (`std::vector<Candidate>`) and hash table lookups inside inner loops that execute over 680,000 times during construction.
+  1. Profiling revealed that `select_neighbors_heuristic` was performing heap allocations (`std::vector<Candidate>`) and hash table lookups inside inner loops that execute repeatedly during construction.
   2. Replaced dynamic vector reallocations with fixed-capacity stack buffers (up to 512 links) and in-place sorting.
   3. Optimized spinlock hold duration in `search_layer` by copying neighbor lists into thread-local stack arrays before computing vector distances outside the critical section.
 - **Result:** Cut allocation overhead dramatically and improved multi-threaded scaling. Clarified the fundamental architectural difference: hnswlib interleaves vector data and link headers in contiguous memory (`data_level0_memory_`), while HNSWDB uses split flat arrays for zero-copy Python compatibility.
 
 ### Story 3: The Single-Query Latency Artifact
-- **Situation:** Early benchmarks reported HNSWDB having lower p50 latency than FAISS (0.056 ms vs 0.162 ms), yet FAISS delivered higher batch QPS. Mathematically, $p50 = 0.162\text{ ms}$ implies $\le 6,170\text{ QPS}$, contradicting FAISS's measured $18,740\text{ QPS}$.
+- **Situation:** Early benchmarks reported contradictory single-query latency and batch throughput measurements for FAISS.
 - **Task:** Investigate the discrepancy and ensure all benchmark call paths are physically meaningful and reproducible.
 - **Action:** 
   1. Investigated the benchmarking harness and found FAISS was being invoked via `faiss.search()` without setting `omp_set_num_threads(1)` on 1-row slices, causing OpenMP thread pool synchronization overhead on individual queries.
@@ -86,7 +86,7 @@ This guide is designed for technical deep-dive interviews in **AI Infrastructure
 ## 4. Technical Q&As (Systems & ANN Deep-Dive)
 
 ### Q1: "Why use HNSW over inverted-file (IVF-PQ) or tree-based (Annoy) algorithms?"
-> "HNSW offers the best empirical recall-vs-latency Pareto frontier for in-memory vector search where recall $\ge 95\%$ is required. Tree-based methods (KD-trees, Annoy) degrade to linear scan in high dimensions ($D > 20$) due to the curse of dimensionality. IVF-PQ compresses vectors using quantization to fit hundreds of millions of vectors in RAM, but quantization introduces an irreversible recall ceiling (~90-95%). For fast retrieval with p50 latency < 0.5 ms at ef=50 and $\ge 99\%$ accuracy, HNSW's multi-layer skip-list graph provides logarithmic search complexity with exact distance evaluations."
+> "HNSW offers strong empirical recall-vs-latency trade-offs for in-memory vector search. Tree-based methods (KD-trees, Annoy) degrade to linear scan in high dimensions due to the curse of dimensionality. IVF-PQ compresses vectors using quantization to fit hundreds of millions of vectors in RAM, but quantization introduces an irreversible recall ceiling. For retrieval with exact distance evaluations and high accuracy, HNSW's multi-layer skip-list graph provides logarithmic search complexity."
 
 ### Q2: "How does HNSW navigate layers during search?"
 > "Search starts at the top layer ($l = L_{max}$) from a global entry point. At each upper layer ($l > 0$), greedy descent is executed: the algorithm evaluates the query distance to all neighbors of the current node and greedily hops to the closest neighbor until no neighbor is closer ($ef=1$). That node becomes the entry point for layer $l - 1$. At layer 0, the algorithm switches from greedy descent to beam search with beam width $ef_{search}$, maintaining a min-heap candidate queue and a max-heap result set."
@@ -100,19 +100,19 @@ This guide is designed for technical deep-dive interviews in **AI Infrastructure
 ### Q5: "How does concurrency work during graph construction?"
 > "HNSWDB uses a two-tier synchronization model:
 > 1. A `std::shared_mutex structure_lock_`: shared readers for concurrent `search` and `add`, exclusive writer for `resize`, `compact`, and persistence.
-> 2. Striped node locks: an array of 1,024 spinlocks (`striped_locks_`). When updating links between node $u$ and neighbor $v$, locks are acquired in sorted order: $\min(u, v) \pmod{1024}$ then $\max(u, v) \pmod{1024}$. This eliminates deadlocks while avoiding the 40-byte overhead of storing a `std::mutex` per node."
+> 2. Striped node locks: an array of 1,024 spinlocks (`striped_locks_`). When updating links between node $u$ and neighbor $v$, locks are acquired in sorted order: $\min(u, v) \pmod{1024}$ then $\max(u, v) \pmod{1024}$. This eliminates deadlocks while avoiding the overhead of storing a `std::mutex` per node."
 
 ### Q6: "Why did you choose AVX2+FMA over AVX-512?"
-> "AVX2 is universally supported across virtually all modern x86_64 hardware (Intel Haswell+, AMD Zen+), whereas AVX-512 has fragmented support and causes core clock downclocking (thermal throttling) on older Intel server processors (Skylake-X). HNSWDB implements 8-wide float FMA intrinsics (`_mm256_fmadd_ps`) with 4-way loop unrolling to maximize pipeline utilization (2 FMA ops/cycle). When AVX-512 is desirable, it can be added as an optional kernel selected at runtime via CPUID."
+> "AVX2 is universally supported across virtually all modern x86_64 hardware (Intel Haswell+, AMD Zen+), whereas AVX-512 has fragmented support and causes core clock downclocking on older Intel server processors. HNSWDB implements 8-wide float FMA intrinsics (`_mm256_fmadd_ps`) with 4-way loop unrolling to maximize pipeline utilization (2 FMA ops/cycle). When AVX-512 is desirable, it can be added as an optional kernel selected at runtime via CPUID."
 
 ### Q7: "How is deleted vector tombstoning handled, and what are the trade-offs?"
-> "Deletions set a byte flag in `deleted_` (`uint8_t` array) and decrement `live_count_`. Queries filter out deleted nodes in $O(1)$ during the result extraction phase without disturbing graph connectivity. The trade-off is memory: deleted nodes still occupy graph link slots. When tombstones exceed a threshold (e.g. 20%), `compact()` rebuilds a clean graph without tombstones."
+> "Deletions set a byte flag in `deleted_` (`uint8_t` array) and decrement `live_count_`. Queries filter out deleted nodes in $O(1)$ during the result extraction phase without disturbing graph connectivity. The trade-off is memory: deleted nodes still occupy graph link slots. When tombstones accumulate, `compact()` rebuilds a clean graph without tombstones."
 
 ### Q8: "How does metadata filtering work in HNSWDB?"
-> "Filtered ANN search typically faces two failure modes: post-filtering yields empty results if selectivity is low ($< 1\%$), while pre-filtering fragments the graph and destroys connectivity. HNSWDB uses an inverted index to estimate query selectivity. For highly selective queries ($\le 2\%$ match rate or $\le 5,000$ candidates), it executes an exact brute-force scan over the candidate subset, delivering 100% recall and fast performance. For broad queries ($> 2\%$), it scales $ef_{search}$ proportionally to search the graph with filter validation."
+> "Filtered ANN search typically faces two failure modes: post-filtering yields empty results if selectivity is low, while pre-filtering fragments the graph and destroys connectivity. HNSWDB uses an inverted index to estimate query selectivity. For highly selective queries, it executes an exact brute-force scan over the candidate subset, delivering exact recall and fast performance. For broad queries, it scales $ef_{search}$ proportionally to search the graph with filter validation."
 
 ### Q9: "What causes the recall gap on tightly-clustered data with low ef_construction?"
-> "When data consists of dense Gaussian clusters with small variance ($\sigma=0.1$), intra-cluster distances are tiny. During graph construction, neighbor lists quickly reach capacity ($M_0=32$). When new nodes are added, overflow reselection runs `select_neighbors_heuristic`. Because intra-cluster distances are smaller than candidate-to-query distances, existing links to early-inserted nodes get pruned. Over time, some nodes lose all incoming edges (becoming unreachable by search). Increasing $ef_{construction}$ to 400 explores a broader candidate pool during build, preserving connections and restoring 100% recall."
+> "When data consists of dense Gaussian clusters with small variance ($\sigma=0.1$), intra-cluster distances are tiny. During graph construction, neighbor lists quickly reach capacity ($M_0=32$). When new nodes are added, overflow reselection runs `select_neighbors_heuristic`. Because intra-cluster distances are smaller than candidate-to-query distances, existing links to early-inserted nodes get pruned. Over time, some nodes lose all incoming edges (becoming unreachable by search). Increasing $ef_{construction}$ to 400 explores a broader candidate pool during build, preserving connections and restoring full recall."
 
 ### Q10: "What is the memory layout of HNSWDB vs hnswlib, and why does it matter?"
 > "hnswlib stores links and vector data contiguously in memory (`data_level0_memory_`). Traversing a node fetches both links and vector in a single cache line. HNSWDB maintains separate `vectors_` and `layer0_links_` flat arrays. Split flat arrays allow zero-copy loading from NumPy and simple memory mapping, but require two separate memory fetches per traversed node during graph traversal, resulting in slightly higher L3/DRAM miss rates."
@@ -133,18 +133,13 @@ This guide is designed for technical deep-dive interviews in **AI Infrastructure
 
 ## 5. Gotchas & Pitfalls in HNSW Implementations
 
-1. **OpenMP Overhead on 1-Row Slices:** Calling `faiss.search(xq[i:i+1])` without `omp_set_num_threads(1)` spawns thread synchronization overhead on every individual query, distorting single-query latency by 3x.
+1. **OpenMP Overhead on 1-Row Slices:** Calling `faiss.search(xq[i:i+1])` without `omp_set_num_threads(1)` spawns thread synchronization overhead on every individual query, distorting single-query latency.
 2. **Heuristic Candidate Deduplication:** When rejected candidates are collected into a `discarded_list` to backfill neighbor slots, they must be deduplicated; otherwise duplicate links fill up the link array and degrade connectivity.
-3. **Squared vs Euclidean Distances:** Standard benchmarks (e.g. ann-benchmarks HDF5) store Euclidean distances ($\sqrt{\sum (x_i - y_i)^2}$), whereas HNSW engines return squared Euclidean distances ($\sum (x_i - y_i)^2$). Comparing them directly results in a ~30x error in approximation ratio.
+3. **Squared vs Euclidean Distances:** Standard benchmarks (e.g. ann-benchmarks HDF5) store Euclidean distances, whereas HNSW engines return squared Euclidean distances. Comparing them directly results in a substantial error in approximation ratio.
 4. **Visited Tag Wraparound:** Visited list epoch rings using `uint16_t` must handle overflow at 65,535 by clearing the array with `memset` and resetting `epoch = 1`, avoiding stale visited flags.
 
 ---
 
-## 6. Resume Bullet Points
+## 6. Interview Material Notice
 
-- **AI Infrastructure / Systems Engineer:**
-  - *Engineered a production-ready C++17 HNSW vector database from scratch, achieving 0.9996 Recall@10 on Fashion-MNIST (60k 784d vectors) with sub-millisecond p50 latency.*
-  - *Authored hand-vectorized AVX2+FMA SIMD distance kernels with automatic runtime CPUID dispatch, delivering 132M distance evaluations/sec on 32-dimensional vectors.*
-  - *Designed an $O(1)$ epoch-based visited tag pool and 1,024 striped spinlocks, eliminating dynamic heap allocations and preventing false sharing during concurrent multi-threaded traversal.*
-  - *Implemented a hybrid filtered search engine combining AST inverted-index selectivity estimation with exact brute-force fallback for $<2\%$ selective metadata queries.*
-  - *Built an automated empirical benchmarking and provenance pipeline, eliminating measurement artifacts and verifying 54 C++/Python regression tests.*
+(Detailed interview story narratives and resume bullets are programmatically generated and updated in Phase 8).

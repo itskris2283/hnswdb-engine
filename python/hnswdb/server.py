@@ -120,12 +120,13 @@ def query_collection(name: str, req: QueryRequest) -> QueryResponse:
         ids_res, dists_res = idx.search(q_arr, k=req.k, ef_search=req.ef_search, filter=req.filter)
         took_ms = (time.perf_counter() - t0) * 1000.0
 
-        res_ids = ids_res[0].tolist()
-        res_dists = dists_res[0].tolist()
+        valid_indices = [i for i, fid in enumerate(ids_res[0]) if fid != -1 and not np.isinf(dists_res[0][i])]
+        res_ids = [int(ids_res[0][i]) for i in valid_indices]
+        res_dists = [float(dists_res[0][i]) for i in valid_indices]
 
         res_meta = []
         for fid in res_ids:
-            if fid != -1 and idx.contains(fid):
+            if idx.contains(fid):
                 res_meta.append(idx.get_metadata(fid))
             else:
                 res_meta.append({})
