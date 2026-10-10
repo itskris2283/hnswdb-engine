@@ -211,4 +211,33 @@ def test_diagnostics_dictionary():
     assert diag["distance_computations_build"] > 0
 
 
+def test_parameter_safety():
+    # Dimension boundaries
+    with pytest.raises(InvalidArgument):
+        HNSWIndex(dim=0, metric="l2", max_elements=50)
+    with pytest.raises(InvalidArgument):
+        HNSWIndex(dim=5000, metric="l2", max_elements=50)
+
+    # M boundaries (allowed [2, 128])
+    with pytest.raises(InvalidArgument):
+        HNSWIndex(dim=16, metric="l2", max_elements=50, M=1)
+    with pytest.raises(InvalidArgument):
+        HNSWIndex(dim=16, metric="l2", max_elements=50, M=200)
+
+    # Capacity boundaries
+    with pytest.raises(InvalidArgument):
+        HNSWIndex(dim=16, metric="l2", max_elements=0)
+
+    # Search with k=0
+    idx = HNSWIndex(dim=16, metric="l2", max_elements=50)
+    v = np.random.randn(5, 16).astype(np.float32)
+    idx.add(v, np.arange(5, dtype=np.int64))
+    with pytest.raises(InvalidArgument):
+        idx.search(v[0], k=0)
+
+    # Negative label
+    with pytest.raises(InvalidArgument):
+        idx.add(v[0], np.array([-1], dtype=np.int64))
+
+
 

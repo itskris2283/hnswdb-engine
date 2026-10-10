@@ -28,7 +28,7 @@ def test_hnsw_save_load_roundtrip():
     orig_ids, orig_dists = idx.search(queries, k=10)
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        path = os.path.join(tmpdir, "test_index.hnsw")
+        path = os.path.join(tmpdir, "test_index.hdb")
         idx.save(path)
 
         loaded = HNSWIndex.load(path)
@@ -86,7 +86,7 @@ def test_corruption_detection():
     idx.add(vecs, ids)
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        path = os.path.join(tmpdir, "corrupt.hnsw")
+        path = os.path.join(tmpdir, "corrupt.hdb")
         idx.save(path)
 
         # Read file bytes
@@ -96,7 +96,7 @@ def test_corruption_detection():
         # 1. Flip magic header
         corrupt_magic = bytearray(data)
         corrupt_magic[0] = ord('X')
-        bad_path1 = os.path.join(tmpdir, "bad_magic.hnsw")
+        bad_path1 = os.path.join(tmpdir, "bad_magic.hdb")
         with open(bad_path1, "wb") as f:
             f.write(corrupt_magic)
 
@@ -106,7 +106,7 @@ def test_corruption_detection():
         # 2. Corrupt a byte in the middle (payload corruption -> CRC32 mismatch)
         corrupt_payload = bytearray(data)
         corrupt_payload[100] ^= 0xFF
-        bad_path2 = os.path.join(tmpdir, "bad_payload.hnsw")
+        bad_path2 = os.path.join(tmpdir, "bad_payload.hdb")
         with open(bad_path2, "wb") as f:
             f.write(corrupt_payload)
 
@@ -115,7 +115,7 @@ def test_corruption_detection():
 
         # 3. Truncated file
         truncated = data[:len(data) // 2]
-        bad_path3 = os.path.join(tmpdir, "truncated.hnsw")
+        bad_path3 = os.path.join(tmpdir, "truncated.hdb")
         with open(bad_path3, "wb") as f:
             f.write(truncated)
 
