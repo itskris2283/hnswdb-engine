@@ -87,6 +87,28 @@
       "dataset": "n/a",
       "state": "test_suite_log",
       "size_bytes": 6359
+    },
+    {
+      "file": "bench_B_s01_0d563c34.json",
+      "run_id": "B_s01_20261010_100918_0d563c34",
+      "dataset": "B_s01",
+      "label": "Synthetic B (20K x 64d, 50 clusters, \u03c3=0.1)",
+      "created": "2026-10-10T10:09:31.773031+00:00"
+    },
+    {
+      "file": "bench_B_s03_4323eef4.json",
+      "run_id": "B_s03_20261010_100931_4323eef4",
+      "dataset": "B_s03",
+      "label": "Synthetic B (20K x 64d, 50 clusters, \u03c3=0.3)",
+      "created": "2026-10-10T10:09:46.705169+00:00"
+    },
+    {
+      "file": "bench_B_s10_7efd78e0.json",
+      "run_id": "B_s10_20261010_100946_7efd78e0",
+      "dataset": "B_s10",
+      "label": "Synthetic B (20K x 64d, 50 clusters, \u03c3=1.0)",
+      "created": "2026-10-10T10:10:03.950047+00:00"
     }
-  ]
+  ],
+  "last_updated": "2026-10-10T10:10:03.951053+00:00"
 }

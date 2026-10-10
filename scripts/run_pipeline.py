@@ -398,9 +398,14 @@ def main():
         with open(manifest_path) as f:
             manifest = json.load(f)
     else:
-        manifest = {"version": 4, "entries": []}
+        manifest = {"version": 4, "runs": []}
 
-    manifest["entries"].extend(manifest_entries)
+    # Handle both old (runs) and new (entries) key names
+    runs_key = "runs" if "runs" in manifest else "entries"
+    if runs_key not in manifest:
+        manifest["runs"] = []
+        runs_key = "runs"
+    manifest[runs_key].extend(manifest_entries)
     manifest["last_updated"] = datetime.now(timezone.utc).isoformat()
     with open(manifest_path, "w") as f:
         json.dump(manifest, f, indent=2)

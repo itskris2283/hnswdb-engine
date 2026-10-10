@@ -1,0 +1,342 @@
+{
+  "run_id": "A_20261010_100807_7d8938d0",
+  "dataset": "A",
+  "params": {
+    "M": 16,
+    "ef_construction": 100,
+    "ef_values": [
+      10,
+      50,
+      200
+    ],
+    "k": 10,
+    "seeds": [
+      42
+    ],
+    "build_threads": 1,
+    "search_threads": [
+      1
+    ],
+    "repeats": 5
+  },
+  "env": {
+    "hostname": "DESKTOP-N3D7KID",
+    "platform": "Windows-11-10.0.22621-SP0",
+    "python": "3.12.6",
+    "cpu_model": "Intel64 Family 6 Model 142 Stepping 10, GenuineIntel",
+    "cpu_count_physical": 4,
+    "cpu_count_logical": 8,
+    "ram_total_gb": 15.8,
+    "timestamp_utc": "2026-10-10T10:08:07.976248+00:00",
+    "git_commit": "12368b39a73e683f2a21cb52431eb81c59549096"
+  },
+  "throttle_check": {
+    "detected": false,
+    "note": "psutil.sensors_temperatures not available on Windows"
+  },
+  "engines": {
+    "hnswdb": {
+      "seed_42": {
+        "engine": "hnswdb",
+        "build_time_s": 0.584,
+        "build_threads": 1,
+        "memory_bytes": 1355848,
+        "rss_delta_mb": 1.98,
+        "ef_results": [
+          {
+            "ef_search": 10,
+            "recall_at_k": 0.9835,
+            "approx_ratio": 1.008168,
+            "latency": {
+              "p50": 0.0144,
+              "p95": 0.0175,
+              "p99": 0.0298,
+              "p999": 0.0651,
+              "mean": 0.0151,
+              "max": 0.0735,
+              "sequential_qps": 66246.6628
+            },
+            "latency_suspect": false,
+            "qps_by_threads": {
+              "1": {
+                "median": 92693.0100352416,
+                "min": 82830.1402250432,
+                "max": 99847.23374748605,
+                "runs": [
+                  92693.01,
+                  95726.76,
+                  99847.23,
+                  82830.14,
+                  89570.42
+                ]
+              }
+            }
+          },
+          {
+            "ef_search": 50,
+            "recall_at_k": 0.9987,
+            "approx_ratio": 1.000049,
+            "latency": {
+              "p50": 0.0256,
+              "p95": 0.0383,
+              "p99": 0.0561,
+              "p999": 0.0913,
+              "mean": 0.0273,
+              "max": 0.0999,
+              "sequential_qps": 36574.0368
+            },
+            "latency_suspect": false,
+            "qps_by_threads": {
+              "1": {
+                "median": 43976.7275184138,
+                "min": 42100.299754517546,
+                "max": 49037.876852276604,
+                "runs": [
+                  43976.73,
+                  49037.88,
+                  48644.05,
+                  42670.85,
+                  42100.3
+                ]
+              }
+            }
+          },
+          {
+            "ef_search": 200,
+            "recall_at_k": 0.9987,
+            "approx_ratio": 1.000049,
+            "latency": {
+              "p50": 0.0465,
+              "p95": 0.0696,
+              "p99": 0.1112,
+              "p999": 0.1266,
+              "mean": 0.0494,
+              "max": 0.1426,
+              "sequential_qps": 20252.0161
+            },
+            "latency_suspect": false,
+            "qps_by_threads": {
+              "1": {
+                "median": 21338.204134719123,
+                "min": 20184.32323966212,
+                "max": 23902.515978111423,
+                "runs": [
+                  23902.52,
+                  21338.2,
+                  21104.04,
+                  21926.99,
+                  20184.32
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    "faiss": {
+      "seed_42": {
+        "engine": "faiss",
+        "build_time_s": 0.185,
+        "build_threads": 1,
+        "memory_bytes": 0,
+        "rss_delta_mb": 1.61,
+        "ef_results": [
+          {
+            "ef_search": 10,
+            "recall_at_k": 0.9224,
+            "approx_ratio": 1.01178,
+            "latency": {
+              "p50": 0.0188,
+              "p95": 0.0324,
+              "p99": 0.0487,
+              "p999": 0.12,
+              "mean": 0.0206,
+              "max": 0.1332,
+              "sequential_qps": 48528.377
+            },
+            "latency_suspect": false,
+            "qps_by_threads": {
+              "1": {
+                "median": 107829.50000340519,
+                "min": 101391.0857184574,
+                "max": 137513.75132675917,
+                "runs": [
+                  137513.75,
+                  107829.5,
+                  118583.17,
+                  103250.32,
+                  101391.09
+                ]
+              }
+            }
+          },
+          {
+            "ef_search": 50,
+            "recall_at_k": 0.9986,
+            "approx_ratio": 1.000052,
+            "latency": {
+              "p50": 0.0377,
+              "p95": 0.0711,
+              "p99": 0.1266,
+              "p999": 0.2879,
+              "mean": 0.0438,
+              "max": 0.3099,
+              "sequential_qps": 22853.4341
+            },
+            "latency_suspect": false,
+            "qps_by_threads": {
+              "1": {
+                "median": 39121.79396885603,
+                "min": 33215.19794593573,
+                "max": 39692.14770675558,
+                "runs": [
+                  33215.2,
+                  38129.37,
+                  39121.79,
+                  39494.78,
+                  39692.15
+                ]
+              }
+            }
+          },
+          {
+            "ef_search": 200,
+            "recall_at_k": 0.999,
+            "approx_ratio": 1.000043,
+            "latency": {
+              "p50": 0.1281,
+              "p95": 0.2018,
+              "p99": 0.2381,
+              "p999": 0.352,
+              "mean": 0.1348,
+              "max": 0.3946,
+              "sequential_qps": 7417.6052
+            },
+            "latency_suspect": false,
+            "qps_by_threads": {
+              "1": {
+                "median": 8888.588652187458,
+                "min": 8326.68586264616,
+                "max": 9163.080847775489,
+                "runs": [
+                  8769.15,
+                  8888.59,
+                  8326.69,
+                  8984.07,
+                  9163.08
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    "hnswlib": {
+      "seed_42": {
+        "engine": "hnswlib",
+        "build_time_s": 0.1927,
+        "build_threads": 1,
+        "memory_bytes": 0,
+        "rss_delta_mb": 7.23,
+        "ef_results": [
+          {
+            "ef_search": 10,
+            "recall_at_k": 0.9272,
+            "approx_ratio": 1.003063,
+            "latency": {
+              "p50": 0.0145,
+              "p95": 0.0186,
+              "p99": 0.0244,
+              "p999": 0.0575,
+              "mean": 0.0152,
+              "max": 0.0769,
+              "sequential_qps": 65920.4472
+            },
+            "latency_suspect": false,
+            "qps_by_threads": {
+              "1": {
+                "median": 122936.20837147221,
+                "min": 118611.2988946343,
+                "max": 139033.71572490656,
+                "runs": [
+                  118611.3,
+                  139033.72,
+                  122936.21,
+                  127860.89,
+                  118941.42
+                ]
+              }
+            }
+          },
+          {
+            "ef_search": 50,
+            "recall_at_k": 0.9996,
+            "approx_ratio": 1.000012,
+            "latency": {
+              "p50": 0.0258,
+              "p95": 0.0373,
+              "p99": 0.0575,
+              "p999": 0.0845,
+              "mean": 0.0275,
+              "max": 0.0898,
+              "sequential_qps": 36405.072
+            },
+            "latency_suspect": false,
+            "qps_by_threads": {
+              "1": {
+                "median": 47546.82173315784,
+                "min": 46444.01406154732,
+                "max": 50708.39629326386,
+                "runs": [
+                  47546.82,
+                  47691.95,
+                  50708.4,
+                  46444.01,
+                  47128.68
+                ]
+              }
+            }
+          },
+          {
+            "ef_search": 200,
+            "recall_at_k": 1.0,
+            "approx_ratio": 1.0,
+            "latency": {
+              "p50": 0.0497,
+              "p95": 0.0717,
+              "p99": 0.0983,
+              "p999": 0.142,
+              "mean": 0.0518,
+              "max": 0.2318,
+              "sequential_qps": 19303.5287
+            },
+            "latency_suspect": false,
+            "qps_by_threads": {
+              "1": {
+                "median": 21168.456459375462,
+                "min": 18231.972681936946,
+                "max": 22164.004769838193,
+                "runs": [
+                  18231.97,
+                  22164.0,
+                  21982.81,
+                  19831.9,
+                  21168.46
+                ]
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "timing": {
+    "total_s": 3.88
+  },
+  "dataset_info": {
+    "n_train": 5000,
+    "n_test": 1000,
+    "dim": 32,
+    "metric": "l2"
+  }
+}

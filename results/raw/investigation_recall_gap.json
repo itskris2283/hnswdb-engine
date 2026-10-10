@@ -1,0 +1,75 @@
+{
+  "h1_distance_parity": {
+    "max_rel_error": 1.8740703439799894e-07,
+    "pass": true
+  },
+  "h2_efc_sensitivity": {
+    "50": 0.9638,
+    "100": 0.9716,
+    "200": 0.9804,
+    "400": 1.0,
+    "800": 1.0
+  },
+  "h3_seed_sensitivity": {
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      42,
+      100,
+      999
+    ],
+    "recalls": [
+      0.9992000000000001,
+      0.999,
+      0.9987,
+      0.9857,
+      0.9716,
+      0.9999,
+      0.9843
+    ],
+    "std": 0.010133395989781241
+  },
+  "h4_sigma_sweep": {
+    "0.05": 0.9681000000000001,
+    "0.1": 0.9716,
+    "0.2": 0.975,
+    "0.3": 1.0,
+    "0.5": 1.0,
+    "1.0": 1.0,
+    "2.0": 0.9917999999999999
+  },
+  "h5_diagnostics": {
+    "total_elements": 20000.0,
+    "live_elements": 20000.0,
+    "self_links_count": 0.0,
+    "zero_in_degree_count": 2.0,
+    "layer0_degree_min": 32.0,
+    "distance_computations_build": 96226349.0,
+    "duplicate_links_count": 0.0,
+    "layer0_degree_mean": 32.0,
+    "layer0_degree_max": 32.0,
+    "unreachable_nodes_count": 2.0,
+    "weakly_connected_components": 1.0,
+    "reciprocal_links_fraction": 0.599709375,
+    "cumulative_duplicate_insert_attempts": 0.0,
+    "cumulative_heuristic_calls": 680523.0,
+    "cumulative_overflow_reselections": 659216.0,
+    "distance_computations_query": 0.0
+  },
+  "h6_per_query": {
+    "n_perfect": 954,
+    "n_below_90": 45,
+    "n_below_50": 33,
+    "mean": 0.9716,
+    "min": 0.0
+  },
+  "h7_M_sensitivity": {
+    "8": 0.9847,
+    "16": 0.9716,
+    "24": 0.9944000000000001,
+    "32": 0.986,
+    "48": 0.9997
+  }
+}

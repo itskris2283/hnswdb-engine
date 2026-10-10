@@ -1,0 +1,324 @@
+{
+  "run_id": "B_s01_20261010_100918_0d563c34",
+  "dataset": "B_s01",
+  "params": {
+    "M": 16,
+    "ef_construction": 100,
+    "ef_values": [
+      10,
+      50,
+      200
+    ],
+    "k": 10,
+    "seeds": [
+      42
+    ],
+    "build_threads": 1,
+    "search_threads": [
+      1
+    ],
+    "repeats": 3
+  },
+  "env": {
+    "hostname": "DESKTOP-N3D7KID",
+    "platform": "Windows-11-10.0.22621-SP0",
+    "python": "3.12.6",
+    "cpu_model": "Intel64 Family 6 Model 142 Stepping 10, GenuineIntel",
+    "cpu_count_physical": 4,
+    "cpu_count_logical": 8,
+    "ram_total_gb": 15.8,
+    "timestamp_utc": "2026-10-10T10:09:18.218741+00:00",
+    "git_commit": "12368b39a73e683f2a21cb52431eb81c59549096"
+  },
+  "throttle_check": {
+    "detected": false,
+    "note": "psutil.sensors_temperatures not available on Windows"
+  },
+  "engines": {
+    "hnswdb": {
+      "seed_42": {
+        "engine": "hnswdb",
+        "build_time_s": 3.1727,
+        "build_threads": 1,
+        "memory_bytes": 7965848,
+        "rss_delta_mb": 9.91,
+        "ef_results": [
+          {
+            "ef_search": 10,
+            "recall_at_k": 0.9101,
+            "approx_ratio": 1.073467,
+            "latency": {
+              "p50": 0.0209,
+              "p95": 0.0344,
+              "p99": 0.0523,
+              "p999": 0.0645,
+              "mean": 0.0229,
+              "max": 0.0771,
+              "sequential_qps": 43684.337
+            },
+            "latency_suspect": false,
+            "qps_by_threads": {
+              "1": {
+                "median": 59881.673809963766,
+                "min": 58540.81172948991,
+                "max": 65933.48629962662,
+                "runs": [
+                  59881.67,
+                  58540.81,
+                  65933.49
+                ]
+              }
+            }
+          },
+          {
+            "ef_search": 50,
+            "recall_at_k": 0.9711,
+            "approx_ratio": 1.001704,
+            "latency": {
+              "p50": 0.0388,
+              "p95": 0.0641,
+              "p99": 0.0892,
+              "p999": 0.1771,
+              "mean": 0.043,
+              "max": 0.2008,
+              "sequential_qps": 23262.0352
+            },
+            "latency_suspect": false,
+            "qps_by_threads": {
+              "1": {
+                "median": 27867.029682058594,
+                "min": 27580.576655337027,
+                "max": 28319.22564094517,
+                "runs": [
+                  27580.58,
+                  28319.23,
+                  27867.03
+                ]
+              }
+            }
+          },
+          {
+            "ef_search": 200,
+            "recall_at_k": 0.9716,
+            "approx_ratio": 1.001692,
+            "latency": {
+              "p50": 0.085,
+              "p95": 0.1307,
+              "p99": 0.1672,
+              "p999": 0.2656,
+              "mean": 0.0881,
+              "max": 0.3696,
+              "sequential_qps": 11345.9727
+            },
+            "latency_suspect": false,
+            "qps_by_threads": {
+              "1": {
+                "median": 13471.76923392776,
+                "min": 12609.147936805773,
+                "max": 13488.304964773786,
+                "runs": [
+                  13471.77,
+                  13488.3,
+                  12609.15
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    "faiss": {
+      "seed_42": {
+        "engine": "faiss",
+        "build_time_s": 1.3029,
+        "build_threads": 1,
+        "memory_bytes": 0,
+        "rss_delta_mb": 8.3,
+        "ef_results": [
+          {
+            "ef_search": 10,
+            "recall_at_k": 0.8508,
+            "approx_ratio": 1.150334,
+            "latency": {
+              "p50": 0.0354,
+              "p95": 0.0704,
+              "p99": 0.0983,
+              "p999": 0.1518,
+              "mean": 0.0409,
+              "max": 0.2395,
+              "sequential_qps": 24423.6626
+            },
+            "latency_suspect": false,
+            "qps_by_threads": {
+              "1": {
+                "median": 70464.21827333079,
+                "min": 50361.08900841228,
+                "max": 78254.60920218461,
+                "runs": [
+                  50361.09,
+                  70464.22,
+                  78254.61
+                ]
+              }
+            }
+          },
+          {
+            "ef_search": 50,
+            "recall_at_k": 0.9943,
+            "approx_ratio": 1.033616,
+            "latency": {
+              "p50": 0.0548,
+              "p95": 0.0806,
+              "p99": 0.133,
+              "p999": 0.1648,
+              "mean": 0.0586,
+              "max": 0.1941,
+              "sequential_qps": 17057.1329
+            },
+            "latency_suspect": false,
+            "qps_by_threads": {
+              "1": {
+                "median": 22760.326927983402,
+                "min": 21870.73520799533,
+                "max": 22790.51641049678,
+                "runs": [
+                  21870.74,
+                  22760.33,
+                  22790.52
+                ]
+              }
+            }
+          },
+          {
+            "ef_search": 200,
+            "recall_at_k": 0.9994,
+            "approx_ratio": 1.000012,
+            "latency": {
+              "p50": 0.1593,
+              "p95": 0.2494,
+              "p99": 0.3021,
+              "p999": 0.4369,
+              "mean": 0.1692,
+              "max": 0.4376,
+              "sequential_qps": 5910.672
+            },
+            "latency_suspect": false,
+            "qps_by_threads": {
+              "1": {
+                "median": 6576.165477352115,
+                "min": 6560.435717863611,
+                "max": 6767.264306284504,
+                "runs": [
+                  6576.17,
+                  6767.26,
+                  6560.44
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    "hnswlib": {
+      "seed_42": {
+        "engine": "hnswlib",
+        "build_time_s": 1.2603,
+        "build_threads": 1,
+        "memory_bytes": 0,
+        "rss_delta_mb": 15.45,
+        "ef_results": [
+          {
+            "ef_search": 10,
+            "recall_at_k": 0.8513,
+            "approx_ratio": 1.025345,
+            "latency": {
+              "p50": 0.0279,
+              "p95": 0.0468,
+              "p99": 0.069,
+              "p999": 0.22,
+              "mean": 0.0319,
+              "max": 1.9362,
+              "sequential_qps": 31381.1142
+            },
+            "latency_suspect": false,
+            "qps_by_threads": {
+              "1": {
+                "median": 52254.79437924499,
+                "min": 44434.570093916154,
+                "max": 55208.96594135367,
+                "runs": [
+                  52254.79,
+                  44434.57,
+                  55208.97
+                ]
+              }
+            }
+          },
+          {
+            "ef_search": 50,
+            "recall_at_k": 0.9979,
+            "approx_ratio": 1.000054,
+            "latency": {
+              "p50": 0.057,
+              "p95": 0.0927,
+              "p99": 0.132,
+              "p999": 0.1814,
+              "mean": 0.0638,
+              "max": 0.2173,
+              "sequential_qps": 15684.5769
+            },
+            "latency_suspect": false,
+            "qps_by_threads": {
+              "1": {
+                "median": 19845.9950783283,
+                "min": 17679.65178174671,
+                "max": 22329.802247733027,
+                "runs": [
+                  22329.8,
+                  19846.0,
+                  17679.65
+                ]
+              }
+            }
+          },
+          {
+            "ef_search": 200,
+            "recall_at_k": 1.0,
+            "approx_ratio": 1.0,
+            "latency": {
+              "p50": 0.0892,
+              "p95": 0.1433,
+              "p99": 0.1754,
+              "p999": 0.2128,
+              "mean": 0.093,
+              "max": 0.2354,
+              "sequential_qps": 10755.325
+            },
+            "latency_suspect": false,
+            "qps_by_threads": {
+              "1": {
+                "median": 13404.915582589178,
+                "min": 12915.357910115916,
+                "max": 14014.21882691197,
+                "runs": [
+                  12915.36,
+                  13404.92,
+                  14014.22
+                ]
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "timing": {
+    "total_s": 13.51
+  },
+  "dataset_info": {
+    "n_train": 20000,
+    "n_test": 1000,
+    "dim": 64,
+    "metric": "l2"
+  }
+}
