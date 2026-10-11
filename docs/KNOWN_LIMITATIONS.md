@@ -27,8 +27,17 @@ Earlier builds were several times slower than hnswlib on small datasets. Same-ru
 
 ## 4. Platform and Sanitizer Verification
 
+Parallel builds insert nodes in a nondeterministic order, which produces different but equally valid graphs; this is why deterministic single-threaded builds are used in the invariant tests. Freedom from data races has not been verified locally (ThreadSanitizer: NOT RUN); the Linux CI job runs it.
+
 - **Host Platform:** Development and validation were performed on Windows 11 (MSVC 2022 Release /O2, AVX2+FMA SIMD kernel).
 - **Sanitizers:** Sanitizers were not executed locally on Windows MSVC. A CI workflow for Linux (GCC ASan/UBSan, Clang TSan) is provided in `.github/workflows/ci.yml`.
+- **Existing Concurrency Tests:**
+  - `ConcurrencyTest.ThreadPoolBasic` (`tests/cpp/test_concurrency.cpp`)
+  - `ConcurrencyTest.ConcurrentDisjointWritersAndReaders` (`tests/cpp/test_concurrency.cpp`)
+  - `ConcurrencyTest.ConcurrentSearchAndDelete` (`tests/cpp/test_concurrency.cpp`)
+  - `ConcurrencyTest.ConcurrentSearchDuringSave` (`tests/cpp/test_concurrency.cpp`)
+  - `test_concurrent_python_readers_and_writers` (`tests/python/test_concurrency.py`)
+  - `test_concurrent_batch_threading` (`tests/python/test_concurrency.py`)
 
 ---
 
