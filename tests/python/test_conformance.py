@@ -106,3 +106,50 @@ def test_search_layer_conformance():
 
         for (cpp_d, _), (ref_d, _) in zip(cpp_res, ref_res):
             assert abs(cpp_d - ref_d) < 1e-4, f"Query {i}: Distance mismatch {cpp_d} vs {ref_d}"
+
+
+def test_overflow_pruning_conformance():
+    """Verify overflow link pruning when neighbor list exceeds max_links under both keep_pruned modes."""
+    rng = np.random.default_rng(99999)
+    dim = 16
+    n_nodes = 500
+
+    xb = rng.standard_normal((n_nodes, dim)).astype(np.float32)
+    idx = HNSWIndex(dim=dim, metric="l2", max_elements=n_nodes, M=16, ef_construction=100, seed=42)
+    idx.add(xb, np.arange(n_nodes, dtype=np.int64), num_threads=1)
+
+    for trial in range(500):
+        target_idx = int(rng.integers(0, n_nodes))
+        target_vec = xb[target_idx]
+
+        # Generate overflowing candidate list (degree > M, e.g. 20 to 64 candidates)
+        n_overflow = int(rng.integers(20, 65))
+        cand_ids = rng.choice([i for i in range(n_nodes) if i != target_idx], size=n_overflow, replace=False)
+
+        cand_list = []
+        for cid in cand_ids:
+            diff = target_vec - xb[cid]
+            d = float(np.sum(diff * diff))
+            cand_list.append((d, int(cid)))
+
+        max_links = 16
+        for keep_pruned in [True, False]:
+            cpp_pruned = idx._test_select_neighbors_heuristic(
+                target_vec.tolist(),
+                cand_list,
+                max_links,
+                keep_pruned=keep_pruned,
+            )
+            ref_pruned = reference_select_neighbors_heuristic(
+                target_vec,
+                cand_list,
+                xb,
+                max_links,
+                keep_pruned=keep_pruned,
+            )
+            assert len(cpp_pruned) <= max_links
+            assert len(ref_pruned) <= max_links
+            assert cpp_pruned == ref_pruned, (
+                f"Overflow pruning mismatch in trial {trial} with keep_pruned={keep_pruned}: "
+                f"CPP={cpp_pruned} vs REF={ref_pruned}"
+            )
