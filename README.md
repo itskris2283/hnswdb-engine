@@ -159,14 +159,21 @@ Evaluated on **Fashion-MNIST** (60,000 train vectors, 10,000 test vectors, 784 d
 
 ### Where HNSWDB Loses Relative to Baselines
 
-<!-- BEGIN GENERATED table=where_it_loses run_id=where_it_loses_20261011_050000_c12 -->
-| Workload | Metric | HNSWDB | Best Baseline | Relative Gap | Notes |
+<!-- BEGIN GENERATED table=where_it_loses run_id=where_it_loses_c7b365cb -->
+| Workload | Metric | HNSWDB | Best baseline (engine) | Relative gap | Source (raw file and key path) |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| Dataset B (20K x 64d, sigma=0.1, 50 clusters) | Unreachable nodes (1-NN self-retrieval) | 9.32 | 0.00 (hnswlib / FAISS) | **+9.32 nodes (~0.05% of dataset)** | Target T5 remains a MISS; intra-cluster clustering causes isolated sub-components |
-| Dataset B (20K x 64d, sigma=0.1) | Single-thread build time | 1.481 s | 1.065 s (FAISS) | **39.1% slower** | FAISS build is faster on 64d; hnswlib build is 3.382 s |
-| Dataset A (5K x 32d, ef_search=10) | Sequential QPS (1 thread) | 42,972 QPS | 117,813 QPS (hnswlib) | **63.5% lower QPS** | Low-dimensional small index where hnswlib flat array traversal overhead is minimal |
-
-*Fashion-MNIST speed ordering is non-deterministic across runs; treated as parity per C9.*
+| Dataset A (5K x 32d) @ R=0.95 | Sequential QPS (equal recall) | 47374.2 QPS | 50858.0 QPS (hnswlib) | **-6.9%** | `equal_recall_grid.json:interpolations[dataset=A,target_recall=0.95].interpolated_sequential_qps` |
+| Dataset A (5K x 32d) @ R=0.95 | 4-thread Batch QPS (equal recall) | 108098.7 QPS | 234608.0 QPS (hnswlib) | **-53.9%** | `equal_recall_grid.json:interpolations[dataset=A,target_recall=0.95].interpolated_batch_qps_4th` |
+| Dataset A (5K x 32d) @ R=0.95 | 8-thread Batch QPS (equal recall) | 122032.4 QPS | 269838.3 QPS (faiss) | **-54.8%** | `equal_recall_grid.json:interpolations[dataset=A,target_recall=0.95].interpolated_batch_qps_8th` |
+| Dataset A (5K x 32d) @ R=0.99 | 4-thread Batch QPS (equal recall) | 81103.8 QPS | 146686.4 QPS (hnswlib) | **-44.7%** | `equal_recall_grid.json:interpolations[dataset=A,target_recall=0.99].interpolated_batch_qps_4th` |
+| Dataset A (5K x 32d) @ R=0.99 | 8-thread Batch QPS (equal recall) | 97362.1 QPS | 152727.9 QPS (hnswlib) | **-36.3%** | `equal_recall_grid.json:interpolations[dataset=A,target_recall=0.99].interpolated_batch_qps_8th` |
+| Dataset B (20K x 64d, sigma=0.1) @ R=0.99 | Sequential QPS (equal recall) | 15291.1 QPS | 18279.4 QPS (hnswlib) | **-16.3%** | `equal_recall_grid.json:interpolations[dataset=B_s01,target_recall=0.99].interpolated_sequential_qps` |
+| Dataset A (5K x 32d) | Process RSS delta | 1.66 MB | 0.94 MB (FAISS) | **+76.6%** | `bench_A_a9f1a6f6.json:engines[hnswdb].seed_42.rss_delta_mb` |
+| Dataset B (20K x 64d, sigma=0.1) | Single-thread build time | 1.4808 s | 1.0645 s (FAISS) | **+39.1%** | `bench_B_s01_8a2302be.json:engines[hnswdb].seed_42.build_time_s` |
+| Dataset B (20K x 64d, sigma=0.1) | Process RSS delta | 9.58 MB | 8.11 MB (FAISS) | **+18.1%** | `bench_B_s01_8a2302be.json:engines[hnswdb].seed_42.rss_delta_mb` |
+| Dataset B (20K x 64d, sigma=0.1) (ef_search=10) | Recall@10 | 0.8461 | 0.8513 (hnswlib) | **-0.0052 abs** | `bench_B_s01_8a2302be.json:engines[hnswdb].seed_42.ef_results[ef=10].recall_at_k` |
+| Fashion-MNIST (60K x 784d) | Single-thread build time | 29.9403 s | 28.2293 s (FAISS) | **+6.1%** | `bench_fashion_mnist_0a9f92db.json:engines[hnswdb].seed_42.build_time_s` |
+| Dataset B (20K x 64d, sigma=0.1) | 4-thread build time | 2.522 s | 1.809 s (hnswlib) | **+39.4%** | `multithread_build.json:dataset_b.hnswdb_build_s` |
 <!-- END GENERATED -->
 
 For detailed analysis, investigations, and trade-offs, see [TRADEOFFS.md](docs/TRADEOFFS.md), [BENCHMARKS.md](docs/BENCHMARKS.md), and [INVESTIGATIONS.md](docs/INVESTIGATIONS.md). Relative speed varies between runs on this host; treat as parity.

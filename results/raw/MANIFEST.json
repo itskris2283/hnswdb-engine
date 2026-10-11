@@ -283,11 +283,11 @@
     },
     {
       "file": "where_it_loses.json",
-      "run_id": "where_it_loses_20261011_050000_c12",
+      "run_id": "where_it_loses_c7b365cb",
       "dataset": "cross_dataset",
       "label": "Where HNSWDB Loses (>5% Gap)",
-      "sha256": "465e8dcddbf924362b3f067f09887018db68d04aedd0f82d2de01c690aa053bc",
-      "size_bytes": 1263
+      "sha256": "574cf55e9d7928a36b938c64092e37b2a9e2b4e3ea274b37606c22fde718c8ac",
+      "size_bytes": 3935
     },
     {
       "file": "check_claims.txt",

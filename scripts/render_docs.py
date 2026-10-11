@@ -542,7 +542,7 @@ def format_recall_table(data: dict, table_name: str) -> str:
         if not comparisons:
             lines.append("*None found: HNSWDB is within 5% of or outperforms the best baseline across all evaluated metrics.*")
         else:
-            lines.append("| Workload | Metric | HNSWDB | Best Baseline | Relative Gap | Notes |")
+            lines.append("| Workload | Metric | HNSWDB | Best baseline (engine) | Relative gap | Source (raw file and key path) |")
             lines.append("| :--- | :--- | :--- | :--- | :--- | :--- |")
             for c in comparisons:
                 w = c.get("workload", "")
@@ -550,12 +550,8 @@ def format_recall_table(data: dict, table_name: str) -> str:
                 h = c.get("hnswdb", "")
                 b = c.get("best_baseline", "")
                 g = c.get("gap", "")
-                n = c.get("notes", "")
-                lines.append(f"| {w} | {m} | {h} | {b} | **{g}** | {n} |")
-        note = data.get("speed_parity_rule", "")
-        if note:
-            lines.append("")
-            lines.append(f"*{note}.*")
+                s = c.get("source", "")
+                lines.append(f"| {w} | {m} | {h} | {b} | **{g}** | `{s}` |")
 
     else:
         lines.append(f"*Unknown table type: {table_name}*")

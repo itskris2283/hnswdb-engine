@@ -1,32 +1,103 @@
 {
-  "run_id": "where_it_loses_20261011_050000_c12",
-  "generated_utc": "2026-10-11T05:06:15.424344+00:00",
+  "run_id": "where_it_loses_c7b365cb",
+  "generated_utc": "2026-10-11T12:45:07.048184+00:00",
   "threshold_pct": 5.0,
-  "speed_parity_rule": "Fashion-MNIST speed ordering is non-deterministic across runs; treated as parity per C9",
   "comparisons": [
     {
-      "workload": "Dataset B (20K x 64d, sigma=0.1, 50 clusters)",
-      "metric": "Unreachable nodes (1-NN self-retrieval)",
-      "hnswdb": "9.32",
-      "best_baseline": "0.00 (hnswlib / FAISS)",
-      "gap": "+9.32 nodes (~0.05% of dataset)",
-      "notes": "Target T5 remains a MISS; intra-cluster clustering causes isolated sub-components"
+      "workload": "Dataset A (5K x 32d) @ R=0.95",
+      "metric": "Sequential QPS (equal recall)",
+      "hnswdb": "47374.2 QPS",
+      "best_baseline": "50858.0 QPS (hnswlib)",
+      "gap": "-6.9%",
+      "source": "equal_recall_grid.json:interpolations[dataset=A,target_recall=0.95].interpolated_sequential_qps"
+    },
+    {
+      "workload": "Dataset A (5K x 32d) @ R=0.95",
+      "metric": "4-thread Batch QPS (equal recall)",
+      "hnswdb": "108098.7 QPS",
+      "best_baseline": "234608.0 QPS (hnswlib)",
+      "gap": "-53.9%",
+      "source": "equal_recall_grid.json:interpolations[dataset=A,target_recall=0.95].interpolated_batch_qps_4th"
+    },
+    {
+      "workload": "Dataset A (5K x 32d) @ R=0.95",
+      "metric": "8-thread Batch QPS (equal recall)",
+      "hnswdb": "122032.4 QPS",
+      "best_baseline": "269838.3 QPS (faiss)",
+      "gap": "-54.8%",
+      "source": "equal_recall_grid.json:interpolations[dataset=A,target_recall=0.95].interpolated_batch_qps_8th"
+    },
+    {
+      "workload": "Dataset A (5K x 32d) @ R=0.99",
+      "metric": "4-thread Batch QPS (equal recall)",
+      "hnswdb": "81103.8 QPS",
+      "best_baseline": "146686.4 QPS (hnswlib)",
+      "gap": "-44.7%",
+      "source": "equal_recall_grid.json:interpolations[dataset=A,target_recall=0.99].interpolated_batch_qps_4th"
+    },
+    {
+      "workload": "Dataset A (5K x 32d) @ R=0.99",
+      "metric": "8-thread Batch QPS (equal recall)",
+      "hnswdb": "97362.1 QPS",
+      "best_baseline": "152727.9 QPS (hnswlib)",
+      "gap": "-36.3%",
+      "source": "equal_recall_grid.json:interpolations[dataset=A,target_recall=0.99].interpolated_batch_qps_8th"
+    },
+    {
+      "workload": "Dataset B (20K x 64d, sigma=0.1) @ R=0.99",
+      "metric": "Sequential QPS (equal recall)",
+      "hnswdb": "15291.1 QPS",
+      "best_baseline": "18279.4 QPS (hnswlib)",
+      "gap": "-16.3%",
+      "source": "equal_recall_grid.json:interpolations[dataset=B_s01,target_recall=0.99].interpolated_sequential_qps"
+    },
+    {
+      "workload": "Dataset A (5K x 32d)",
+      "metric": "Process RSS delta",
+      "hnswdb": "1.66 MB",
+      "best_baseline": "0.94 MB (FAISS)",
+      "gap": "+76.6%",
+      "source": "bench_A_a9f1a6f6.json:engines[hnswdb].seed_42.rss_delta_mb"
     },
     {
       "workload": "Dataset B (20K x 64d, sigma=0.1)",
       "metric": "Single-thread build time",
-      "hnswdb": "1.481 s",
-      "best_baseline": "1.065 s (FAISS)",
-      "gap": "39.1% slower",
-      "notes": "FAISS build is faster on 64d; hnswlib build is 3.382 s"
+      "hnswdb": "1.4808 s",
+      "best_baseline": "1.0645 s (FAISS)",
+      "gap": "+39.1%",
+      "source": "bench_B_s01_8a2302be.json:engines[hnswdb].seed_42.build_time_s"
     },
     {
-      "workload": "Dataset A (5K x 32d, ef_search=10)",
-      "metric": "Sequential QPS (1 thread)",
-      "hnswdb": "42,972 QPS",
-      "best_baseline": "117,813 QPS (hnswlib)",
-      "gap": "63.5% lower QPS",
-      "notes": "Low-dimensional small index where hnswlib flat array traversal overhead is minimal"
+      "workload": "Dataset B (20K x 64d, sigma=0.1)",
+      "metric": "Process RSS delta",
+      "hnswdb": "9.58 MB",
+      "best_baseline": "8.11 MB (FAISS)",
+      "gap": "+18.1%",
+      "source": "bench_B_s01_8a2302be.json:engines[hnswdb].seed_42.rss_delta_mb"
+    },
+    {
+      "workload": "Dataset B (20K x 64d, sigma=0.1) (ef_search=10)",
+      "metric": "Recall@10",
+      "hnswdb": "0.8461",
+      "best_baseline": "0.8513 (hnswlib)",
+      "gap": "-0.0052 abs",
+      "source": "bench_B_s01_8a2302be.json:engines[hnswdb].seed_42.ef_results[ef=10].recall_at_k"
+    },
+    {
+      "workload": "Fashion-MNIST (60K x 784d)",
+      "metric": "Single-thread build time",
+      "hnswdb": "29.9403 s",
+      "best_baseline": "28.2293 s (FAISS)",
+      "gap": "+6.1%",
+      "source": "bench_fashion_mnist_0a9f92db.json:engines[hnswdb].seed_42.build_time_s"
+    },
+    {
+      "workload": "Dataset B (20K x 64d, sigma=0.1)",
+      "metric": "4-thread build time",
+      "hnswdb": "2.522 s",
+      "best_baseline": "1.809 s (hnswlib)",
+      "gap": "+39.4%",
+      "source": "multithread_build.json:dataset_b.hnswdb_build_s"
     }
   ]
 }
