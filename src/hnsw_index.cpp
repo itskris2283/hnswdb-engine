@@ -1444,7 +1444,7 @@ void HNSWIndex::save(const std::string& filename) const {
     const char magic[8] = {'H', 'N', 'S', 'W', 'D', 'B', '0', '1'};
     buffer.insert(buffer.end(), magic, magic + 8);
 
-    uint32_t format_version = 1;
+    uint32_t format_version = 2;
     uint32_t metric_val = static_cast<uint32_t>(metric_);
     uint32_t dim_val = static_cast<uint32_t>(dim_);
     uint64_t count_val = cur_element_count_.load();
@@ -1577,8 +1577,11 @@ std::unique_ptr<HNSWIndex> HNSWIndex::load(const std::string& filename) {
     uint64_t seed_val = 0;
 
     read_raw(format_version);
-    if (format_version != 1) {
-        throw UnsupportedVersion("Unsupported index file version: " + std::to_string(format_version));
+    if (format_version != 2) {
+        if (format_version == 1) {
+            throw UnsupportedVersion("re-save the index with the current version");
+        }
+        throw UnsupportedVersion("Unsupported index file version " + std::to_string(format_version) + ": re-save the index with the current version");
     }
     read_raw(metric_val);
     read_raw(dim_val);

@@ -13,7 +13,7 @@ All integers and floats are serialized in **Little-Endian** byte order.
 +-------------------------------------------------------------+
 | Header (64 bytes)                                           |
 |   Magic: "HNSWDB01" (8 bytes: 0x48 4E 53 57 44 42 30 31)     |
-|   Format Version: uint32 (4 bytes) [Current = 1]            |
+|   Format Version: uint32 (4 bytes) [Current = 2]            |
 |   Metric: uint32 (4 bytes) [0=L2, 1=IP, 2=Cosine]           |
 |   Dimension: uint32 (4 bytes)                               |
 |   Current Elements: uint64 (8 bytes)                        |
@@ -68,7 +68,7 @@ All integers and floats are serialized in **Little-Endian** byte order.
 
 ### 3.1 Header (64 bytes)
 - **Magic Bytes:** `0x48 0x4E 0x53 0x57 0x44 0x42 0x30 0x31` (`"HNSWDB01"`)
-- **Version:** `0x00000001` (v1)
+- **Version:** `0x00000002` (v2)
 - Files with mismatched magic bytes or unsupported version numbers throw `CorruptFile` or `UnsupportedVersion` exceptions immediately on load.
 
 ### 3.2 Vectors & Topologies
@@ -91,3 +91,10 @@ To guarantee that crashes or power failures never leave a corrupt index file on 
 1. The index is written to a temporary sibling file: `<target_path>.tmp.<pid>.<timestamp>`.
 2. File buffers are flushed to disk using `fflush` / `FlushFileBuffers`.
 3. The temporary file is atomically renamed to `<target_path>` using POSIX `rename()` or Windows `MoveFileEx(..., MOVEFILE_REPLACE_EXISTING)`.
+
+---
+
+## 5. Version History
+
+- **v2 (Current):** Format version bumped to 2 following the CRC table correction. Saved files are validated against the standard IEEE 802.3 CRC32 polynomial (matching Python `zlib.crc32`).
+- **v1:** Initial serialization format. v1 files were written with an incorrect CRC table. The loader rejects version-1 files with `UnsupportedVersion` and the message "re-save the index with the current version".

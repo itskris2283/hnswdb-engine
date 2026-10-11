@@ -160,7 +160,7 @@ def test_binary_format_struct_offsets_and_crc():
          M, efc, efs, ep, max_lvl, seed) = struct.unpack(header_fmt, data[:64])
 
         assert magic == b"HNSWDB01"
-        assert version == 1
+        assert version == 2
         assert metric == 0  # L2
         assert d == dim
         assert count == n
