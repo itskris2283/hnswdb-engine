@@ -503,6 +503,60 @@ def format_recall_table(data: dict, table_name: str) -> str:
             lines.append("")
             lines.append(f"*{note.capitalize()}.*")
 
+    elif table_name.startswith("readme_equal_recall"):
+        lines.append("| Dataset | Target Recall | Engine | Status | Interp. p50 (ms) | Interp. Seq QPS | 4T Batch QPS |")
+        lines.append("| :--- | ---: | :--- | :--- | ---: | ---: | ---: |")
+        for r in data.get("interpolations", []):
+            ds = r.get("dataset", "")
+            tgt = r.get("target_recall", 0.0)
+            if ds in ("fashion_mnist", "B_s01") and tgt in (0.95, 0.99):
+                eng = r.get("engine", "")
+                stat = r.get("status", "")
+                p50 = r.get("interpolated_p50_ms", 0.0)
+                sqps = r.get("interpolated_sequential_qps", 0.0)
+                b4 = r.get("interpolated_batch_qps_4th", 0.0)
+                ds_name = "Fashion-MNIST (784d)" if ds == "fashion_mnist" else "Dataset B (64d, σ=0.1)"
+                lines.append(f"| {ds_name} | {tgt:.2f} | **{eng}** | {stat} | {p50:.4f} | {sqps:,.0f} | {b4:,.0f} |")
+
+    elif table_name.startswith("readme_clustered_matrix"):
+        lines.append("| Engine | 1T Recall@10 (Mean ± Std) | 4T Recall@10 (Mean ± Std) | Unreachable Nodes (Self-Retrieval Mean) |")
+        lines.append("| :--- | :---: | :---: | :---: |")
+        engs = [
+            ("hnswdb_cured", "**HNSWDB (Cured)**"),
+            ("faiss", "**FAISS HNSW**"),
+            ("hnswlib", "**hnswlib**"),
+            ("hnswdb_legacy", "HNSWDB (Legacy)"),
+        ]
+        engines_data = data.get("engines", {})
+        for eng_key, display_name in engs:
+            ed = engines_data.get(eng_key, {})
+            r1_m = ed.get("recall_1t_mean", 0.0)
+            r1_s = ed.get("recall_1t_std", 0.0)
+            r4_m = ed.get("recall_4t_mean", 0.0)
+            r4_s = ed.get("recall_4t_std", 0.0)
+            unreach = ed.get("unreachable_mean", 0.0)
+            lines.append(f"| {display_name} | {r1_m:.4f} ± {r1_s:.4f} | {r4_m:.4f} ± {r4_s:.4f} | {unreach:.2f} |")
+
+    elif table_name.startswith("where_it_loses"):
+        comparisons = data.get("comparisons", [])
+        if not comparisons:
+            lines.append("*None found: HNSWDB is within 5% of or outperforms the best baseline across all evaluated metrics.*")
+        else:
+            lines.append("| Workload | Metric | HNSWDB | Best Baseline | Relative Gap | Notes |")
+            lines.append("| :--- | :--- | :--- | :--- | :--- | :--- |")
+            for c in comparisons:
+                w = c.get("workload", "")
+                m = c.get("metric", "")
+                h = c.get("hnswdb", "")
+                b = c.get("best_baseline", "")
+                g = c.get("gap", "")
+                n = c.get("notes", "")
+                lines.append(f"| {w} | {m} | {h} | {b} | **{g}** | {n} |")
+        note = data.get("speed_parity_rule", "")
+        if note:
+            lines.append("")
+            lines.append(f"*{note}.*")
+
     else:
         lines.append(f"*Unknown table type: {table_name}*")
 

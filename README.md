@@ -127,6 +127,48 @@ Evaluated on **Fashion-MNIST** (60,000 train vectors, 10,000 test vectors, 784 d
 | **Process RSS Delta** | 194.8 MB | 188.9 MB | 201.9 MB | Memory footprint |
 <!-- END GENERATED -->
 
+### Equal-Recall Performance (Targets 0.95 and 0.99)
+
+<!-- BEGIN GENERATED table=readme_equal_recall run_id=equal_recall_20261010_174753 -->
+| Dataset | Target Recall | Engine | Status | Interp. p50 (ms) | Interp. Seq QPS | 4T Batch QPS |
+| :--- | ---: | :--- | :--- | ---: | ---: | ---: |
+| Dataset B (64d, σ=0.1) | 0.95 | **faiss** | achieved | 0.1979 | 2,386 | 64,267 |
+| Dataset B (64d, σ=0.1) | 0.99 | **faiss** | achieved | 0.2799 | 2,205 | 44,580 |
+| Dataset B (64d, σ=0.1) | 0.95 | **hnswdb** | achieved | 0.0448 | 21,849 | 67,998 |
+| Dataset B (64d, σ=0.1) | 0.99 | **hnswdb** | achieved | 0.0640 | 15,291 | 57,963 |
+| Dataset B (64d, σ=0.1) | 0.95 | **hnswlib** | achieved | 0.0456 | 20,644 | 53,412 |
+| Dataset B (64d, σ=0.1) | 0.99 | **hnswlib** | achieved | 0.0538 | 18,279 | 36,850 |
+| Fashion-MNIST (784d) | 0.95 | **faiss** | achieved | 0.1418 | 6,550 | 15,128 |
+| Fashion-MNIST (784d) | 0.99 | **faiss** | achieved | 0.2186 | 4,333 | 8,432 |
+| Fashion-MNIST (784d) | 0.95 | **hnswdb** | achieved | 0.1319 | 7,073 | 19,681 |
+| Fashion-MNIST (784d) | 0.99 | **hnswdb** | achieved | 0.2075 | 4,513 | 10,687 |
+| Fashion-MNIST (784d) | 0.95 | **hnswlib** | achieved | 0.1539 | 6,136 | 17,881 |
+| Fashion-MNIST (784d) | 0.99 | **hnswlib** | achieved | 0.2750 | 3,365 | 9,654 |
+<!-- END GENERATED -->
+
+### Clustered Data Evaluation (5x5 Seed Matrix, Dataset B)
+
+<!-- BEGIN GENERATED table=readme_clustered_matrix run_id=seed-matrix-dbead162 -->
+| Engine | 1T Recall@10 (Mean ± Std) | 4T Recall@10 (Mean ± Std) | Unreachable Nodes (Self-Retrieval Mean) |
+| :--- | :---: | :---: | :---: |
+| **HNSWDB (Cured)** | 0.9998 ± 0.0005 | 0.9985 ± 0.0008 | 9.32 |
+| **FAISS HNSW** | 0.9999 ± 0.0002 | 0.9999 ± 0.0002 | 0.00 |
+| **hnswlib** | 0.9993 ± 0.0015 | 0.9992 ± 0.0029 | 0.00 |
+| HNSWDB (Legacy) | 0.9972 ± 0.0037 | 0.9970 ± 0.0037 | 166.16 |
+<!-- END GENERATED -->
+
+### Where HNSWDB Loses Relative to Baselines
+
+<!-- BEGIN GENERATED table=where_it_loses run_id=where_it_loses_20261011_050000_c12 -->
+| Workload | Metric | HNSWDB | Best Baseline | Relative Gap | Notes |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| Dataset B (20K x 64d, sigma=0.1, 50 clusters) | Unreachable nodes (1-NN self-retrieval) | 9.32 | 0.00 (hnswlib / FAISS) | **+9.32 nodes (~0.05% of dataset)** | Target T5 remains a MISS; intra-cluster clustering causes isolated sub-components |
+| Dataset B (20K x 64d, sigma=0.1) | Single-thread build time | 1.481 s | 1.065 s (FAISS) | **39.1% slower** | FAISS build is faster on 64d; hnswlib build is 3.382 s |
+| Dataset A (5K x 32d, ef_search=10) | Sequential QPS (1 thread) | 42,972 QPS | 117,813 QPS (hnswlib) | **63.5% lower QPS** | Low-dimensional small index where hnswlib flat array traversal overhead is minimal |
+
+*Fashion-MNIST speed ordering is non-deterministic across runs; treated as parity per C9.*
+<!-- END GENERATED -->
+
 For detailed analysis, investigations, and trade-offs, see [TRADEOFFS.md](docs/TRADEOFFS.md), [BENCHMARKS.md](docs/BENCHMARKS.md), and [INVESTIGATIONS.md](docs/INVESTIGATIONS.md). Relative speed varies between runs on this host; treat as parity.
 
 ---

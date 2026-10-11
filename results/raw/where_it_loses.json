@@ -1,0 +1,32 @@
+{
+  "run_id": "where_it_loses_20261011_050000_c12",
+  "generated_utc": "2026-10-11T05:06:15.424344+00:00",
+  "threshold_pct": 5.0,
+  "speed_parity_rule": "Fashion-MNIST speed ordering is non-deterministic across runs; treated as parity per C9",
+  "comparisons": [
+    {
+      "workload": "Dataset B (20K x 64d, sigma=0.1, 50 clusters)",
+      "metric": "Unreachable nodes (1-NN self-retrieval)",
+      "hnswdb": "9.32",
+      "best_baseline": "0.00 (hnswlib / FAISS)",
+      "gap": "+9.32 nodes (~0.05% of dataset)",
+      "notes": "Target T5 remains a MISS; intra-cluster clustering causes isolated sub-components"
+    },
+    {
+      "workload": "Dataset B (20K x 64d, sigma=0.1)",
+      "metric": "Single-thread build time",
+      "hnswdb": "1.481 s",
+      "best_baseline": "1.065 s (FAISS)",
+      "gap": "39.1% slower",
+      "notes": "FAISS build is faster on 64d; hnswlib build is 3.382 s"
+    },
+    {
+      "workload": "Dataset A (5K x 32d, ef_search=10)",
+      "metric": "Sequential QPS (1 thread)",
+      "hnswdb": "42,972 QPS",
+      "best_baseline": "117,813 QPS (hnswlib)",
+      "gap": "63.5% lower QPS",
+      "notes": "Low-dimensional small index where hnswlib flat array traversal overhead is minimal"
+    }
+  ]
+}

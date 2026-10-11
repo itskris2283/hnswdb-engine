@@ -280,6 +280,14 @@
       "label": "Ranking Stability (3 repeated Fashion-MNIST runs)",
       "sha256": "1b61f14f4fba115af613bac24d79f9a9d929674eb2dc05f24a960af2102053b4",
       "size_bytes": 2277
+    },
+    {
+      "file": "where_it_loses.json",
+      "run_id": "where_it_loses_20261011_050000_c12",
+      "dataset": "cross_dataset",
+      "label": "Where HNSWDB Loses (>5% Gap)",
+      "sha256": "465e8dcddbf924362b3f067f09887018db68d04aedd0f82d2de01c690aa053bc",
+      "size_bytes": 1263
     }
   ],
   "last_updated": "2026-10-11T04:47:16.103817+00:00"
