@@ -27,7 +27,7 @@
 - **Quantization:** Exact 32-bit floating point storage only; no scalar quantization (SQ8) or product quantization (PQ).
 - **Execution Target:** CPU-only (x86_64 AVX2/FMA with scalar fallback); no GPU acceleration.
 - **Distributed Topology:** Single-node embedded library and server; no distributed partitioning or Raft clustering.
-- **Known Graph Construction Weakness:** On synthetic data with tight Gaussian clusters ($\sigma=0.1$), graph construction at $ef_c=100$ exhibits lower search reachability than reference baselines. See [INVESTIGATIONS.md](docs/INVESTIGATIONS.md) for full empirical analysis and isolation experiments.
+- **Clustered-data weakness (reduced, not eliminated):** On tightly clustered synthetic data a small fraction of nodes fail 1-NN self-retrieval even after the construction defaults were corrected. See INVESTIGATIONS.md and target T5 in REPORT.md. Parallel builds give slightly lower recall than single-thread builds in the generated seed matrix.
 - **Platform Verification:** Tested on Windows 11 (MSVC 2022). Linux sanitizer CI workflows (ASan, UBSan, TSan) are defined in `.github/workflows/ci.yml`.
 
 ---
