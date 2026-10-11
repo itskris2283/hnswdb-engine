@@ -306,6 +306,14 @@
       "sha256": "8ace75be01964c37050f1bd4adadc705a65e73adcceea3bc80200ea425615126",
       "state": "cleanup_report",
       "size_bytes": 12065
+    },
+    {
+      "file": "baseline_self_retrieval_2796e161.json",
+      "run_id": "baseline_self_retrieval_2796e161",
+      "dataset": "dataset_b, fashion_mnist",
+      "label": "Baseline Self-Retrieval (hnswlib and FAISS, 5K sample, ef=400)",
+      "sha256": "e2207d4a80f1e7c01df4622820d5a889459640f4bf4b1aeb5772693a68e471e5",
+      "size_bytes": 4214
     }
   ],
   "last_updated": "2026-10-11T04:47:16.103817+00:00"

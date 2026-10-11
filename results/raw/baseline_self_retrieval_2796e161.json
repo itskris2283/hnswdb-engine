@@ -1,0 +1,184 @@
+{
+  "benchmark": "baseline_self_retrieval",
+  "timestamp": "2026-10-11T12:52:50.973871+00:00",
+  "params": {
+    "M": 16,
+    "ef_construction": 100,
+    "ef_search": 400,
+    "sample_size": 5000
+  },
+  "dataset_b": {
+    "dataset": "Dataset B (20K x 64d, sigma=0.1)",
+    "sample_size": 5000,
+    "ef_search": 400,
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "results_by_seed": [
+      {
+        "data_seed": 0,
+        "hnswlib": {
+          "unreachable_in_sample": 2,
+          "self_retrieval_rate": 0.9996
+        },
+        "faiss": {
+          "unreachable_in_sample": 13,
+          "self_retrieval_rate": 0.9974
+        },
+        "hnswdb": {
+          "unreachable_in_sample": 2,
+          "self_retrieval_rate": 0.9996
+        }
+      },
+      {
+        "data_seed": 1,
+        "hnswlib": {
+          "unreachable_in_sample": 1,
+          "self_retrieval_rate": 0.9998
+        },
+        "faiss": {
+          "unreachable_in_sample": 4,
+          "self_retrieval_rate": 0.9992
+        },
+        "hnswdb": {
+          "unreachable_in_sample": 1,
+          "self_retrieval_rate": 0.9998
+        }
+      },
+      {
+        "data_seed": 2,
+        "hnswlib": {
+          "unreachable_in_sample": 2,
+          "self_retrieval_rate": 0.9996
+        },
+        "faiss": {
+          "unreachable_in_sample": 3,
+          "self_retrieval_rate": 0.9994
+        },
+        "hnswdb": {
+          "unreachable_in_sample": 2,
+          "self_retrieval_rate": 0.9996
+        }
+      },
+      {
+        "data_seed": 3,
+        "hnswlib": {
+          "unreachable_in_sample": 6,
+          "self_retrieval_rate": 0.9988
+        },
+        "faiss": {
+          "unreachable_in_sample": 3,
+          "self_retrieval_rate": 0.9994
+        },
+        "hnswdb": {
+          "unreachable_in_sample": 3,
+          "self_retrieval_rate": 0.9994
+        }
+      },
+      {
+        "data_seed": 4,
+        "hnswlib": {
+          "unreachable_in_sample": 4,
+          "self_retrieval_rate": 0.9992
+        },
+        "faiss": {
+          "unreachable_in_sample": 4,
+          "self_retrieval_rate": 0.9992
+        },
+        "hnswdb": {
+          "unreachable_in_sample": 3,
+          "self_retrieval_rate": 0.9994
+        }
+      }
+    ],
+    "hnswlib": {
+      "unreachable_mean": 3.0,
+      "self_retrieval_rate_mean": 0.9994,
+      "unreachable_counts": [
+        2,
+        1,
+        2,
+        6,
+        4
+      ]
+    },
+    "faiss": {
+      "unreachable_mean": 5.4,
+      "self_retrieval_rate_mean": 0.99892,
+      "unreachable_counts": [
+        13,
+        4,
+        3,
+        3,
+        4
+      ]
+    },
+    "hnswdb": {
+      "unreachable_mean": 2.2,
+      "self_retrieval_rate_mean": 0.99956,
+      "unreachable_counts": [
+        2,
+        1,
+        2,
+        3,
+        3
+      ]
+    }
+  },
+  "fashion_mnist": {
+    "dataset": "fashion_mnist",
+    "sample_size": 5000,
+    "ef_search": 400,
+    "hnswlib": {
+      "unreachable_count": 11,
+      "self_retrieval_rate": 0.9978
+    },
+    "faiss": {
+      "unreachable_count": 24,
+      "self_retrieval_rate": 0.9952
+    },
+    "hnswdb": {
+      "unreachable_count": 12,
+      "self_retrieval_rate": 0.9976
+    }
+  },
+  "env": {
+    "cpu_model": "Intel(R) Core(TM) i7-8650U CPU @ 1.90GHz",
+    "physical_cores": 4,
+    "logical_cores": 8,
+    "cpu_clock_mhz": 1910.0,
+    "ram_gb": 15.84,
+    "os": "Windows",
+    "os_release": "11",
+    "os_version": "10.0.22621",
+    "machine": "AMD64",
+    "python_version": "3.12.6",
+    "compiler": "MSVC 2022 (cl.exe 19.40)",
+    "cmake_build_type": "Release",
+    "cmake_flags": "/O2 /MD /arch:AVX2 (MSVC)",
+    "git_commit": "6c3c55ea50070eef00a890241c24224d1cadddda",
+    "active_simd_kernel": "avx2",
+    "process_affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "process_priority": "32",
+    "versions": {
+      "hnswdb": "0.1.0",
+      "numpy": "2.3.5",
+      "faiss": "1.15.1",
+      "hnswlib": "0.8.0"
+    }
+  },
+  "run_id": "baseline_self_retrieval_2796e161"
+}

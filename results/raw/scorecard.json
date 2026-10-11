@@ -26,14 +26,14 @@
       "description": "Corrected self-retrieval rate >= 0.999 on Dataset B and on Fashion-MNIST",
       "value": 0.9976,
       "status": "MISS",
-      "notes": "Dataset B: 0.9995, Fashion-MNIST: 0.9976"
+      "notes": "Dataset B: 0.9995, Fashion-MNIST: 0.9976. Baselines under the same metric: hnswlib (0.9994 / 0.9978), FAISS (0.9989 / 0.9952)"
     },
     {
       "id": "T5",
       "description": "Unreachable nodes == 0 (Dataset B mean, Fashion-MNIST)",
       "value": 12.0,
       "status": "MISS",
-      "notes": "Dataset B mean: 9.32, Fashion-MNIST (in sample): 12"
+      "notes": "Dataset B mean: 9.32, Fashion-MNIST (in sample): 12. Baselines under the same metric: hnswlib (3.00 / 11), FAISS (5.40 / 24)"
     },
     {
       "id": "T6",

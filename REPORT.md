@@ -16,8 +16,8 @@ Every measured number in this report is programmatically generated from raw JSON
 | `T1` | Fashion-MNIST (M=16, efC=100): recall@10 >= 0.99 at some ef <= 100 and >= 0.999 at some ef <= 400 | `0.9992` | **PASS** |  |
 | `T2` | Dataset B (sigma=0.1, efC=100): recall@10 at ef=200, mean over 5 data seeds x 5 build seeds, >= 0.999 | `0.9998` | **PASS** |  |
 | `T3` | Dataset B: mean recall gap vs hnswlib (same seeds) <= 0.002 | `0.0005` | **PASS** |  |
-| `T4` | Corrected self-retrieval rate >= 0.999 on Dataset B and on Fashion-MNIST | `0.9976` | **MISS** | Dataset B: 0.9995, Fashion-MNIST: 0.9976 |
-| `T5` | Unreachable nodes == 0 (Dataset B mean, Fashion-MNIST) | `12.0000` | **MISS** | Dataset B mean: 9.32, Fashion-MNIST (in sample): 12 |
+| `T4` | Corrected self-retrieval rate >= 0.999 on Dataset B and on Fashion-MNIST | `0.9976` | **MISS** | Dataset B: 0.9995, Fashion-MNIST: 0.9976. Baselines under the same metric: hnswlib (0.9994 / 0.9978), FAISS (0.9989 / 0.9952) |
+| `T5` | Unreachable nodes == 0 (Dataset B mean, Fashion-MNIST) | `12.0000` | **MISS** | Dataset B mean: 9.32, Fashion-MNIST (in sample): 12. Baselines under the same metric: hnswlib (3.00 / 11), FAISS (5.40 / 24) |
 | `T6` | HNSWDB single-thread vs multi-thread build recall difference < 0.003 | `0.0014` | **PASS** |  |
 | `T7` | Sequential QPS at recall@10 = 0.99 within 3x of hnswlib (Fashion-MNIST, equal-recall interpolation) | `1.1000` | **PASS** |  |
 | `T8` | Build time, 1 thread, within 3x of hnswlib on Fashion-MNIST and Dataset B | `0.6200` | **PASS** |  |
@@ -28,6 +28,7 @@ Every measured number in this report is programmatically generated from raw JSON
 | `T13` | Sanitizers: zero findings (status NOT RUN if not executed) | `NOT RUN (Windows host)` | **NOT RUN** |  |
 
 *Target T5 uses the self-retrieval unreachable metric.*
+*Baselines under the same metric: hnswlib (Dataset B: 3.00 unreachable / 0.9994 rate; Fashion-MNIST: 11 unreachable / 0.9978 rate); FAISS (Dataset B: 5.40 unreachable / 0.9989 rate; Fashion-MNIST: 24 unreachable / 0.9952 rate).*
 <!-- END GENERATED -->
 
 *Note on T5 (MISS): On tightly-clustered synthetic data ($\sigma=0.1$), HNSWDB exhibits 9.32 mean unreachable nodes (target is 0). This limitation is investigated and documented in Section 2 and [INVESTIGATIONS.md](docs/INVESTIGATIONS.md).*

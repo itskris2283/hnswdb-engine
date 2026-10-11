@@ -152,8 +152,8 @@ Evaluated on **Fashion-MNIST** (60,000 train vectors, 10,000 test vectors, 784 d
 | Engine | 1T Recall@10 (Mean ± Std) | 4T Recall@10 (Mean ± Std) | Unreachable Nodes (Self-Retrieval Mean) |
 | :--- | :---: | :---: | :---: |
 | **HNSWDB (Cured)** | 0.9998 ± 0.0005 | 0.9985 ± 0.0008 | 9.32 |
-| **FAISS HNSW** | 0.9999 ± 0.0002 | 0.9999 ± 0.0002 | 0.00 |
-| **hnswlib** | 0.9993 ± 0.0015 | 0.9992 ± 0.0029 | 0.00 |
+| **FAISS HNSW** | 0.9999 ± 0.0002 | 0.9999 ± 0.0002 | 5.40 |
+| **hnswlib** | 0.9993 ± 0.0015 | 0.9992 ± 0.0029 | 3.00 |
 | HNSWDB (Legacy) | 0.9972 ± 0.0037 | 0.9970 ± 0.0037 | 166.16 |
 <!-- END GENERATED -->
 
