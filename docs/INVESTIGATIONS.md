@@ -80,18 +80,18 @@ Range across seeds exhibits high sensitivity as shown in the table above; seed 4
 | 2.0 | 0.9918 |
 <!-- END GENERATED -->
 
-#### Hypothesis 5: Graph diagnostics ($ef_c=100$, seed=42)
+#### Hypothesis 5: Graph diagnostics ($ef_c=100$, data seed 42)
 - Duplicate links: 0
 - Self-links: 0
 - All nodes degree: 32 ($M_0$ slots utilized)
 - Overflow reselections: 659,216
 - Reciprocal link fraction: 0.600
-- Unreachable by 1-NN self-retrieval: 505 out of 20,000 nodes
+- Unreachable by 1-NN self-retrieval (for data seed 42): 505 out of 20,000 nodes
 
 #### Hypothesis 6: Per-query recall analysis
 - 954 / 1,000 queries achieve perfect recall (10/10)
 - 33 queries have recall < 0.5
-- All 33 bad queries target ground-truth neighbors that belong to the 505 unreachable nodes
+- All 33 bad queries target ground-truth neighbors that belong to the 505 nodes that failed 1-NN self-retrieval (for data seed 42)
 
 #### Hypothesis 7: M sensitivity
 
