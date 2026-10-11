@@ -4,11 +4,13 @@ This document transparently records verified engineering limitations, dataset se
 
 ---
 
-## 1. Clustered Distribution Weakness (Implementation-Specific Construction Weakness)
+## 1. Clustered-data weakness (reduced, not eliminated)
 
-- **Symptom:** On synthetic distributions with tight, well-separated Gaussian clusters (50 clusters, standard deviation $\sigma=0.1$ across 20,000 vectors in 64 dimensions, Dataset B), legacy HNSW graph construction with standard $ef_{construction}=100$ reached an early recall ceiling at $ef_{search}=200$ (see generated tables in [INVESTIGATIONS.md](INVESTIGATIONS.md)).
-- **Isolation & Resolution:** In Phase 3 ablations (`results/raw/ablations_study.json`), the issue was isolated to initial layer-0 degree over-allocation (`new_node_degree="M0"`, 32 links) combined with retaining pruned candidates (`keep_pruned=true`), which crowded out inter-cluster bridges. Setting defaults to `new_node_degree="M"` (16 links) and `keep_pruned=false` cured the recall gap, achieving 1.0000 recall at $ef=200$.
-- **Residual Limitation:** Unreachable nodes are reduced from over five hundred to single digits, but non-zero on clustered distributions (see generated seed matrix and ablation tables in [INVESTIGATIONS.md](INVESTIGATIONS.md)), causing target T5 to be reported as a MISS.
+Symptom: On tightly clustered synthetic data (Dataset B: 50 clusters, sigma 0.1, 20,000 vectors, 64 dimensions), the original construction defaults gave lower and more variable recall than hnswlib and FAISS at equal parameters (see the generated seed-matrix table in INVESTIGATIONS.md).
+
+Finding: Same-session ablations (results/raw/ablations_dataset_b.json) point to the original defaults (M0 neighbors for new nodes with back-filled candidates). The current defaults (M neighbors, no back-fill) follow the reference algorithm. Why back-filling hurts is a hypothesis (loss of navigability); it was not isolated by a direct test.
+
+Residual limitation: A small number of nodes still fail 1-NN self-retrieval on clustered data (generated counts in INVESTIGATIONS.md), so target T5 is a MISS. Baseline values under the same metric are shown in the same document.
 
 ---
 
