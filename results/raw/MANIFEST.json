@@ -225,9 +225,10 @@
     },
     {
       "file": "scorecard.json",
-      "sha256": "f5c1c127a17da84cc794eea8f1068f950912ea1457bf0d492664120154282f69",
+      "sha256": "1c95e8df2f8b3e4dd3107c62459d69dc33d6df9082daba1be184b38147f73391",
       "state": "raw_result",
-      "size_bytes": 2775
+      "size_bytes": 8627,
+      "run_id": "multiple runs; see Notes"
     },
     {
       "file": "seed_matrix_dataset_b.json",

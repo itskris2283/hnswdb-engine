@@ -24,7 +24,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RAW_DIR = os.path.join(ROOT, "results", "raw")
 
 BEGIN_PATTERN = re.compile(
-    r'<!--\s*BEGIN\s+GENERATED\s+table=(\S+)\s+run_id=(\S+)\s*-->'
+    r'<!--\s*BEGIN\s+GENERATED\s+table=(\S+)\s+run_id=("?[^">]+"|\S+)\s*-->'
 )
 END_PATTERN = re.compile(r'<!--\s*END\s+GENERATED\s*-->')
 
@@ -88,7 +88,7 @@ def check_file(filepath: str, valid_run_ids: set, strict: bool = False) -> list[
             in_block = True
             block_start_line = line_num
             table_name = begin_match.group(1)
-            run_id = begin_match.group(2)
+            run_id = begin_match.group(2).strip('"')
             has_any_block = True
 
             if run_id not in valid_run_ids:

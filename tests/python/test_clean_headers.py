@@ -13,7 +13,7 @@ def test_no_generated_block_contains_unknown_or_question_marks():
 
     assert len(doc_paths) > 0, "Must find documentation files to check"
 
-    pattern = re.compile(r'<!--\s*BEGIN\s+GENERATED\s+table=(\S+)\s+run_id=(\S+)\s*-->(.*?)<!--\s*END\s+GENERATED\s*-->', re.DOTALL)
+    pattern = re.compile(r'<!--\s*BEGIN\s+GENERATED\s+table=(\S+)\s+run_id=("?[^">]+"|\S+)\s*-->(.*?)<!--\s*END\s+GENERATED\s*-->', re.DOTALL)
 
     violations = []
     for doc_path in doc_paths:
@@ -23,7 +23,7 @@ def test_no_generated_block_contains_unknown_or_question_marks():
 
         for match in pattern.finditer(content):
             table_name = match.group(1)
-            run_id = match.group(2)
+            run_id = match.group(2).strip('"')
             block_body = match.group(3)
 
             if "unknown" in block_body.lower():
@@ -41,7 +41,7 @@ def test_scorecard_header_format():
     with open(report_path, "r", encoding="utf-8") as f:
         content = f.read()
 
-    pattern = re.compile(r'<!--\s*BEGIN\s+GENERATED\s+table=scorecard\s+run_id=(\S+)\s*-->(.*?)<!--\s*END\s+GENERATED\s*-->', re.DOTALL)
+    pattern = re.compile(r'<!--\s*BEGIN\s+GENERATED\s+table=scorecard\s+run_id=("?[^">]+"|\S+)\s*-->(.*?)<!--\s*END\s+GENERATED\s*-->', re.DOTALL)
     match = pattern.search(content)
     assert match is not None, "REPORT.md must contain generated scorecard block"
     block_body = match.group(2)

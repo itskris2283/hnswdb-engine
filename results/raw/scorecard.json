@@ -1,31 +1,68 @@
 {
+  "run_id": "multiple runs; see Notes",
   "targets": [
     {
       "id": "T1",
       "description": "Fashion-MNIST (M=16, efC=100): recall@10 >= 0.99 at some ef <= 100 and >= 0.999 at some ef <= 400",
       "value": 0.99917,
       "status": "PASS",
-      "notes": ""
+      "raw_files": [
+        "bench_fashion_mnist_0a9f92db.json",
+        "bench_fashion_mnist_723b5b0a.json",
+        "bench_fashion_mnist_b3b2cd25.json"
+      ],
+      "run_ids": [
+        "fashion_mnist_20261010_174828_0a9f92db",
+        "fashion_mnist_20261011_042950_723b5b0a",
+        "fashion_mnist_20261011_043826_b3b2cd25"
+      ],
+      "aggregation": "Median recall@10 at ef=200 across 3 Fashion-MNIST benchmark runs",
+      "notes": "Fashion-MNIST (3 runs, median ef=200 recall); runs: 0a9f92db, 723b5b0a, b3b2cd25"
     },
     {
       "id": "T2",
       "description": "Dataset B (sigma=0.1, efC=100): recall@10 at ef=200, mean over 5 data seeds x 5 build seeds, >= 0.999",
       "value": 0.999808,
       "status": "PASS",
-      "notes": ""
+      "raw_files": [
+        "seed_matrix_dataset_b.json"
+      ],
+      "run_ids": [
+        "seed-matrix-dbead162"
+      ],
+      "aggregation": "Mean recall@10 at ef=200 over 5 data seeds x 5 build seeds (25 indices)",
+      "notes": "Dataset B (seed_matrix_dataset_b.json); mean over 5x5 data/build seeds"
     },
     {
       "id": "T3",
       "description": "Dataset B: mean recall gap vs hnswlib (same seeds) <= 0.002",
       "value": 0.000476,
       "status": "PASS",
-      "notes": ""
+      "raw_files": [
+        "seed_matrix_dataset_b.json"
+      ],
+      "run_ids": [
+        "seed-matrix-dbead162"
+      ],
+      "aggregation": "Absolute mean recall gap between HNSWDB (cured) and hnswlib over same 25 seeds",
+      "notes": "Dataset B (seed_matrix_dataset_b.json); |hnswdb_cured - hnswlib| recall@200"
     },
     {
       "id": "T4",
       "description": "Corrected self-retrieval rate >= 0.999 on Dataset B and on Fashion-MNIST",
       "value": 0.9976,
       "status": "MISS",
+      "raw_files": [
+        "seed_matrix_dataset_b.json",
+        "self_retrieval_fashion_mnist_50033fba.json",
+        "baseline_self_retrieval_2796e161.json"
+      ],
+      "run_ids": [
+        "seed-matrix-dbead162",
+        "self_retrieval_fashion_mnist_20261011_094933_50033fba",
+        "baseline_self_retrieval_2796e161"
+      ],
+      "aggregation": "Minimum self-retrieval rate across Dataset B (25-seed mean) and Fashion-MNIST (5K sample)",
       "notes": "Dataset B: 0.9995, Fashion-MNIST: 0.9976. Baselines under the same metric: hnswlib (0.9994 / 0.9978), FAISS (0.9989 / 0.9952)"
     },
     {
@@ -33,6 +70,17 @@
       "description": "Unreachable nodes == 0 (Dataset B mean, Fashion-MNIST)",
       "value": 12.0,
       "status": "MISS",
+      "raw_files": [
+        "seed_matrix_dataset_b.json",
+        "self_retrieval_fashion_mnist_50033fba.json",
+        "baseline_self_retrieval_2796e161.json"
+      ],
+      "run_ids": [
+        "seed-matrix-dbead162",
+        "self_retrieval_fashion_mnist_20261011_094933_50033fba",
+        "baseline_self_retrieval_2796e161"
+      ],
+      "aggregation": "Maximum unreachable node count across Dataset B (25-seed mean) and Fashion-MNIST (5K sample)",
       "notes": "Dataset B mean: 9.32, Fashion-MNIST (in sample): 12. Baselines under the same metric: hnswlib (3.00 / 11), FAISS (5.40 / 24)"
     },
     {
@@ -40,56 +88,131 @@
       "description": "HNSWDB single-thread vs multi-thread build recall difference < 0.003",
       "value": 0.001356,
       "status": "PASS",
-      "notes": ""
+      "raw_files": [
+        "seed_matrix_dataset_b.json"
+      ],
+      "run_ids": [
+        "seed-matrix-dbead162"
+      ],
+      "aggregation": "Absolute difference between 1-thread and 4-thread build recall means over 25 seeds",
+      "notes": "Dataset B (seed_matrix_dataset_b.json); |1T - 4T| build recall difference"
     },
     {
       "id": "T7",
       "description": "Sequential QPS at recall@10 = 0.99 within 3x of hnswlib (Fashion-MNIST, equal-recall interpolation)",
-      "value": 1.1,
+      "value": 0.7321,
       "status": "PASS",
-      "notes": ""
+      "raw_files": [
+        "bench_fashion_mnist_0a9f92db.json",
+        "bench_fashion_mnist_723b5b0a.json",
+        "bench_fashion_mnist_b3b2cd25.json"
+      ],
+      "run_ids": [
+        "fashion_mnist_20261010_174828_0a9f92db",
+        "fashion_mnist_20261011_042950_723b5b0a",
+        "fashion_mnist_20261011_043826_b3b2cd25"
+      ],
+      "aggregation": "Median of (hnswlib seq QPS / HNSWDB seq QPS at ef=50, R~0.995) across 3 Fashion-MNIST runs",
+      "notes": "Ratio = hnswlib seq QPS / HNSWDB seq QPS at ef=50 (R~0.995). Runs: 0.7321, 0.5701, 1.1016; median across 3 runs = 0.7321"
     },
     {
       "id": "T8",
       "description": "Build time, 1 thread, within 3x of hnswlib on Fashion-MNIST and Dataset B",
-      "value": 0.62,
+      "value": 0.6164,
       "status": "PASS",
-      "notes": ""
+      "raw_files": [
+        "bench_fashion_mnist_0a9f92db.json",
+        "bench_fashion_mnist_723b5b0a.json",
+        "bench_fashion_mnist_b3b2cd25.json",
+        "bench_B_s01_8a2302be.json"
+      ],
+      "run_ids": [
+        "fashion_mnist_20261010_174828_0a9f92db",
+        "fashion_mnist_20261011_042950_723b5b0a",
+        "fashion_mnist_20261011_043826_b3b2cd25",
+        "B_s01_20261010_174800_8a2302be"
+      ],
+      "aggregation": "Max over {Fashion-MNIST median build ratio, Dataset B build ratio} of (HNSWDB build time / hnswlib build time)",
+      "notes": "Ratio = max(FM build ratio, Dataset B build ratio). FM median = 0.6164 (runs: 1.0535, 0.5604, 0.6164), Dataset B = 0.4378. Max = 0.6164"
     },
     {
       "id": "T9",
       "description": "Build time at max physical threads within 3x of hnswlib (MISS is acceptable if reported)",
       "value": 1.39,
       "status": "PASS",
-      "notes": ""
+      "raw_files": [
+        "multithread_build.json"
+      ],
+      "run_ids": [
+        "multithread_build_20261010_180617_73c07096"
+      ],
+      "aggregation": "Build time ratio at max physical threads (8T) vs hnswlib on Dataset A",
+      "notes": "multithread_build.json (run_id: multithread_build_823c144e); 8-thread build time ratio vs hnswlib"
     },
     {
       "id": "T10",
       "description": "RSS delta within 15% of hnswlib on Fashion-MNIST",
-      "value": 0.0335,
+      "value": 0.0354,
       "status": "PASS",
-      "notes": ""
+      "raw_files": [
+        "bench_fashion_mnist_0a9f92db.json",
+        "bench_fashion_mnist_723b5b0a.json",
+        "bench_fashion_mnist_b3b2cd25.json"
+      ],
+      "run_ids": [
+        "fashion_mnist_20261010_174828_0a9f92db",
+        "fashion_mnist_20261011_042950_723b5b0a",
+        "fashion_mnist_20261011_043826_b3b2cd25"
+      ],
+      "aggregation": "Median of |HNSWDB RSS - hnswlib RSS| / hnswlib RSS across 3 Fashion-MNIST runs",
+      "notes": "Ratio = |HNSWDB RSS - hnswlib RSS| / hnswlib RSS on Fashion-MNIST. Runs: 0.0354, 0.0515, 0.0335; median across 3 runs = 0.0354"
     },
     {
       "id": "T11",
       "description": "Approximation ratio of exact search == 1.0 +/- 1e-6; Fashion-MNIST ratio <= 1.05",
       "value": 1.000041,
       "status": "PASS",
-      "notes": ""
+      "raw_files": [
+        "bench_fashion_mnist_0a9f92db.json",
+        "bench_fashion_mnist_723b5b0a.json",
+        "bench_fashion_mnist_b3b2cd25.json"
+      ],
+      "run_ids": [
+        "fashion_mnist_20261010_174828_0a9f92db",
+        "fashion_mnist_20261011_042950_723b5b0a",
+        "fashion_mnist_20261011_043826_b3b2cd25"
+      ],
+      "aggregation": "Median approx_ratio at ef=200 across 3 Fashion-MNIST runs",
+      "notes": "Fashion-MNIST (3 runs); median approx_ratio at ef=200 = 1.000041"
     },
     {
       "id": "T12",
       "description": "All C++ and Python tests pass (counts from run output)",
-      "value": "9 C++ / 72 Python passed",
+      "value": "9 C++ / 74 Python passed",
       "status": "PASS",
-      "notes": ""
+      "raw_files": [
+        "ctest_output",
+        "pytest_output"
+      ],
+      "run_ids": [
+        "test_suite_runs"
+      ],
+      "aggregation": "Direct count of passing test suites / cases from ctest and pytest",
+      "notes": "CTest (9 suites) and pytest (74 tests); counts from test run outputs"
     },
     {
       "id": "T13",
       "description": "Sanitizers: zero findings (status NOT RUN if not executed)",
       "value": "NOT RUN (Windows host)",
       "status": "NOT RUN",
-      "notes": ""
+      "raw_files": [
+        "results/raw/sanitizers"
+      ],
+      "run_ids": [
+        "sanitizers_not_run"
+      ],
+      "aggregation": "Directory inspection for sanitizer report logs",
+      "notes": "Sanitizers require Linux/WSL environment; Windows host not supported"
     }
   ]
 }

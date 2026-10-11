@@ -28,7 +28,7 @@ RAW_DIR = os.path.join(ROOT, "results", "raw")
 
 # Pattern for generated block markers
 BEGIN_PATTERN = re.compile(
-    r'<!--\s*BEGIN\s+GENERATED\s+table=(\S+)\s+run_id=(\S+)\s*-->'
+    r'<!--\s*BEGIN\s+GENERATED\s+table=(\S+)\s+run_id=("?[^">]+"|\S+)\s*-->'
 )
 END_PATTERN = re.compile(r'<!--\s*END\s+GENERATED\s*-->')
 
@@ -282,6 +282,7 @@ def format_recall_table(data: dict, table_name: str) -> str:
                 lines.append(f"| `{t['id']}` | {t['description']} | `{val}` | {status_badge} | {notes_str} |")
             lines.append("")
             lines.append("*Target T5 uses the self-retrieval unreachable metric.*")
+            lines.append("*Ratio definitions: T7 = hnswlib sequential QPS / HNSWDB sequential QPS at recall@10 = 0.99 (evaluated at ef=50, R~0.995; <= 3 passes) on Fashion-MNIST (median across 3 runs). T8 = max(Fashion-MNIST build ratio, Dataset B build ratio) of HNSWDB single-thread build time / hnswlib single-thread build time (Fashion-MNIST uses median across 3 runs). T10 = |HNSWDB RSS - hnswlib RSS| / hnswlib RSS on Fashion-MNIST (median across 3 runs).*")
             bsr_files = [f for f in os.listdir(RAW_DIR) if f.startswith("baseline_self_retrieval_") and f.endswith(".json")]
             if bsr_files:
                 with open(os.path.join(RAW_DIR, bsr_files[0]), "r", encoding="utf-8") as bf:
@@ -651,7 +652,7 @@ def render_file(filepath: str, raw_results: dict, check_only: bool = False) -> t
         begin_match = BEGIN_PATTERN.search(line)
         if begin_match and not in_block:
             block_table = begin_match.group(1)
-            block_run_id = begin_match.group(2)
+            block_run_id = begin_match.group(2).strip('"')
             in_block = True
             new_lines.append(line)
             i += 1
