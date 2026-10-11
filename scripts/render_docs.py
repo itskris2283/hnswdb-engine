@@ -333,7 +333,16 @@ def format_recall_table(data: dict, table_name: str) -> str:
         for eng, stats in data.get("engines", {}).items():
             anova = stats.get("anova_1t")
             if not anova:
-                raise ValueError(f"Missing anova_1t data for engine {eng}")
+                runs = stats.get("runs_1t")
+                if runs and len(runs) == 25:
+                    import numpy as np
+                    from benchmarks.anova import compute_two_way_anova
+                    mat = np.zeros((5, 5), dtype=np.float64)
+                    for r in runs:
+                        mat[r["data_seed"], r["build_seed"]] = r["recall_at_k"]
+                    anova = compute_two_way_anova(mat)
+                else:
+                    raise ValueError(f"Missing anova_1t data for engine {eng}")
             d_share = anova.get("share_data_percent")
             b_share = anova.get("share_build_percent")
             r_share = anova.get("share_error_percent")
