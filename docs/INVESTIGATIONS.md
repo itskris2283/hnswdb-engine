@@ -38,6 +38,8 @@ The distance kernel is correct.
 
 #### Hypothesis 2: efC sensitivity — CONVERGING
 
+Configuration: legacy construction defaults (new_node_degree="M0", keep_pruned=true).
+
 <!-- BEGIN GENERATED table=inv_efc run_id=investigation_recall_gap -->
 | efC | Recall@10 (ef=200) |
 | ---: | ---: |
@@ -51,6 +53,8 @@ The distance kernel is correct.
 Increasing $ef_c$ improves recall, reaching 1.0000 at $ef_c=400$.
 
 #### Hypothesis 3: Seed sensitivity — HIGH VARIANCE
+
+Configuration: legacy construction defaults (new_node_degree="M0", keep_pruned=true).
 
 <!-- BEGIN GENERATED table=inv_seed run_id=investigation_recall_gap -->
 | Seed | Recall@10 (ef=200, efC=100) |
@@ -68,6 +72,8 @@ Range across seeds exhibits high sensitivity as shown in the table above; seed 4
 
 #### Hypothesis 4: Sigma sweep
 
+Configuration: legacy construction defaults (new_node_degree="M0", keep_pruned=true).
+
 <!-- BEGIN GENERATED table=inv_sigma run_id=investigation_recall_gap -->
 | Sigma | Recall@10 (ef=200) |
 | ---: | ---: |
@@ -81,6 +87,9 @@ Range across seeds exhibits high sensitivity as shown in the table above; seed 4
 <!-- END GENERATED -->
 
 #### Hypothesis 5: Graph diagnostics ($ef_c=100$, data seed 42)
+
+Configuration: legacy construction defaults (new_node_degree="M0", keep_pruned=true).
+
 - Duplicate links: 0
 - Self-links: 0
 - All nodes degree: 32 ($M_0$ slots utilized)
@@ -95,6 +104,8 @@ Range across seeds exhibits high sensitivity as shown in the table above; seed 4
 
 #### Hypothesis 7: M sensitivity
 
+Configuration: legacy construction defaults (new_node_degree="M0", keep_pruned=true).
+
 <!-- BEGIN GENERATED table=inv_m run_id=investigation_recall_gap -->
 | M | Recall@10 (ef=200, efC=100) |
 | ---: | ---: |
@@ -107,7 +118,9 @@ Range across seeds exhibits high sensitivity as shown in the table above; seed 4
 
 Observed values in the table above show non-monotonic behavior across $M$ values ($M=8$ exceeds $M=16$, and $M=32$ remains below target).
 
-### 1.3 Leading Hypothesis (Not Isolated)
+### 1.3 Earlier hypothesis (superseded by section 2.4)
+
+This section describes the legacy construction defaults and is kept for history.
 
 evidence: results/raw/investigation_recall_gap.json
 
@@ -123,7 +136,9 @@ Supporting evidence in `results/raw/investigation_recall_gap.json`:
 - All 33 zero/low-recall queries on data seed 42 target ground-truth neighbors that failed self-retrieval.
 - $ef_c=400$ produces 0 unreachable nodes on data seed 42 and parity recall.
 
-### 1.4 Mitigation Analysis
+### 1.4 Earlier mitigation analysis (superseded by section 2.4)
+
+This section describes the legacy construction defaults and is kept for history.
 
 Based strictly on empirical measurements:
 1. **Higher $ef_c$:** Setting $ef_c=400$ eliminates unreachable nodes and restores full recall on Dataset B (see table above).
@@ -178,6 +193,10 @@ To isolate the construction defect, 10 systematic configurations were benchmarke
 | `degree_M__keep_False__protect_True` | M | False | True | 1.0000 | 0.87s | 4 | 1.0000 | MISS |
 | `degree_M__keep_False__overflow_closest` | M | False | False | 0.9990 | 1.21s | 23 | 0.9998 | MISS |
 | `degree_M__keep_False__entry_all` | M | False | False | 1.0000 | 0.92s | 8 | 1.0000 | MISS |
+<!-- END GENERATED -->
+
+<!-- BEGIN GENERATED table=navigability run_id=decomp-e111e7e5 -->
+In the legacy configuration, 2 nodes were unreachable by BFS from the entry point at N=20,000 (data seed 42), while on average 166.16 nodes per index failed 1-NN self-retrieval across the 25-seed matrix. Most failing nodes were therefore connected to the graph but were not found by greedy search. The cured configuration has 8 BFS-unreachable nodes at the same size. BFS reachability does not predict self-retrieval failures; this supports the navigability hypothesis over pure connectivity loss. The two metrics come from different runs and seeds, so this is supporting evidence, not a direct test.
 <!-- END GENERATED -->
 
 ### 2.3 Step-Wise Graph Connectivity Trajectory
