@@ -57,7 +57,12 @@ def main():
     all_logs.append(out)
     if code != 0: overall_pass = False
 
-    # 7. Verify README
+    # 7. Check Reproduction Commands
+    code, out = run_command([sys.executable, "scripts/check_repro_commands.py"])
+    all_logs.append(out)
+    if code != 0: overall_pass = False
+
+    # 8. Verify README
     code, out = run_command([sys.executable, "scripts/verify_readme.py"])
     all_logs.append(out)
     if code != 0: overall_pass = False

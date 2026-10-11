@@ -24,7 +24,7 @@ Every measured number in this report is programmatically generated from raw JSON
 | `T9` | Build time at max physical threads within 3x of hnswlib (MISS is acceptable if reported) | `1.3900` | **PASS** | multithread_build.json (run_id: multithread_build_823c144e); 8-thread build time ratio vs hnswlib |
 | `T10` | RSS delta within 15% of hnswlib on Fashion-MNIST | `0.0354` | **PASS** | Ratio = |HNSWDB RSS - hnswlib RSS| / hnswlib RSS on Fashion-MNIST. Runs: 0.0354, 0.0515, 0.0335; median across 3 runs = 0.0354 |
 | `T11` | Approximation ratio of exact search == 1.0 +/- 1e-6; Fashion-MNIST ratio <= 1.05 | `1.0000` | **PASS** | Fashion-MNIST (3 runs); median approx_ratio at ef=200 = 1.000041 |
-| `T12` | All C++ and Python tests pass (counts from run output) | `9 C++ / 75 Python passed` | **PASS** | CTest (9 suites) and pytest (75 tests); counts from test run outputs |
+| `T12` | All C++ and Python tests pass (counts from run output) | `9 C++ / 76 Python passed` | **PASS** | CTest (9 suites) and pytest (76 tests); counts from test run outputs |
 | `T13` | Sanitizers: zero findings (status NOT RUN if not executed) | `NOT RUN (Windows host)` | **NOT RUN** | Sanitizers require Linux/WSL environment; Windows host not supported |
 
 *Target T5 uses the self-retrieval unreachable metric.*
@@ -149,24 +149,41 @@ ctest --test-dir build/rel -C Release --output-on-failure
 # 3. Run Python PyTest suite
 python -m pytest tests/python -v
 
-# 4. Run Full Benchmark Pipeline across datasets (Fashion-MNIST, Dataset B, Dataset A)
+# 4. Primary benchmarks
 python scripts/run_pipeline.py --config full --datasets fashion_mnist,B,A --threads 1,2,4,8
 
-# 5. Run Auxiliary Benchmarks (Multithread build, Filtered search, Work counting)
-python benchmarks/run_multithread_build.py
-python benchmarks/run_filtered_search.py
+# 5. Clustered-data study & ablations
+python benchmarks/run_seed_matrix.py
+python benchmarks/run_ablations.py
+python benchmarks/run_decomposition.py
+
+# 6. Work counting and query ef-semantics
 python benchmarks/run_work_counting.py
 
-# 6. Generate Audited Scorecard
+# 7. Multi-thread build & filtered benchmark
+python benchmarks/run_multithread_build.py
+python benchmarks/run_filtered_bench.py
+
+# 8. Self-retrieval measurements (engine and baselines)
+python scripts/measure_fashion_mnist_self_retrieval.py
+python benchmarks/measure_baseline_self_retrieval.py
+
+# 9. Interpolations & stability evaluations
+python benchmarks/equal_recall.py
+python benchmarks/run_ranking_stability.py
+python scripts/where_it_loses.py
+
+# 10. Scorecard & documentation generation
 python scripts/make_scorecard.py
-
-# 7. Render All Markdown Tables from Raw JSON
 python scripts/render_docs.py
+python scripts/make_resume_bullets.py
 
-# 8. Run Complete Verification and Provenance Checkers
+# 11. Run complete verification and provenance checkers
 python scripts/check_targets_unchanged.py
 python scripts/check_claims.py
 python scripts/check_provenance.py
 python scripts/check_docs_links.py
+python scripts/check_repro_commands.py
 python scripts/verify_readme.py
 ```
+

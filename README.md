@@ -187,7 +187,44 @@ For detailed analysis, investigations, and trade-offs, see [TRADEOFFS.md](docs/T
 ctest --test-dir build/rel -C Release --output-on-failure
 
 # Run Python PyTest suite
-pytest tests/python -v
+python -m pytest tests/python -v
+
+# Primary benchmarks
+python scripts/run_pipeline.py --config full --datasets fashion_mnist,B,A --threads 1,2,4,8
+
+# Clustered-data study & ablations
+python benchmarks/run_seed_matrix.py
+python benchmarks/run_ablations.py
+python benchmarks/run_decomposition.py
+
+# Work counting and query ef-semantics
+python benchmarks/run_work_counting.py
+
+# Multi-thread build & filtered benchmark
+python benchmarks/run_multithread_build.py
+python benchmarks/run_filtered_bench.py
+
+# Self-retrieval measurements (engine and baselines)
+python scripts/measure_fashion_mnist_self_retrieval.py
+python benchmarks/measure_baseline_self_retrieval.py
+
+# Interpolations & stability evaluations
+python benchmarks/equal_recall.py
+python benchmarks/run_ranking_stability.py
+python scripts/where_it_loses.py
+
+# Scorecard & documentation generation
+python scripts/make_scorecard.py
+python scripts/render_docs.py
+python scripts/make_resume_bullets.py
+
+# Complete verification and provenance checkers
+python scripts/check_targets_unchanged.py
+python scripts/check_claims.py
+python scripts/check_provenance.py
+python scripts/check_docs_links.py
+python scripts/check_repro_commands.py
+python scripts/verify_readme.py
 ```
 
 ---

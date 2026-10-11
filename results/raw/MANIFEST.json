@@ -225,7 +225,7 @@
     },
     {
       "file": "scorecard.json",
-      "sha256": "d8d602c9630fe2ee9b1173caf39574f5c4cc3230955568a5efc8e33453da59ea",
+      "sha256": "d0db98e44b80510986beb8907d6eca8f8c13c2ca653eec42e7dea37ae573aed6",
       "state": "raw_result",
       "size_bytes": 8627,
       "run_id": "multiple runs; see Notes"
