@@ -81,3 +81,32 @@ def test_allowlist_cap_enforced():
 
         entries, errors = parse_allowlist(allowlist_path=al_path, raw_metric_vals=set(), target_thresholds=set())
         assert any("exceeds 25-entry cap" in e for e in errors)
+
+
+def test_new_banned_phrases_fail():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        os.makedirs(os.path.join(tmpdir, "docs"))
+        with open(os.path.join(tmpdir, "docs", "claims_allowlist.txt"), "w") as f:
+            f.write("# empty\n")
+
+        # Test pruned-element retention
+        test_file = os.path.join(tmpdir, "README.md")
+        with open(test_file, "w", encoding="utf-8") as f:
+            f.write("This used pruned-element retention.\n")
+
+        errors = check_claims(root_dir=tmpdir)
+        assert any("Contains prohibited phrase 'pruned-element retention'" in e for e in errors)
+
+        # Test lock contention without evidence path
+        with open(test_file, "w", encoding="utf-8") as f:
+            f.write("Parallel insertion suffers from lock contention.\n")
+
+        errors = check_claims(root_dir=tmpdir)
+        assert any("Contains prohibited phrase 'lock contention'" in e for e in errors)
+
+        # Test race conditions without C11 sentence
+        with open(test_file, "w", encoding="utf-8") as f:
+            f.write("Builds have race conditions.\n")
+
+        errors = check_claims(root_dir=tmpdir)
+        assert any("Contains prohibited phrase 'race conditions'" in e for e in errors)

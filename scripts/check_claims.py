@@ -50,6 +50,14 @@ BANNED_PHRASES = [
     "tsan-clean",
     "threadsanitizer-clean",
     "under 0.3 ms",
+    "edge starvation",
+    "cutting incoming edges",
+    "pruned-element retention",
+    "instruction profiling",
+    "distance compute dominates",
+    "reduced unreachable nodes to",
+    "scheduling race conditions",
+    "real algorithmic",
 ]
 
 # Regex for numbers with units: ms, us, µs, ns, s, QPS, MB, GB, x, %
@@ -273,7 +281,24 @@ def check_claims(root_dir=PROJECT_ROOT):
                 line_lower = line.lower()
                 for phrase in BANNED_PHRASES:
                     if phrase in line_lower:
+                        if phrase == "edge starvation" and "does not explain the gap" in line_lower:
+                            continue
                         errors.append(f"{rel_path}:{line_idx}: Contains prohibited phrase '{phrase}'")
+
+                if "race conditions" in line_lower:
+                    approved_c11 = "parallel builds insert nodes in a nondeterministic order"
+                    if approved_c11 not in line_lower:
+                        errors.append(f"{rel_path}:{line_idx}: Contains prohibited phrase 'race conditions'")
+
+                if "lock contention" in line_lower:
+                    ev_match = re.search(r'(?:results/raw/|\.\./results/raw/)([a-zA-Z0-9_\-\.]+)', line)
+                    has_ev = False
+                    if ev_match:
+                        raw_f = os.path.join(root_dir, "results", "raw", ev_match.group(1))
+                        if os.path.exists(raw_f):
+                            has_ev = True
+                    if not has_ev:
+                        errors.append(f"{rel_path}:{line_idx}: Contains prohibited phrase 'lock contention' without raw evidence path on the same line")
 
             # Special phrase: sub-millisecond
             if "sub-millisecond" in line_lower:

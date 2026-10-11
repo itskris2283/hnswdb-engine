@@ -140,7 +140,7 @@ Be skeptical of your own system. Never make these claims:
 | Forbidden Claim | Why It Is Erroneous | What to Say Instead |
 | :--- | :--- | :--- |
 | **"Claiming unconditional superiority over FAISS"** | FAISS is heavily optimized in C++ and achieves faster index build times on low dimensions. | "HNSWDB achieves competitive parity on Fashion-MNIST search recall and latency, but FAISS builds faster on low dimensions." |
-| **"Claiming the engine is entirely non-blocking"** | The engine uses 1,024 striped spinlocks and a shared mutex; it is fine-grained locking, not lockless. | "We use fine-grained striped spinlocks with sorted lock acquisition to avoid deadlocks without global lock contention." |
+| **"Claiming the engine is entirely non-blocking"** | The engine uses 1,024 striped spinlocks and a shared mutex; it is fine-grained locking, not lockless. | "We use fine-grained striped spinlocks with sorted lock acquisition to avoid deadlocks." |
 | **"Claiming the recall gap is an inherent algorithmic limitation of HNSW"** | False: hnswlib achieves high recall on the identical dataset at $ef_c=100$. | "It is an implementation-specific construction weakness related to candidate degree allocation and heuristic pruning." |
 | **"Claiming ThreadSanitizer verified cleanliness on Windows"** | The local development machine is Windows MSVC where TSan cannot run. | "Linux sanitizer workflows (ASan, UBSan, TSan) are configured in GitHub Actions CI; local host status is honestly reported as NOT RUN." |
 | **"Claiming 3 million duplicate links existed"** | Mathematically impossible in a 5,000-node graph ($5000 \times 32 = 160,000$ maximum links). | "Invariant unit tests verify 0 duplicate links exist in snapshot graphs; our ablation study confirmed dedup had no measurable effect on recall." |
@@ -155,6 +155,6 @@ Be skeptical of your own system. Never make these claims:
 >
 > *Third, I designed a multi-seed ablation benchmark comparing the engine with and without the deduplication logic across 5 random seeds: the recall delta was zero (pure noise). My hypothesis had been completely falsified.*
 >
-> *I immediately retracted the claim from our technical documentation, introduced strict invariant tests to catch invalid assertions, and redesigned our diagnostic approach. By writing 1-NN self-retrieval diagnostics and a systematic 10-configuration ablation matrix, I discovered the real mechanism: heuristic neighbor pruning during overflow reselection under `new_node_degree=M` was starving early-inserted nodes of incoming edges.*
+> *I immediately retracted the claim from our technical documentation, introduced strict invariant tests to catch invalid assertions, and redesigned our diagnostic approach. By writing 1-NN self-retrieval diagnostics and a systematic ablation matrix, we traced the issue to original construction defaults (`new_node_degree="M0"`, `keep_pruned=true`), as detailed in Story 3 and INVESTIGATIONS.md.*
 >
 > *That experience reinforced an essential systems engineering principle: **never confuse a plausible narrative with an isolated, verified cause. Write invariant assertions before writing fixes, and measure before concluding.**"*
