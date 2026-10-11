@@ -46,15 +46,10 @@ def get_resume_bullets_data():
     cur_sm = sm_data.get("engines", {}).get("hnswdb_cured", {})
     legacy_recall_mean = f"{leg_sm.get('recall_1t_mean', 0.0):.4f}"
     cured_recall_mean = f"{cur_sm.get('recall_1t_mean', 0.0):.4f}"
-
-    # Load ablations
-    abl_path = os.path.join(RAW_DIR, "ablations_dataset_b.json")
-    abl_data = load_json(abl_path)
-    configs = {c["name"]: c for c in abl_data.get("configs", [])}
-    leg_cfg = configs.get("degree_M0__keep_True__protect_False", {})
-    cur_cfg = configs.get("degree_M__keep_False__protect_False", {})
-    legacy_build_s = f"{leg_cfg.get('dataset_b', {}).get('build_time_s', 0.0):.2f}"
-    cured_build_s = f"{cur_cfg.get('dataset_b', {}).get('build_time_s', 0.0):.2f}"
+    legacy_recall_min = f"{leg_sm.get('recall_1t_min', 0.0):.4f}"
+    cured_recall_min = f"{cur_sm.get('recall_1t_min', 0.0):.4f}"
+    legacy_unreach_mean = f"{leg_sm.get('unreachable_mean', 0.0):.2f}"
+    cured_unreach_mean = f"{cur_sm.get('unreachable_mean', 0.0):.2f}"
 
     # Load targets
     tg_path = os.path.join(ROOT, "benchmarks", "targets.json")
@@ -68,8 +63,10 @@ def get_resume_bullets_data():
         "fm_p50": fm_p50,
         "legacy_recall_mean": legacy_recall_mean,
         "cured_recall_mean": cured_recall_mean,
-        "legacy_build_s": legacy_build_s,
-        "cured_build_s": cured_build_s,
+        "legacy_recall_min": legacy_recall_min,
+        "cured_recall_min": cured_recall_min,
+        "legacy_unreach_mean": legacy_unreach_mean,
+        "cured_unreach_mean": cured_unreach_mean,
         "n_targets": n_targets,
     }
 

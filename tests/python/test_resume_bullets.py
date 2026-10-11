@@ -69,14 +69,18 @@ def test_resume_bullets_provenance():
         elif placeholder == "cured_recall_mean":
             rec = raw_data["engines"]["hnswdb_cured"]["recall_1t_mean"]
             assert f"{rec:.4f}" == entry["val"]
-        elif placeholder == "legacy_build_s":
-            cfg = next(c for c in raw_data["configs"] if c["name"] == "degree_M0__keep_True__protect_False")
-            b_s = cfg["dataset_b"]["build_time_s"]
-            assert f"{b_s:.2f}" == entry["val"]
-        elif placeholder == "cured_build_s":
-            cfg = next(c for c in raw_data["configs"] if c["name"] == "degree_M__keep_False__protect_False")
-            b_s = cfg["dataset_b"]["build_time_s"]
-            assert f"{b_s:.2f}" == entry["val"]
+        elif placeholder == "legacy_recall_min":
+            rec = raw_data["engines"]["hnswdb_legacy"]["recall_1t_min"]
+            assert f"{rec:.4f}" == entry["val"]
+        elif placeholder == "cured_recall_min":
+            rec = raw_data["engines"]["hnswdb_cured"]["recall_1t_min"]
+            assert f"{rec:.4f}" == entry["val"]
+        elif placeholder == "legacy_unreach_mean":
+            unreach = raw_data["engines"]["hnswdb_legacy"]["unreachable_mean"]
+            assert f"{unreach:.2f}" == entry["val"]
+        elif placeholder == "cured_unreach_mean":
+            unreach = raw_data["engines"]["hnswdb_cured"]["unreachable_mean"]
+            assert f"{unreach:.2f}" == entry["val"]
         elif placeholder == "n_targets":
             assert len(raw_data["targets"]) == int(entry["val"])
 

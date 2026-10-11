@@ -1,5 +1,5 @@
 * Built an HNSW vector database from scratch in C++17 (AVX2/FMA kernels, metadata-filtered search, CRC32 atomic persistence, pybind11 bindings, FastAPI and CLI) with {n_cpp} C++ and {n_py} Python tests; on Fashion-MNIST (60K x 784) it reaches {fm_recall50} recall@10 at ef=50 with p50 {fm_p50} ms, in line with FAISS and hnswlib at the same parameters.
-* Ran a 25-seed ablation on tightly clustered data that traced a recall gap to the original construction defaults, raising mean recall@10 from {legacy_recall_mean} to {cured_recall_mean} and cutting Dataset B build time from {legacy_build_s} s to {cured_build_s} s in the same run.
+* Ran a 25-seed construction study on tightly clustered data that traced a recall gap to the original construction defaults, raising mean recall@10 from {legacy_recall_mean} to {cured_recall_mean} (worst seed from {legacy_recall_min} to {cured_recall_min}) and cutting mean 1-NN self-retrieval failures from {legacy_unreach_mean} to {cured_unreach_mean}.
 * Built a generated-docs pipeline in which every published benchmark number is rendered from raw run JSON, with checkers that fail on hand-edited tables, banned claims, and changed targets ({n_targets} targets frozen in git).
 
 ### Provenance Table
@@ -12,6 +12,8 @@
 | `fm_p50` | {fm_p50} | `results/raw/bench_fashion_mnist_0a9f92db.json` | `engines.hnswdb.seed_42.ef_results[1].latency.p50` | `fashion_mnist_20261010_174828_0a9f92db` |
 | `legacy_recall_mean` | {legacy_recall_mean} | `results/raw/seed_matrix_dataset_b.json` | `engines.hnswdb_legacy.recall_1t_mean` | `seed-matrix-dbead162` |
 | `cured_recall_mean` | {cured_recall_mean} | `results/raw/seed_matrix_dataset_b.json` | `engines.hnswdb_cured.recall_1t_mean` | `seed-matrix-dbead162` |
-| `legacy_build_s` | {legacy_build_s} | `results/raw/ablations_dataset_b.json` | `configs[degree_M0__keep_True__protect_False].dataset_b.build_time_s` | `ablations-9faf2a74` |
-| `cured_build_s` | {cured_build_s} | `results/raw/ablations_dataset_b.json` | `configs[degree_M__keep_False__protect_False].dataset_b.build_time_s` | `ablations-9faf2a74` |
+| `legacy_recall_min` | {legacy_recall_min} | `results/raw/seed_matrix_dataset_b.json` | `engines.hnswdb_legacy.recall_1t_min` | `seed-matrix-dbead162` |
+| `cured_recall_min` | {cured_recall_min} | `results/raw/seed_matrix_dataset_b.json` | `engines.hnswdb_cured.recall_1t_min` | `seed-matrix-dbead162` |
+| `legacy_unreach_mean` | {legacy_unreach_mean} | `results/raw/seed_matrix_dataset_b.json` | `engines.hnswdb_legacy.unreachable_mean` | `seed-matrix-dbead162` |
+| `cured_unreach_mean` | {cured_unreach_mean} | `results/raw/seed_matrix_dataset_b.json` | `engines.hnswdb_cured.unreachable_mean` | `seed-matrix-dbead162` |
 | `n_targets` | {n_targets} | `benchmarks/targets.json` | `targets` | `round5-targets-frozen` |
