@@ -2,7 +2,7 @@
 
 ## 1. Executive Summary
 
-On Fashion-MNIST and on the clustered synthetic set (after the construction defaults were corrected), HNSWDB's recall matches FAISS and hnswlib at equal parameters. Search speed is comparable, and the ordering between engines is not stable across runs on this host. A small number of nodes remain unreachable on clustered data (see target T5 in REPORT.md).
+On Fashion-MNIST and on the clustered synthetic set (after the construction defaults were corrected), HNSWDB's recall matches FAISS and hnswlib at equal parameters. Search speed is comparable, and the ordering between engines is not stable across runs on this host (relative speed varies between runs on this host; treat as parity). A small number of nodes remain unreachable on clustered data (see target T5 in REPORT.md).
 
 ---
 

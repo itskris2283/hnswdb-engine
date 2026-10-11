@@ -1,0 +1,78 @@
+{
+  "run_id": "ranking_stability_20261011_045000_c9stable",
+  "dataset": "fashion_mnist",
+  "target_recall": 0.99,
+  "all_rankings_identical": false,
+  "note": "relative speed varies between runs on this host; treat as parity",
+  "runs": [
+    {
+      "label": "Run 1",
+      "run_id": "fashion_mnist_20261010_174828_0a9f92db",
+      "raw_file": "bench_fashion_mnist_0a9f92db.json",
+      "build_time_s": {
+        "hnswdb": 29.9403,
+        "faiss": 28.2293,
+        "hnswlib": 28.4201
+      },
+      "build_time_order": "faiss < hnswlib < hnswdb",
+      "seq_qps_at_099": {
+        "faiss": 4858.1,
+        "hnswdb": 5434.2,
+        "hnswlib": 3615.5
+      },
+      "seq_qps_order": "hnswdb > faiss > hnswlib",
+      "p50_latency_ms_at_099": {
+        "faiss": 0.2186,
+        "hnswdb": 0.2075,
+        "hnswlib": 0.275
+      },
+      "p50_latency_order": "hnswdb < faiss < hnswlib"
+    },
+    {
+      "label": "Run 2",
+      "run_id": "fashion_mnist_20261011_042950_723b5b0a",
+      "raw_file": "bench_fashion_mnist_723b5b0a.json",
+      "build_time_s": {
+        "hnswdb": 16.2561,
+        "faiss": 23.0591,
+        "hnswlib": 29.0069
+      },
+      "build_time_order": "hnswdb < faiss < hnswlib",
+      "seq_qps_at_099": {
+        "faiss": 5018.6,
+        "hnswdb": 5995.4,
+        "hnswlib": 4198.5
+      },
+      "seq_qps_order": "hnswdb > faiss > hnswlib",
+      "p50_latency_ms_at_099": {
+        "faiss": 0.1915,
+        "hnswdb": 0.1704,
+        "hnswlib": 0.253
+      },
+      "p50_latency_order": "hnswdb < faiss < hnswlib"
+    },
+    {
+      "label": "Run 3",
+      "run_id": "fashion_mnist_20261011_043826_b3b2cd25",
+      "raw_file": "bench_fashion_mnist_b3b2cd25.json",
+      "build_time_s": {
+        "hnswdb": 21.571,
+        "faiss": 17.7602,
+        "hnswlib": 34.9971
+      },
+      "build_time_order": "faiss < hnswdb < hnswlib",
+      "seq_qps_at_099": {
+        "faiss": 4985.7,
+        "hnswdb": 5044.1,
+        "hnswlib": 2902.3
+      },
+      "seq_qps_order": "hnswdb > faiss > hnswlib",
+      "p50_latency_ms_at_099": {
+        "faiss": 0.1848,
+        "hnswdb": 0.1962,
+        "hnswlib": 0.2774
+      },
+      "p50_latency_order": "faiss < hnswdb < hnswlib"
+    }
+  ]
+}

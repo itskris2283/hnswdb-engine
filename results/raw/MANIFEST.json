@@ -254,7 +254,33 @@
       "label": "Fashion-MNIST Self-Retrieval (60K x 784d, sample 5000, ef=400)",
       "sha256": "2e472a72d3caa3ae375f7b383a2f266124895d8bcac5b2575aa284f805eed1d0",
       "size_bytes": 1494
+    },
+    {
+      "file": "bench_fashion_mnist_723b5b0a.json",
+      "run_id": "fashion_mnist_20261011_042950_723b5b0a",
+      "dataset": "fashion_mnist",
+      "label": "Fashion-MNIST (60K x 784d, Euclidean L2)",
+      "created": "2026-10-11T04:38:11.144805+00:00",
+      "sha256": "f6ed842ca6517c49db8b1da0a791e3ffca4b681a4a4c117cc20e7a5d98992908",
+      "size_bytes": 19133
+    },
+    {
+      "file": "bench_fashion_mnist_b3b2cd25.json",
+      "run_id": "fashion_mnist_20261011_043826_b3b2cd25",
+      "dataset": "fashion_mnist",
+      "label": "Fashion-MNIST (60K x 784d, Euclidean L2)",
+      "created": "2026-10-11T04:47:16.023462+00:00",
+      "sha256": "18da85ff3cce4ddc2de3ea355026b9cd629af3e27a7bfcb5307a308c787d3a70",
+      "size_bytes": 19144
+    },
+    {
+      "file": "ranking_stability_fashion_mnist.json",
+      "run_id": "ranking_stability_20261011_045000_c9stable",
+      "dataset": "fashion_mnist",
+      "label": "Ranking Stability (3 repeated Fashion-MNIST runs)",
+      "sha256": "1b61f14f4fba115af613bac24d79f9a9d929674eb2dc05f24a960af2102053b4",
+      "size_bytes": 2277
     }
   ],
-  "last_updated": "2026-10-10T17:57:08.503803+00:00"
+  "last_updated": "2026-10-11T04:47:16.103817+00:00"
 }

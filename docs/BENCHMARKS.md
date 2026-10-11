@@ -84,6 +84,18 @@ Verifies whether identical $ef_{search}$ parameter implies equal algorithmic dis
 | hnswlib | 28.420 | 201.9 |
 <!-- END GENERATED -->
 
+#### Ranking Stability Across Repeated Runs
+
+<!-- BEGIN GENERATED table=ranking_stability run_id=ranking_stability_20261011_045000_c9stable -->
+| Run | Run ID | Build Time Order (fastest to slowest) | Sequential QPS @ R=0.99 (fastest to slowest) | p50 Latency @ R=0.99 (fastest to slowest) |
+| :--- | :--- | :--- | :--- | :--- |
+| Run 1 | `fashion_mnist_20261010_174828_0a9f92db` | faiss < hnswlib < hnswdb | hnswdb > faiss > hnswlib | hnswdb < faiss < hnswlib |
+| Run 2 | `fashion_mnist_20261011_042950_723b5b0a` | hnswdb < faiss < hnswlib | hnswdb > faiss > hnswlib | hnswdb < faiss < hnswlib |
+| Run 3 | `fashion_mnist_20261011_043826_b3b2cd25` | faiss < hnswdb < hnswlib | hnswdb > faiss > hnswlib | faiss < hnswdb < hnswlib |
+
+*Relative speed varies between runs on this host; treat as parity.*
+<!-- END GENERATED -->
+
 ---
 
 ### 2.2 Dataset: `Dataset B (sigma=0.1)` (Clustered Synthetic)

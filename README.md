@@ -127,7 +127,7 @@ Evaluated on **Fashion-MNIST** (60,000 train vectors, 10,000 test vectors, 784 d
 | **Process RSS Delta** | 194.8 MB | 188.9 MB | 201.9 MB | Memory footprint |
 <!-- END GENERATED -->
 
-For detailed analysis, investigations, and trade-offs, see [TRADEOFFS.md](docs/TRADEOFFS.md), [BENCHMARKS.md](docs/BENCHMARKS.md), and [INVESTIGATIONS.md](docs/INVESTIGATIONS.md).
+For detailed analysis, investigations, and trade-offs, see [TRADEOFFS.md](docs/TRADEOFFS.md), [BENCHMARKS.md](docs/BENCHMARKS.md), and [INVESTIGATIONS.md](docs/INVESTIGATIONS.md). Relative speed varies between runs on this host; treat as parity.
 
 ---
 

@@ -488,6 +488,21 @@ def format_recall_table(data: dict, table_name: str) -> str:
             status = "Equivalent (+/- 5%)" if abs(ratio - 1.0) <= 0.05 else "Equivalent (+/- 10%)"
             lines.append(f"| {ds} | {ef_s} | {hd:.1f} | {fd:.1f} | {ratio:.2f}x | {status} |")
 
+    elif table_name.startswith("ranking_stability"):
+        lines.append("| Run | Run ID | Build Time Order (fastest to slowest) | Sequential QPS @ R=0.99 (fastest to slowest) | p50 Latency @ R=0.99 (fastest to slowest) |")
+        lines.append("| :--- | :--- | :--- | :--- | :--- |")
+        for r in data.get("runs", []):
+            lbl = r.get("label", "")
+            rid = r.get("run_id", "")
+            bo = r.get("build_time_order", "")
+            qo = r.get("seq_qps_order", "")
+            lo = r.get("p50_latency_order", "")
+            lines.append(f"| {lbl} | `{rid}` | {bo} | {qo} | {lo} |")
+        note = data.get("note", "")
+        if note:
+            lines.append("")
+            lines.append(f"*{note.capitalize()}.*")
+
     else:
         lines.append(f"*Unknown table type: {table_name}*")
 
