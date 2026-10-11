@@ -221,5 +221,9 @@ Measured distance computations per insert across datasets (diagnostics counters)
 ### 3.2 Profiling and Host Availability
 
 - **Profiling Status:** Evaluated via host profiler check. Non-elevated Windows environment without WSL distribution prevents ETW kernel traces and Linux perf (see recorded notice in `results/raw/profile_build_work_counting_20261010_181658_811df090.txt`).
-- **Empirical Finding:** At high dimensions (Fashion-MNIST 784d), distance compute time dominates and HNSWDB matches hnswlib build throughput within the target ratio (see table above and [BENCHMARKS.md](BENCHMARKS.md)). At low dimensions (32d, 64d), distance compute represents approximately one third to one half of build time, with the remainder consumed by non-distance graph and priority queue operations.
+- **Empirical Finding:**
+
+<!-- BEGIN GENERATED table=investigations_kernel_share run_id=work_counting_20261010_181658_811df090 -->
+The cache-hot kernel estimate accounts for 9.4 percent of the measured Fashion-MNIST build time (a lower bound, since the microbenchmark does not include memory stalls). The remainder is not attributed.
+<!-- END GENERATED -->
 

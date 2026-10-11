@@ -99,3 +99,14 @@ HNSWDB supports expressive JSON/AST metadata queries (`$eq`, `$ne`, `$gt`, `$gte
 2. **Hybrid Execution Path:**
    - **Highly Selective ($\le 0.02$ match fraction or $\le 5,000$ candidates):** Falls back to exact brute-force search over the filtered subset. Graph search in disconnected or sparse subgraphs suffers from topological disconnects; exact subset scanning is faster and delivers exact recall.
    - **Mildly Selective ($> 0.02$ match fraction):** Executes HNSW graph traversal with dynamic expansion: $ef_{\text{effective}} = \min(ef / \text{selectivity}, 10 \cdot ef)$. Non-matching nodes are traversed to maintain connectivity, but only matching nodes enter the candidate result set.
+
+---
+
+## 7. Construction Options and Defaults
+
+HNSWDB supports configurable graph construction parameters, with current defaults chosen for algorithmic alignment:
+- `new_node_degree`: Current default is `"M"`. Setting `new_node_degree="M"` follows the paper's insertion algorithm (M neighbors selected for the new element, M0 as the cap for neighbor lists).
+- `keep_pruned`: Current default is `false`. Setting `keep_pruned=false` matches hnswlib's behavior, discarding candidates rejected by the heuristic neighbor selection rather than back-filling.
+- `protect_last_in_edge`: Current default is `false`. When enabled, prevents evicting a node's sole remaining incoming connection during neighbor list shrinkage.
+- `overflow_selection`: Current default is `"heuristic"`. Selects neighbors during list overflow using the heuristic diversity algorithm rather than simple closest-first selection.
+- `layer_entry`: Current default is `"single"`. Routes greedy search from a single global top-layer entry point down through intermediate levels.

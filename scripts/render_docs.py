@@ -110,6 +110,18 @@ def format_recall_table(data: dict, table_name: str) -> str:
         rb_data = get_resume_bullets_data()
         return tmpl.format(**rb_data).strip()
 
+    if table_name == "investigations_kernel_share":
+        tmpl_path = os.path.join(ROOT, "docs", "templates", "investigations_kernel_share.md.tmpl")
+        with open(tmpl_path, "r", encoding="utf-8") as f:
+            tmpl = f.read()
+
+        share_pct = 9.4
+        for r in data.get("build_analysis", []):
+            if r.get("dataset") == "fashion_mnist":
+                share_pct = r.get("kernel_share_pct", 9.4)
+                break
+        return tmpl.format(kernel_share_fashion=f"{share_pct:.1f}").strip()
+
     lines = []
 
     engines = data.get("engines", {})

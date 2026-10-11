@@ -12,10 +12,9 @@ This document transparently records verified engineering limitations, dataset se
 
 ---
 
-## 2. Build-Time Gap vs hnswlib/FAISS: Causes Not Yet Isolated
+## 2. Build-time comparison with hnswlib and FAISS
 
-- **Observation:** HNSWDB single-thread index construction was slower than `hnswlib` and `FAISS` on small-dimensional datasets. Under cured defaults, build times meet the target ratio relative to hnswlib on Fashion-MNIST and Dataset B (see generated benchmark tables in [BENCHMARKS.md](BENCHMARKS.md)).
-- **Status:** Detailed work counting and profiling in Phase 5 examine remaining distance-computation shares and lock overheads.
+Earlier builds were several times slower than hnswlib on small datasets. Same-run ablations show that most of that gap came from the original construction defaults (M0 neighbors for new nodes and back-filled candidates). With the current defaults, build times are comparable to hnswlib and FAISS in the generated tables. Absolute timings on this laptop vary by two to three times between sessions, so only within-run ratios are reported. No profiler was available on the host, so remaining differences are not attributed to a specific cause.
 
 ---
 

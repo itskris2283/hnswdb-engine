@@ -2,9 +2,7 @@
 
 ## 1. Executive Summary
 
-HNSWDB was engineered from first principles in C++17 as an approximate nearest neighbor (ANN) vector database.
-
-Across all evaluated workloads, every measured figure is rendered directly from verified raw run JSON artifacts. In direct comparison with reference baselines (FAISS and hnswlib), HNSWDB demonstrates competitive search latency and memory efficiency, alongside documented gaps in index build throughput and tightly-clustered graph construction.
+On Fashion-MNIST and on the clustered synthetic set (after the construction defaults were corrected), HNSWDB's recall matches FAISS and hnswlib at equal parameters. Search speed is comparable, and the ordering between engines is not stable across runs on this host. A small number of nodes remain unreachable on clustered data (see target T5 in REPORT.md).
 
 ---
 
@@ -29,9 +27,7 @@ Evaluated on **Fashion-MNIST** ($N=60,000, D=784, M=16, ef_c=100, k=10$) on Wind
 
 ### 3.1 Build-Time Performance
 
-Index build performance is empirically evaluated in `results/raw/work_counting_build.json` and `results/raw/multithread_build.json`:
-- At high vector dimensions (Fashion-MNIST 784d), SIMD distance calculations dominate execution time and HNSWDB achieves build parity relative to hnswlib (see generated summary table above and [BENCHMARKS.md](BENCHMARKS.md)).
-- At low vector dimensions (32d, 64d), distance evaluations take single-digit nanoseconds, meaning non-distance graph operations (priority queue maintenance, candidate list traversal, and striped lock synchronization) account for more than half of construction runtime, explaining the relative build time gap on low-dimensional synthetic benchmarks (see detailed work counting table in [INVESTIGATIONS.md](INVESTIGATIONS.md)).
+Build-time behavior is reported only through the generated tables in BENCHMARKS.md and INVESTIGATIONS.md. See KNOWN_LIMITATIONS.md section 2.
 
 ### 3.2 SIMD Distance Kernel Microbenchmark
 
@@ -53,7 +49,7 @@ Distance computation throughput measured across vector dimensions on host CPU (A
 
 - **hnswlib:** Uses fine-grained `std::mutex` per node array.
 - **FAISS:** Uses OpenMP static work-sharing loops for batch operations.
-- **HNSWDB:** Uses 1,024 striped spinlocks and a dedicated `std::mutex` for label mapping (`label_to_idx_`). Striped spinlocks keep latency low, but parallel insertion throughput experiences lock contention when thread count is greater than physical core count.
+- **HNSWDB:** Uses 1,024 striped spinlocks and a dedicated `std::mutex` for label mapping (`label_to_idx_`).
 
 ---
 
