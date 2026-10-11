@@ -19,12 +19,12 @@ Every measured number in this report is programmatically generated from raw JSON
 | `T4` | Corrected self-retrieval rate >= 0.999 on Dataset B and on Fashion-MNIST | `0.9976` | **MISS** | Dataset B: 0.9995, Fashion-MNIST: 0.9976 |
 | `T5` | Unreachable nodes == 0 (Dataset B mean, Fashion-MNIST) | `12.0000` | **MISS** | Dataset B mean: 9.32, Fashion-MNIST (in sample): 12 |
 | `T6` | HNSWDB single-thread vs multi-thread build recall difference < 0.003 | `0.0014` | **PASS** |  |
-| `T7` | Sequential QPS at recall@10 = 0.99 within 3x of hnswlib (Fashion-MNIST, equal-recall interpolation) | `0.7300` | **PASS** |  |
-| `T8` | Build time, 1 thread, within 3x of hnswlib on Fashion-MNIST and Dataset B | `1.0500` | **PASS** |  |
+| `T7` | Sequential QPS at recall@10 = 0.99 within 3x of hnswlib (Fashion-MNIST, equal-recall interpolation) | `1.1000` | **PASS** |  |
+| `T8` | Build time, 1 thread, within 3x of hnswlib on Fashion-MNIST and Dataset B | `0.6200` | **PASS** |  |
 | `T9` | Build time at max physical threads within 3x of hnswlib (MISS is acceptable if reported) | `1.3900` | **PASS** |  |
-| `T10` | RSS delta within 15% of hnswlib on Fashion-MNIST | `0.0354` | **PASS** |  |
+| `T10` | RSS delta within 15% of hnswlib on Fashion-MNIST | `0.0335` | **PASS** |  |
 | `T11` | Approximation ratio of exact search == 1.0 +/- 1e-6; Fashion-MNIST ratio <= 1.05 | `1.0000` | **PASS** |  |
-| `T12` | All C++ and Python tests pass (counts from run output) | `9 C++ / 57 Python passed` | **PASS** |  |
+| `T12` | All C++ and Python tests pass (counts from run output) | `9 C++ / 72 Python passed` | **PASS** |  |
 | `T13` | Sanitizers: zero findings (status NOT RUN if not executed) | `NOT RUN (Windows host)` | **NOT RUN** |  |
 
 *Target T5 uses the self-retrieval unreachable metric.*
@@ -107,8 +107,8 @@ In the spirit of complete engineering honesty, this section explicitly documents
 
 ## 4. Test Suite Summary
 
-- **C++ GoogleTest Suite:** 9 / 9 test suites passing (`ctest --test-dir build/rel -C Release`)
-- **Python Pytest Suite:** 57 / 57 tests passing (`python -m pytest tests/python -v`)
+- **C++ GoogleTest Suite:** 9 / 9 test suites passing (`ctest`)
+- **Python Pytest Suite:** 72 / 72 tests passing (`python -m pytest tests/python -v`)
 - **Strict Claims Check:** PASSED (`python scripts/check_claims.py`)
 - **Targets Frozen Check:** PASSED (`python scripts/check_targets_unchanged.py`)
 - **Documentation Link Check:** PASSED (`python scripts/check_docs_links.py`)

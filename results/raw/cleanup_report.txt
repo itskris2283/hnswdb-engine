@@ -1,0 +1,195 @@
+================================================================================
+HNSWDB REVIEW DEFECT CLEANUP REPORT (Tasks C1 to C15)
+================================================================================
+Date: 2026-10-11
+Host Environment: Windows 11 AMD64, MSVC 2022 (cl.exe 19.40), Python 3.12.5
+
+1. SUMMARY OF COMPLETED TASKS (C1 to C14)
+--------------------------------------------------------------------------------
+
+Task C1: Replace conclusion about clustered-data gap
+  - Files changed:
+    * Created docs/templates/phase3_conclusion.md.tmpl
+    * docs/INVESTIGATIONS.md: Replaced Section 2.4 with generated block (phase3_conclusion)
+    * REPORT.md: Replaced Phase 3 Conclusion with generated block (phase3_conclusion)
+    * docs/INTERVIEW_PREP.md: Replaced Story 3 with generated block (phase3_conclusion)
+    * scripts/render_docs.py: Added formatter for phase3_conclusion pulling from
+      results/raw/seed_matrix_dataset_b.json and results/raw/ablations_dataset_b.json
+  - Removed outdated claims asserting that new nodes used M instead of M0, that
+    reconfiguring to M0 with pruned retention cured the gap, that unreachable
+    nodes were reduced to 2, and edge starvation as proven root cause.
+
+Task C2: Reachability Metrics Glossary & Disambiguation
+  - Files changed:
+    * docs/INVESTIGATIONS.md: Added Section 1.6 "Reachability Metrics Glossary:
+      Self-Retrieval vs. Graph Reachability" detailing 1-NN self-retrieval failure
+      vs BFS unreachable nodes.
+    * scripts/render_docs.py: Renamed table headers to "Unreachable (self-retrieval, Mean)"
+      in seed_matrix and "Cured Unreachable (BFS)" in decomposition.
+    * docs/INVESTIGATIONS.md: Clarified in scorecard notes that target T5 specifically
+      evaluates self-retrieval failure counts.
+
+Task C3: Corrections Table Update
+  - Files changed:
+    * REPORT.md: Updated Section 1.2 "Corrections to Earlier Claims" with approved
+      verbatim retraction rows covering metric confusion, false fix claim, root cause
+      over-claim, duplicate links bug retraction, and build profiling over-claim.
+    * Repo-wide sweep: Completely purged "instruction profiling" from all documentation
+      and comments outside the explicit retraction row in REPORT.md.
+
+Task C4: Clean Resume Bullets & Number Provenance
+  - Files changed:
+    * Created docs/templates/resume_bullets.md.tmpl
+    * scripts/make_resume_bullets.py: Rewrote to extract all metrics from raw JSON
+      and generate provenance table.
+    * docs/RESUME_BULLETS.md: Rendered resume bullets and provenance table via generated block.
+    * tests/python/test_resume_bullets.py: Added unit test verifying every placeholder
+      and bullet number against raw result files.
+    * scripts/render_docs.py: Integrated table=resume_bullets generator.
+
+Task C5: Formalize Two-Way ANOVA
+  - Files changed:
+    * benchmarks/anova.py: Implemented two_way_anova_without_replication(matrix_5x5)
+      computing Sum of Squares, degrees of freedom, mean squares, and F-statistics.
+    * tests/python/test_anova.py: Added unit tests validating ANOVA correctness.
+    * scripts/render_docs.py: Integrated benchmarks.anova into table=seed_anova.
+
+Task C6: Clean Generated Block Headers
+  - Files changed:
+    * scripts/render_docs.py: Removed duplicate markdown headers immediately preceding
+      generated blocks to prevent visual header repetition.
+    * tests/python/test_clean_headers.py: Added unit test asserting no redundant headers.
+
+Task C7: Measure Fashion-MNIST Self-Retrieval & Update Scorecard
+  - Files changed:
+    * Measured 1-NN self-retrieval on Fashion-MNIST over 5,000 distinct vectors at ef=400:
+      self-retrieval rate = 0.9976 (4,988/5,000 found), 12 unreachable nodes.
+    * Saved results/raw/self_retrieval_fashion_mnist_50033fba.json.
+    * scripts/make_scorecard.py: Updated T4 evaluated against min(Dataset B cured 0.9995,
+      Fashion-MNIST 0.9976) = 0.9976 -> MISS. Updated T5 evaluated against max(Dataset B
+      cured 9.32, Fashion-MNIST 12.0) = 12.0 -> MISS.
+    * results/raw/scorecard.json: Regenerated scorecard.
+
+Task C8: Document True Profiling Reality & Microbenchmark Kernel Share
+  - Files changed:
+    * docs/KNOWN_LIMITATIONS.md: Replaced speculative profiler prose with measured reality
+      (Windows host, lack of PMU counters, 9.4% SIMD kernel share lower bound).
+    * docs/TRADEOFFS.md: Updated Executive Summary and Sections 3.1 & 3.3.
+    * Created docs/templates/investigations_kernel_share.md.tmpl and rendered generated block
+      into docs/INVESTIGATIONS.md Section 3.2.
+    * docs/DESIGN.md: Added Section 7 "Build-Time Profile Analysis and Work Decomposition".
+
+Task C9: Characterize Timing Stability & State Speed Parity
+  - Files changed:
+    * Measured 3 consecutive Fashion-MNIST benchmark runs:
+      bench_fashion_mnist_0a9f92db.json, bench_fashion_mnist_723b5b0a.json, bench_fashion_mnist_b3b2cd25.json.
+    * Generated results/raw/ranking_stability_fashion_mnist.json.
+    * docs/BENCHMARKS.md: Rendered table=ranking_stability in Section 2.1.
+    * README.md & docs/TRADEOFFS.md: Added speed parity rule: "Relative speed varies
+      between runs on this host; treat as parity."
+
+Task C10: Version-Bump Binary Serialization Format to 2
+  - Files changed:
+    * src/hnsw_index.cpp: Bumped format_version to 2; added explicit rejection of v1 with
+      UnsupportedVersion("re-save the index with the current version").
+    * docs/FILE_FORMAT.md: Added Section 5 "Version History" documenting format change.
+    * tests/python/test_crc_matches_zlib.py: Added unit test verifying file format v2 CRC32
+      matches zlib.crc32(data[:-4]) & 0xFFFFFFFF.
+
+Task C11: Clarify Multi-Threaded Build Insertion Race
+  - Files changed:
+    * docs/KNOWN_LIMITATIONS.md Section 4: Replaced race condition text with approved verbatim
+      text detailing fine-grained mutex semantics and concurrent rewrites. Listed concurrency
+      tests by name (test_concurrent_add_search, test_concurrent_search_delete,
+      test_multithread_build_deterministic).
+    * docs/TRADEOFFS.md Section 2: Replaced concurrency prose with approved verbatim text.
+    * docs/DESIGN.md Section 4.2: Updated concurrency architecture documentation.
+
+Task C12: Add Generated Tables to README
+  - Files changed:
+    * scripts/render_docs.py: Added handlers for table=readme_equal_recall,
+      table=readme_clustered_matrix, and table=where_it_loses.
+    * scripts/where_it_loses.py: Created script and generated results/raw/where_it_loses.json.
+    * README.md: Added generated blocks for equal-recall comparison (R=0.95 and R=0.99),
+      5x5 clustered matrix, and Where HNSWDB Loses gap analysis.
+
+Task C13: Expand Banned Phrases in Claims Checker
+  - Files changed:
+    * scripts/check_claims.py: Added strict banned patterns: root cause (unauthorized),
+      instruction profiling, profiling showed, edge starvation (asserted), reduced to 2,
+      new nodes used M, reconfigured to M0, duplicate-links bug, sanitizers clean,
+      zero overhead, lock-free.
+    * docs/INTERVIEW_PREP.md: Swept and verified zero banned phrases.
+    * tests/python/test_check_claims.py: Added unit tests ensuring checker catches all banned phrases.
+
+Task C14: Conformance Tests Audit
+  - Files changed:
+    * Audited all 4 conformance components in tests/python/test_conformance.py and
+      benchmarks/reference_hnsw.py:
+      1. Pure Python reference HNSW implementation (benchmarks/reference_hnsw.py)
+      2. Heuristic selection conformance (test_heuristic_selection_conformance)
+      3. Overflow-pruning conformance (test_overflow_pruning_conformance)
+      4. Layer search conformance (test_search_layer_conformance)
+    * Added test_overflow_pruning_conformance validating degree truncation to Mmax
+      without keep_pruned retention.
+
+
+2. NUMBER VERIFICATION TABLE (Template Placeholders vs Raw JSON)
+--------------------------------------------------------------------------------
+
+| Placeholder | Rendered Value | Raw Result File | JSON Key Path | Status / Flags |
+| :--- | :--- | :--- | :--- | :--- |
+| `legacy_recall_mean` | `0.9972` | `results/raw/seed_matrix_dataset_b.json` | `engines.hnswdb_legacy.recall_1t_mean` | Verified |
+| `cured_recall_mean` | `0.9998` | `results/raw/seed_matrix_dataset_b.json` | `engines.hnswdb_cured.recall_1t_mean` | Verified |
+| `legacy_unreach_mean` | `166.16` | `results/raw/seed_matrix_dataset_b.json` | `engines.hnswdb_legacy.unreachable_mean` | Verified |
+| `cured_unreach_mean` | `9.32` | `results/raw/seed_matrix_dataset_b.json` | `engines.hnswdb_cured.unreachable_mean` | Verified |
+| `legacy_build_s` | `8.51` | `results/raw/ablations_dataset_b.json` | `configs[degree_M0__keep_True__protect_False].dataset_b.build_time_s` | Verified |
+| `cured_build_s` | `0.93` | `results/raw/ablations_dataset_b.json` | `configs[degree_M__keep_False__protect_False].dataset_b.build_time_s` | Verified |
+| `protect_bfs_unreach` | `0` | `results/raw/ablations_dataset_b.json` | `configs[degree_M0__keep_True__protect_True].dataset_b.unreachable_nodes` | Verified |
+| `protect_recall` | `0.9726` | `results/raw/ablations_dataset_b.json` | `configs[degree_M0__keep_True__protect_True].dataset_b.recalls.recall_ef200` | Verified |
+| `kernel_share_fashion`| `9.4` | `results/raw/work_counting_build.json` | `build_analysis[fashion_mnist].kernel_share_pct` | Verified (prompt draft speculated 94.8%; real value is 9.4%) |
+| `n_cpp` | `9` | `results/raw/scorecard.json` | `targets[11].value` | Verified |
+| `n_py` | `72` | `results/raw/scorecard.json` | `targets[11].value` | Verified (grew from 57 to 72 with added unit tests) |
+| `fm_recall50` | `0.9951` | `results/raw/bench_fashion_mnist_0a9f92db.json` | `engines.hnswdb.seed_42.ef_results[1].recall_at_k` | Verified |
+| `fm_p50` | `0.220` | `results/raw/bench_fashion_mnist_0a9f92db.json` | `engines.hnswdb.seed_42.ef_results[1].latency.p50` | Verified |
+| `n_targets` | `13` | `benchmarks/targets.json` | `targets (length)` | Verified |
+
+Notes on Figures:
+- Flag 1 (Kernel Share): Prompt narrative draft mentioned "94.8% pure kernel share", which was an
+  arithmetic typo/draft estimate. Actual raw data in work_counting_build.json is 9.4%. The doc template
+  and prose correctly use 9.4%.
+- Flag 2 (Test Counts): Python test suite grew from 57 to 72 tests due to new verification tests
+  (test_resume_bullets, test_anova, test_clean_headers, test_crc_matches_zlib, test_check_claims,
+  test_self_retrieval, test_conformance). All 72 pass.
+- Flag 3 (T4 & T5 Status): On Fashion-MNIST (sample 5,000 distinct vectors, ef=400), self-retrieval
+  rate is 0.9976 (T4 MISS vs 0.999 threshold), and 12 unreachable nodes remain (T5 MISS vs 0 threshold).
+  Both targets are honestly recorded as MISS on the scorecard.
+
+
+3. VERIFICATION AND CHECKER RESULTS
+--------------------------------------------------------------------------------
+1. CTest (C++ test suite):
+   - Status: PASSED (9/9 test suites passed, 100%)
+   - Suites: test_distance, test_flat_index, test_hnsw_basic, test_hnsw_invariants,
+     test_hnsw_delete, test_errors, test_metadata_filter, test_serialization, test_concurrency.
+
+2. Pytest (Python test suite):
+   - Status: PASSED (72/72 tests passed, 100%)
+
+3. Targets Freeze Check (scripts/check_targets_unchanged.py):
+   - Status: PASSED (benchmarks/targets.json exactly matches git tag round5-targets-frozen)
+
+4. Strict Claims Checker (scripts/check_claims.py):
+   - Status: PASSED (All claims, scoped allowlists, and evidence paths verified successfully)
+
+5. Provenance Checker (scripts/check_provenance.py):
+   - Status: PASSED (23 valid run_id files verified in results/raw/)
+
+6. Documentation Link Checker (scripts/check_docs_links.py):
+   - Status: PASSED (All internal documentation links and relative paths resolve successfully)
+
+7. README Verification (scripts/verify_readme.py):
+   - Status: PASSED (REST API examples and Python quickstart code execute and pass)
+
+OVERALL STATUS: ALL CHECKS PASSED. Zero uncompleted items.
+================================================================================

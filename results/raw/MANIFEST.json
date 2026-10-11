@@ -217,17 +217,17 @@
     },
     {
       "file": "run_all_checks.txt",
-      "sha256": "616973ab2014ee3a0fe5c1181063a6ddce28b0c9d0feca48dccde4fe76f2665b",
+      "sha256": "edcc321c65101f7d102f605176ed623e0087756dbf8ec1cca9acbe01b4d33e86",
       "commit": "72aad13",
       "dataset": "n/a",
       "state": "test_suite_log",
-      "size_bytes": 6870
+      "size_bytes": 10200
     },
     {
       "file": "scorecard.json",
-      "sha256": "542f15b5f723003ed3bef21012a813b4b7e6f96211c2dfd2d5e72eaab65a1c21",
+      "sha256": "f5c1c127a17da84cc794eea8f1068f950912ea1457bf0d492664120154282f69",
       "state": "raw_result",
-      "size_bytes": 2427
+      "size_bytes": 2775
     },
     {
       "file": "seed_matrix_dataset_b.json",
@@ -288,6 +288,24 @@
       "label": "Where HNSWDB Loses (>5% Gap)",
       "sha256": "465e8dcddbf924362b3f067f09887018db68d04aedd0f82d2de01c690aa053bc",
       "size_bytes": 1263
+    },
+    {
+      "file": "check_claims.txt",
+      "sha256": "4e72e8e1e9f3c3a192fed6c796fa67a2ad8e446c07b0394acdaf15c9973bdcb5",
+      "state": "claim_audit",
+      "size_bytes": 290
+    },
+    {
+      "file": "provenance_check.txt",
+      "sha256": "ce11f3ca5f9cbcfc83a5edcac12afe6a6e014d4ca56c394ea098167ed048c7a1",
+      "state": "provenance_audit",
+      "size_bytes": 162
+    },
+    {
+      "file": "cleanup_report.txt",
+      "sha256": "8ace75be01964c37050f1bd4adadc705a65e73adcceea3bc80200ea425615126",
+      "state": "cleanup_report",
+      "size_bytes": 12065
     }
   ],
   "last_updated": "2026-10-11T04:47:16.103817+00:00"

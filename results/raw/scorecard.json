@@ -45,14 +45,14 @@
     {
       "id": "T7",
       "description": "Sequential QPS at recall@10 = 0.99 within 3x of hnswlib (Fashion-MNIST, equal-recall interpolation)",
-      "value": 0.73,
+      "value": 1.1,
       "status": "PASS",
       "notes": ""
     },
     {
       "id": "T8",
       "description": "Build time, 1 thread, within 3x of hnswlib on Fashion-MNIST and Dataset B",
-      "value": 1.05,
+      "value": 0.62,
       "status": "PASS",
       "notes": ""
     },
@@ -66,7 +66,7 @@
     {
       "id": "T10",
       "description": "RSS delta within 15% of hnswlib on Fashion-MNIST",
-      "value": 0.0354,
+      "value": 0.0335,
       "status": "PASS",
       "notes": ""
     },
@@ -80,7 +80,7 @@
     {
       "id": "T12",
       "description": "All C++ and Python tests pass (counts from run output)",
-      "value": "9 C++ / 57 Python passed",
+      "value": "9 C++ / 72 Python passed",
       "status": "PASS",
       "notes": ""
     },

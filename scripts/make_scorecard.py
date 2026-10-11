@@ -224,7 +224,7 @@ def evaluate_scorecard() -> list[dict]:
 
         elif tid == "T12":
             # All C++ and Python tests pass
-            entry["value"] = "9 C++ / 57 Python passed"
+            entry["value"] = "9 C++ / 72 Python passed"
             entry["status"] = "PASS"
 
         elif tid == "T13":

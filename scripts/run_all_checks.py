@@ -27,7 +27,8 @@ def main():
     overall_pass = True
 
     # 1. CTest
-    code, out = run_command(["ctest", "--test-dir", "build/rel", "-C", "Release", "--output-on-failure"])
+    test_dir = "build/cp312-cp312-win_amd64" if os.path.exists(os.path.join(PROJECT_ROOT, "build", "cp312-cp312-win_amd64", "CTestTestfile.cmake")) else "build/rel"
+    code, out = run_command(["ctest", "--test-dir", test_dir, "-C", "Release", "--output-on-failure"])
     all_logs.append(out)
     if code != 0: overall_pass = False
 
@@ -36,13 +37,28 @@ def main():
     all_logs.append(out)
     if code != 0: overall_pass = False
 
-    # 3. Check Claims
+    # 3. Check Targets Unchanged
+    code, out = run_command([sys.executable, "scripts/check_targets_unchanged.py"])
+    all_logs.append(out)
+    if code != 0: overall_pass = False
+
+    # 4. Check Claims
     code, out = run_command([sys.executable, "scripts/check_claims.py"])
     all_logs.append(out)
     if code != 0: overall_pass = False
 
-    # 4. Check Docs Links
+    # 5. Check Provenance
+    code, out = run_command([sys.executable, "scripts/check_provenance.py"])
+    all_logs.append(out)
+    if code != 0: overall_pass = False
+
+    # 6. Check Docs Links
     code, out = run_command([sys.executable, "scripts/check_docs_links.py"])
+    all_logs.append(out)
+    if code != 0: overall_pass = False
+
+    # 7. Verify README
+    code, out = run_command([sys.executable, "scripts/verify_readme.py"])
     all_logs.append(out)
     if code != 0: overall_pass = False
 
