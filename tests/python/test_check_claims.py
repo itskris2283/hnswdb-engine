@@ -110,3 +110,29 @@ def test_new_banned_phrases_fail():
 
         errors = check_claims(root_dir=tmpdir)
         assert any("Contains prohibited phrase 'race conditions'" in e for e in errors)
+
+
+def test_corrections_block_numbers_scanned():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        os.makedirs(os.path.join(tmpdir, "docs"))
+        with open(os.path.join(tmpdir, "docs", "claims_allowlist.txt"), "w") as f:
+            f.write("# empty\n")
+
+        report_file = os.path.join(tmpdir, "REPORT.md")
+        # Line with unverified number in evidence column should fail
+        with open(report_file, "w", encoding="utf-8") as f:
+            f.write("<!-- BEGIN CORRECTIONS -->\n")
+            f.write('| **"3,080,326 duplicate links"** | Round 2 | Error | Unverified number 1.05x here. |\n')
+            f.write("<!-- END CORRECTIONS -->\n")
+
+        errors = check_claims(root_dir=tmpdir)
+        assert any("Unverified number/metric" in e and "1.05x" in e for e in errors)
+
+        # Quoted retracted claim in col 1 without unverified numbers elsewhere should pass
+        with open(report_file, "w", encoding="utf-8") as f:
+            f.write("<!-- BEGIN CORRECTIONS -->\n")
+            f.write('| **"3,080,326 duplicate links"** | Round 2 | Error | Retracted without numbers. |\n')
+            f.write("<!-- END CORRECTIONS -->\n")
+
+        errors = check_claims(root_dir=tmpdir)
+        assert not any("Unverified number/metric" in e for e in errors)

@@ -277,8 +277,8 @@ def check_claims(root_dir=PROJECT_ROOT):
                 errors.append(f"{rel_path}:{line_idx}: Reference to legacy 'index.hnsw' instead of '.hdb'")
 
             # Banned phrases (exempt inside REPORT.md Corrections section where earlier claims are explicitly retracted)
+            line_lower = line.lower()
             if not in_corrections:
-                line_lower = line.lower()
                 for phrase in BANNED_PHRASES:
                     if phrase in line_lower:
                         if phrase == "edge starvation" and "does not explain the gap" in line_lower:
@@ -310,7 +310,7 @@ def check_claims(root_dir=PROJECT_ROOT):
                     )
 
             # Special phrase: L2SqrSIMD16Ext
-            if "l2sqrsimd16ext" in line_lower:
+            if "l2sqrsimd16ext" in line_lower and not in_corrections:
                 is_hnswlib = "hnswlib" in line_lower
                 has_perf_claim = any(
                     word in line_lower
@@ -359,10 +359,19 @@ def check_claims(root_dir=PROJECT_ROOT):
                         )
 
             # Numbers with units & recall decimals outside generated blocks
-            if not in_generated and not in_corrections:
+            if not in_generated:
+                line_for_nums = line
+                if in_corrections and line.strip().startswith("|"):
+                    cols = line.split("|")
+                    if len(cols) >= 3:
+                        # Ignore numbers inside quoted retracted claims in the first column
+                        col1 = cols[1]
+                        col1_masked = re.sub(r'"[^"]*"', lambda m: " " * len(m.group(0)), col1)
+                        line_for_nums = "|" + col1_masked + "|" + "|".join(cols[2:])
+
                 # Find all numbers with units
-                unit_matches = NUMBER_WITH_UNIT_RE.findall(line)
-                decimal_matches = RECALL_DECIMAL_RE.findall(line)
+                unit_matches = NUMBER_WITH_UNIT_RE.findall(line_for_nums)
+                decimal_matches = RECALL_DECIMAL_RE.findall(line_for_nums)
                 candidates = unit_matches + decimal_matches
 
                 for val in candidates:
