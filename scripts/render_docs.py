@@ -99,6 +99,17 @@ def format_recall_table(data: dict, table_name: str) -> str:
             protect_recall=protect_recall,
         ).strip()
 
+    if table_name.startswith("resume_bullets"):
+        tmpl_path = os.path.join(ROOT, "docs", "templates", "resume_bullets.md.tmpl")
+        with open(tmpl_path, "r", encoding="utf-8") as f:
+            tmpl = f.read()
+
+        if ROOT not in sys.path:
+            sys.path.insert(0, ROOT)
+        from scripts.make_resume_bullets import get_resume_bullets_data
+        rb_data = get_resume_bullets_data()
+        return tmpl.format(**rb_data).strip()
+
     lines = []
 
     engines = data.get("engines", {})
