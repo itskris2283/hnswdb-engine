@@ -56,7 +56,49 @@ def load_raw_results() -> dict:
 
 
 def format_recall_table(data: dict, table_name: str) -> str:
-    """Format a recall/latency table from raw benchmark data."""
+    """Format a recall/latency table or generated template from raw benchmark data."""
+    if table_name == "phase3_conclusion":
+        tmpl_path = os.path.join(ROOT, "docs", "templates", "phase3_conclusion.md.tmpl")
+        with open(tmpl_path, "r", encoding="utf-8") as f:
+            tmpl = f.read()
+
+        sm_path = os.path.join(RAW_DIR, "seed_matrix_dataset_b.json")
+        with open(sm_path, "r", encoding="utf-8") as f:
+            sm_data = json.load(f)
+
+        abl_path = os.path.join(RAW_DIR, "ablations_dataset_b.json")
+        with open(abl_path, "r", encoding="utf-8") as f:
+            abl_data = json.load(f)
+
+        leg_sm = sm_data.get("engines", {}).get("hnswdb_legacy", {})
+        cur_sm = sm_data.get("engines", {}).get("hnswdb_cured", {})
+
+        legacy_recall_mean = f"{leg_sm.get('recall_1t_mean', 0.0):.4f}"
+        cured_recall_mean = f"{cur_sm.get('recall_1t_mean', 0.0):.4f}"
+        legacy_unreach_mean = f"{leg_sm.get('unreachable_mean', 0.0):.2f}"
+        cured_unreach_mean = f"{cur_sm.get('unreachable_mean', 0.0):.2f}"
+
+        abl_configs = {c["name"]: c for c in abl_data.get("configs", [])}
+        leg_cfg = abl_configs.get("degree_M0__keep_True__protect_False", {})
+        cur_cfg = abl_configs.get("degree_M__keep_False__protect_False", {})
+        prot_cfg = abl_configs.get("degree_M0__keep_True__protect_True", {})
+
+        legacy_build_s = f"{leg_cfg.get('dataset_b', {}).get('build_time_s', 0.0):.2f}"
+        cured_build_s = f"{cur_cfg.get('dataset_b', {}).get('build_time_s', 0.0):.2f}"
+        protect_bfs_unreach = str(prot_cfg.get("dataset_b", {}).get("unreachable_nodes", 0))
+        protect_recall = f"{prot_cfg.get('dataset_b', {}).get('recalls', {}).get('recall_ef200', 0.0):.4f}"
+
+        return tmpl.format(
+            legacy_recall_mean=legacy_recall_mean,
+            cured_recall_mean=cured_recall_mean,
+            legacy_unreach_mean=legacy_unreach_mean,
+            cured_unreach_mean=cured_unreach_mean,
+            legacy_build_s=legacy_build_s,
+            cured_build_s=cured_build_s,
+            protect_bfs_unreach=protect_bfs_unreach,
+            protect_recall=protect_recall,
+        ).strip()
+
     lines = []
 
     engines = data.get("engines", {})
@@ -64,11 +106,15 @@ def format_recall_table(data: dict, table_name: str) -> str:
     dataset_info = data.get("dataset_info", {})
 
     # Header
-    lines.append(f"**Dataset**: {data.get('dataset', 'unknown')} "
-                 f"({dataset_info.get('n_train', '?')} x {dataset_info.get('dim', '?')}d) | "
-                 f"**M**={params.get('M', '?')} | **efC**={params.get('ef_construction', '?')} | "
-                 f"**k**={params.get('k', '?')}")
-    lines.append("")
+    if table_name.startswith("scorecard"):
+        lines.append("**Scorecard (multiple datasets)**")
+        lines.append("")
+    elif "dataset" in data and "n_train" in dataset_info and "dim" in dataset_info:
+        lines.append(f"**Dataset**: {data['dataset']} "
+                     f"({dataset_info['n_train']} x {dataset_info['dim']}d) | "
+                     f"**M**={params.get('M', '?')} | **efC**={params.get('ef_construction', '?')} | "
+                     f"**k**={params.get('k', '?')}")
+        lines.append("")
 
     if table_name.startswith("recall"):
         # Recall table
@@ -172,6 +218,8 @@ def format_recall_table(data: dict, table_name: str) -> str:
                 val = f"{t['value']:.4f}" if isinstance(t["value"], float) else str(t["value"])
                 status_badge = f"**{t['status']}**"
                 lines.append(f"| `{t['id']}` | {t['description']} | `{val}` | {status_badge} |")
+            lines.append("")
+            lines.append("*Target T5 uses the self-retrieval unreachable metric.*")
         else:
             lines.append("*Scorecard not yet generated*")
 
@@ -250,7 +298,7 @@ def format_recall_table(data: dict, table_name: str) -> str:
             lines.append(f"| {m} | {rec:.4f} |")
 
     elif table_name == "seed_matrix":
-        lines.append("| Engine | 1T Recall (Mean +/- Std) | 1T Range [Min, Max] | 4T Recall (Mean +/- Std) | 4T Range [Min, Max] | Unreachable (Mean) |")
+        lines.append("| Engine | 1T Recall (Mean +/- Std) | 1T Range [Min, Max] | 4T Recall (Mean +/- Std) | 4T Range [Min, Max] | Unreachable (self-retrieval, Mean) |")
         lines.append("| :--- | :--- | :--- | :--- | :--- | :--- |")
         for eng, stats in data.get("engines", {}).items():
             r1_m = stats.get("recall_1t_mean", 0.0)
@@ -272,18 +320,25 @@ def format_recall_table(data: dict, table_name: str) -> str:
         lines.append("| Engine | Data Seed SS Share | Build Seed SS Share | Residual SS Share | F-stat (Data Seed) | F-stat (Build Seed) |")
         lines.append("| :--- | ---: | ---: | ---: | ---: | ---: |")
         for eng, stats in data.get("engines", {}).items():
-            anova = stats.get("anova_1t", {})
-            d_share = anova.get("pct_ss_data", 0.0)
-            b_share = anova.get("pct_ss_build", 0.0)
-            r_share = anova.get("pct_ss_residual", 0.0)
-            f_data = anova.get("f_stat_data", 0.0)
-            f_build = anova.get("f_stat_build", 0.0)
+            anova = stats.get("anova_1t")
+            if not anova:
+                raise ValueError(f"Missing anova_1t data for engine {eng}")
+            d_share = anova.get("share_data_percent")
+            b_share = anova.get("share_build_percent")
+            r_share = anova.get("share_error_percent")
+            if d_share is None or b_share is None or r_share is None:
+                raise ValueError(f"Missing variance share percentages for engine {eng}")
+            ss_data = anova.get("ss_data", 0.0)
+            ss_build = anova.get("ss_build", 0.0)
+            ss_error = anova.get("ss_error", 0.0)
+            f_data = 4.0 * (ss_data / ss_error) if ss_error > 0 else 0.0
+            f_build = 4.0 * (ss_build / ss_error) if ss_error > 0 else 0.0
             lines.append(
                 f"| **{eng}** | {d_share:.1f}% | {b_share:.1f}% | {r_share:.1f}% | {f_data:.2f} | {f_build:.2f} |"
             )
 
     elif table_name == "ablations":
-        lines.append("| Configuration | Initial Degree | Keep Pruned | Protect Edge | Dataset B Recall@200 | Dataset B Build (s) | Dataset B Unreachable | F-MNIST Recall@100 | All Targets Pass |")
+        lines.append("| Configuration | Initial Degree | Keep Pruned | Protect Edge | Dataset B Recall@200 | Dataset B Build (s) | Dataset B Unreachable (BFS) | F-MNIST Recall@100 | All Targets Pass |")
         lines.append("| :--- | :--- | :--- | :--- | ---: | ---: | ---: | ---: | :--- |")
         for cfg in data.get("configs", []):
             name = cfg.get("name", "")
@@ -303,7 +358,7 @@ def format_recall_table(data: dict, table_name: str) -> str:
             )
 
     elif table_name == "decomposition":
-        lines.append("| Elements (N) | Legacy Unreachable | Legacy Zero In-Degree | Legacy Reciprocal Links | Cured Unreachable | Cured Zero In-Degree | Cured Reciprocal Links | Cured Mean Degree |")
+        lines.append("| Elements (N) | Legacy Unreachable (BFS) | Legacy Zero In-Degree | Legacy Reciprocal Links | Cured Unreachable (BFS) | Cured Zero In-Degree | Cured Reciprocal Links | Cured Mean Degree |")
         lines.append("| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |")
         leg_traj = data.get("comparisons", {}).get("legacy", {}).get("trajectory", [])
         cur_traj = data.get("comparisons", {}).get("cured", {}).get("trajectory", [])

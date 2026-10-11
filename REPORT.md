@@ -9,7 +9,7 @@ Every measured number in this report is programmatically generated from raw JSON
 ### Audited Scorecard (Fixed Targets Evaluated by Code)
 
 <!-- BEGIN GENERATED table=scorecard run_id=A_20261010_174754_a9f1a6f6 -->
-**Dataset**: A (5000 x 32d) | **M**=16 | **efC**=100 | **k**=10
+**Scorecard (multiple datasets)**
 
 | ID | Target Description | Value | Status |
 | :--- | :--- | :--- | :--- |
@@ -26,9 +26,19 @@ Every measured number in this report is programmatically generated from raw JSON
 | `T11` | Approximation ratio of exact search == 1.0 +/- 1e-6; Fashion-MNIST ratio <= 1.05 | `1.0000` | **PASS** |
 | `T12` | All C++ and Python tests pass (counts from run output) | `9 C++ / 57 Python passed` | **PASS** |
 | `T13` | Sanitizers: zero findings (status NOT RUN if not executed) | `NOT RUN (Windows host)` | **NOT RUN** |
+
+*Target T5 uses the self-retrieval unreachable metric.*
 <!-- END GENERATED -->
 
 *Note on T5 (MISS): On tightly-clustered synthetic data ($\sigma=0.1$), HNSWDB exhibits 9.32 mean unreachable nodes (target is 0). This limitation is investigated and documented in Section 2 and [INVESTIGATIONS.md](docs/INVESTIGATIONS.md).*
+
+### Phase 3 Conclusion: Clustered-Data Gap Analysis
+
+<!-- BEGIN GENERATED table=phase3_conclusion run_id=ablations-9faf2a74 -->
+Ablations on Dataset B (sigma 0.1, M=16, efC=100) over a 5x5 data-seed by build-seed matrix show that the recall gap came from the original construction defaults: each new node selected M0 neighbors and back-filled candidates rejected by the neighbor-selection heuristic (new_node_degree="M0", keep_pruned=true). Switching to reference-style semantics (new_node_degree="M", keep_pruned=false) raised mean recall@10 at ef=200 from 0.9972 to 0.9998, reduced the mean number of nodes that fail 1-NN self-retrieval from 166.16 to 9.32, and reduced Dataset B build time from 8.51 s to 0.93 s within the same ablation run.
+
+Protecting each node's last incoming edge reduced BFS-unreachable nodes to 0 without improving recall (0.9726), so pure in-edge starvation does not explain the gap. Leading hypothesis, not isolated by a direct test: back-filled intra-cluster links crowd out long-range links and reduce navigability. About 9.32 nodes per index still fail self-retrieval, so target T5 remains a MISS.
+<!-- END GENERATED -->
 
 ---
 

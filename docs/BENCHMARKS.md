@@ -32,8 +32,6 @@ All runs were executed on **Windows 11 x86_64** (Intel Core i7-8650U, MSVC 2022 
 Verifies whether identical $ef_{search}$ parameter implies equal algorithmic distance work:
 
 <!-- BEGIN GENERATED table=ef_semantics run_id=query_ef_semantics_20261010_181658_2464a233 -->
-**Dataset**: unknown (? x ?d) | **M**=? | **efC**=? | **k**=?
-
 | Dataset | ef_search | HNSWDB Distances / Query | FAISS Distances / Query | Ratio (HNSWDB / FAISS) | Work Invariance Status |
 | :--- | ---: | ---: | ---: | ---: | :--- |
 | A | 10 | 336.3 | 340.8 | 0.99x | Equivalent (+/- 5%) |
@@ -161,8 +159,6 @@ Verifies whether identical $ef_{search}$ parameter implies equal algorithmic dis
 Evaluated at 4 physical threads (host maximum) with median of 3 repeats:
 
 <!-- BEGIN GENERATED table=multithread_build run_id=multithread_build_20261010_180617_73c07096 -->
-**Dataset**: unknown (? x ?d) | **M**=? | **efC**=? | **k**=?
-
 | Dataset | HNSWDB 4T Build (s) | hnswlib 4T Build (s) | Ratio vs hnswlib | Target Status |
 | :--- | ---: | ---: | ---: | :--- |
 | Dataset B (20K x 64d) | 2.522 | 1.809 | 1.39x | **PASS** |
@@ -176,8 +172,6 @@ Evaluated at 4 physical threads (host maximum) with median of 3 repeats:
 Log-linear interpolation across $ef_{search} \in \{10, 20, 50, 100, 200, 400\}$ to determine exact latency and throughput at target recall milestones:
 
 <!-- BEGIN GENERATED table=equal_recall run_id=equal_recall_20261010_174753 -->
-**Dataset**: unknown (? x ?d) | **M**=? | **efC**=? | **k**=?
-
 | Dataset | Target Recall | Engine | Status | Interp. p50 (ms) | Interp. Seq QPS | 4T Batch QPS | 8T (HT) Batch QPS |
 | :--- | ---: | :--- | :--- | ---: | ---: | ---: | ---: |
 | A | 0.90 | **faiss** | achieved | 0.0231 | 42,079 | 246,719 | 403,437 |
@@ -225,8 +219,6 @@ Log-linear interpolation across $ef_{search} \in \{10, 20, 50, 100, 200, 400\}$ 
 Evaluates predicate-filtered search across selectivity thresholds ($0.1\%$ to $100\%$) on 10,000 vectors (64d, $M=16, ef_c=100$) vs exact NumPy brute force filtering baseline:
 
 <!-- BEGIN GENERATED table=filtered_search run_id=filtered_20261010_180154_e2247004 -->
-**Dataset**: unknown (? x ?d) | **M**=? | **efC**=? | **k**=?
-
 | Selectivity | ef_search | Recall@10 | HNSWDB p50 (ms) | NumPy BF p50 (ms) | HNSWDB Seq QPS | 4T Batch QPS |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: |
 | 0.1% (0.1pct) | 50 | 1.0000 | 0.0117 | 0.0150 | 79,259 | 112,887 |

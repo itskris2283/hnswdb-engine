@@ -14,6 +14,13 @@ All figures in this document are programmatically rendered from raw result files
 
 ---
 
+## Reachability Metrics Glossary
+
+- **Unreachable (self-retrieval):** a node whose own vector, used as a query with a large ef, does not return that node (or an identical vector) as the top result. This is the metric used for target T5 and for the seed matrix.
+- **Unreachable (BFS):** a node that cannot be reached from the entry point by following layer-0 links. This is the metric used in the ablation and decomposition tables.
+
+---
+
 ## 1. Recall Gap on Tightly-Clustered Data
 
 ### 1.1 Problem Statement
@@ -32,8 +39,6 @@ The distance kernel is correct.
 #### Hypothesis 2: efC sensitivity — CONVERGING
 
 <!-- BEGIN GENERATED table=inv_efc run_id=investigation_recall_gap -->
-**Dataset**: unknown (? x ?d) | **M**=? | **efC**=? | **k**=?
-
 | efC | Recall@10 (ef=200) |
 | ---: | ---: |
 | 50 | 0.9638 |
@@ -48,8 +53,6 @@ Increasing $ef_c$ improves recall, reaching 1.0000 at $ef_c=400$.
 #### Hypothesis 3: Seed sensitivity — HIGH VARIANCE
 
 <!-- BEGIN GENERATED table=inv_seed run_id=investigation_recall_gap -->
-**Dataset**: unknown (? x ?d) | **M**=? | **efC**=? | **k**=?
-
 | Seed | Recall@10 (ef=200, efC=100) |
 | ---: | ---: |
 | 0 | 0.9992 |
@@ -66,8 +69,6 @@ Range across seeds exhibits high sensitivity as shown in the table above; seed 4
 #### Hypothesis 4: Sigma sweep
 
 <!-- BEGIN GENERATED table=inv_sigma run_id=investigation_recall_gap -->
-**Dataset**: unknown (? x ?d) | **M**=? | **efC**=? | **k**=?
-
 | Sigma | Recall@10 (ef=200) |
 | ---: | ---: |
 | 0.05 | 0.9681 |
@@ -95,8 +96,6 @@ Range across seeds exhibits high sensitivity as shown in the table above; seed 4
 #### Hypothesis 7: M sensitivity
 
 <!-- BEGIN GENERATED table=inv_m run_id=investigation_recall_gap -->
-**Dataset**: unknown (? x ?d) | **M**=? | **efC**=? | **k**=?
-
 | M | Recall@10 (ef=200, efC=100) |
 | ---: | ---: |
 | 8 | 0.9847 |
@@ -116,13 +115,13 @@ When data has very tight clusters ($\sigma \le 0.2$):
 1. Nodes in the same cluster have very similar distances to each other and to the query point.
 2. The heuristic `select_neighbors_heuristic` prunes intra-cluster links aggressively because $d(\text{candidate}, \text{selected}) < d(\text{candidate}, \text{query})$ is easily satisfied.
 3. During overflow reselection (when a node already has $M_0=32$ neighbors and a new link is added), existing links to early-inserted nodes may be evicted.
-4. Over thousands of insertions, some early nodes lose incoming edges, becoming search-unreachable.
+4. Over thousands of insertions, some early nodes lose connectivity, becoming search-unreachable.
 5. The search terminates early because greedy descent cannot find traversable paths to these nodes.
 
 Supporting evidence in `results/raw/investigation_recall_gap.json`:
-- 505 nodes unreachable by 1-NN self-retrieval (vs 7 for hnswlib).
-- All 33 zero/low-recall queries target unreachable ground-truth neighbors.
-- $ef_c=400$ produces 0 unreachable nodes and parity recall.
+- For data seed 42, 505 nodes failed 1-NN self-retrieval (vs 7 for hnswlib; see section 2 for 25-seed matrix means).
+- All 33 zero/low-recall queries on data seed 42 target ground-truth neighbors that failed self-retrieval.
+- $ef_c=400$ produces 0 unreachable nodes on data seed 42 and parity recall.
 
 ### 1.4 Mitigation Analysis
 
@@ -143,9 +142,7 @@ Full algorithmic isolation and ablation experiments are conducted in Phase 3 bel
 To distinguish data sample variance from stochastic graph construction variance, 25 seed combinations (data seeds 0 to 4 crossed with build seeds 0 to 4) were evaluated on Dataset B ($20\text{k} \times 64\text{d}, \sigma=0.1, M=16, ef_c=100$). Single-threaded (1T) and 4-threaded (4T) builds were recorded across all four engines.
 
 <!-- BEGIN GENERATED table=seed_matrix run_id=seed-matrix-dbead162 -->
-**Dataset**: Dataset B (20K x 64d, 50 clusters, sigma=0.1) (? x ?d) | **M**=16 | **efC**=100 | **k**=10
-
-| Engine | 1T Recall (Mean +/- Std) | 1T Range [Min, Max] | 4T Recall (Mean +/- Std) | 4T Range [Min, Max] | Unreachable (Mean) |
+| Engine | 1T Recall (Mean +/- Std) | 1T Range [Min, Max] | 4T Recall (Mean +/- Std) | 4T Range [Min, Max] | Unreachable (self-retrieval, Mean) |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **hnswdb_legacy** | 0.9972 +/- 0.0037 | [0.9885, 1.0000] | 0.9970 +/- 0.0037 | [0.9883, 1.0000] | 166.2 |
 | **hnswdb_cured** | 0.9998 +/- 0.0005 | [0.9974, 1.0000] | 0.9985 +/- 0.0008 | [0.9966, 0.9998] | 9.3 |
@@ -156,14 +153,12 @@ To distinguish data sample variance from stochastic graph construction variance,
 Two-way analysis of variance (ANOVA) on Recall@10 across the seed matrix:
 
 <!-- BEGIN GENERATED table=seed_anova run_id=seed-matrix-dbead162 -->
-**Dataset**: Dataset B (20K x 64d, 50 clusters, sigma=0.1) (? x ?d) | **M**=16 | **efC**=100 | **k**=10
-
 | Engine | Data Seed SS Share | Build Seed SS Share | Residual SS Share | F-stat (Data Seed) | F-stat (Build Seed) |
 | :--- | ---: | ---: | ---: | ---: | ---: |
-| **hnswdb_legacy** | 0.0% | 0.0% | 0.0% | 0.00 | 0.00 |
-| **hnswdb_cured** | 0.0% | 0.0% | 0.0% | 0.00 | 0.00 |
-| **hnswlib** | 0.0% | 0.0% | 0.0% | 0.00 | 0.00 |
-| **faiss** | 0.0% | 0.0% | 0.0% | 0.00 | 0.00 |
+| **hnswdb_legacy** | 22.8% | 10.2% | 67.0% | 1.36 | 0.61 |
+| **hnswdb_cured** | 27.4% | 13.8% | 58.9% | 1.86 | 0.94 |
+| **hnswlib** | 31.2% | 11.4% | 57.4% | 2.17 | 0.79 |
+| **faiss** | 12.7% | 6.0% | 81.3% | 0.62 | 0.30 |
 <!-- END GENERATED -->
 
 ### 2.2 Ablation Study Across 10 Parameter Configurations
@@ -171,9 +166,7 @@ Two-way analysis of variance (ANOVA) on Recall@10 across the seed matrix:
 To isolate the construction defect, 10 systematic configurations were benchmarked across Dataset B and Fashion-MNIST:
 
 <!-- BEGIN GENERATED table=ablations run_id=ablations-9faf2a74 -->
-**Dataset**: unknown (? x ?d) | **M**=? | **efC**=? | **k**=?
-
-| Configuration | Initial Degree | Keep Pruned | Protect Edge | Dataset B Recall@200 | Dataset B Build (s) | Dataset B Unreachable | F-MNIST Recall@100 | All Targets Pass |
+| Configuration | Initial Degree | Keep Pruned | Protect Edge | Dataset B Recall@200 | Dataset B Build (s) | Dataset B Unreachable (BFS) | F-MNIST Recall@100 | All Targets Pass |
 | :--- | :--- | :--- | :--- | ---: | ---: | ---: | ---: | :--- |
 | `degree_M0__keep_True__protect_False` | M0 | True | False | 0.9716 | 8.51s | 2 | 1.0000 | MISS |
 | `degree_M0__keep_True__protect_True` | M0 | True | True | 0.9726 | 10.78s | 0 | 1.0000 | MISS |
@@ -192,9 +185,7 @@ To isolate the construction defect, 10 systematic configurations were benchmarke
 Graph connectivity diagnostics measured at dataset size checkpoints ($N \in \{1000, 2000, 5000, 10000, 20000\}$):
 
 <!-- BEGIN GENERATED table=decomposition run_id=decomp-e111e7e5 -->
-**Dataset**: Dataset B (20K x 64d, 50 clusters, sigma=0.1) (? x ?d) | **M**=? | **efC**=? | **k**=?
-
-| Elements (N) | Legacy Unreachable | Legacy Zero In-Degree | Legacy Reciprocal Links | Cured Unreachable | Cured Zero In-Degree | Cured Reciprocal Links | Cured Mean Degree |
+| Elements (N) | Legacy Unreachable (BFS) | Legacy Zero In-Degree | Legacy Reciprocal Links | Cured Unreachable (BFS) | Cured Zero In-Degree | Cured Reciprocal Links | Cured Mean Degree |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | 1000 | 0 | 0 | 67.7% | 0 | 0 | 95.7% | 9.22 |
 | 2000 | 0 | 0 | 86.1% | 0 | 0 | 96.1% | 9.66 |
@@ -205,15 +196,11 @@ Graph connectivity diagnostics measured at dataset size checkpoints ($N \in \{10
 
 ### 2.4 Algorithmic Isolation and Identified Defect
 
-Root cause:
-evidence: results/raw/ablations_dataset_b.json
+<!-- BEGIN GENERATED table=phase3_conclusion run_id=ablations-9faf2a74 -->
+Ablations on Dataset B (sigma 0.1, M=16, efC=100) over a 5x5 data-seed by build-seed matrix show that the recall gap came from the original construction defaults: each new node selected M0 neighbors and back-filled candidates rejected by the neighbor-selection heuristic (new_node_degree="M0", keep_pruned=true). Switching to reference-style semantics (new_node_degree="M", keep_pruned=false) raised mean recall@10 at ef=200 from 0.9972 to 0.9998, reduced the mean number of nodes that fail 1-NN self-retrieval from 166.16 to 9.32, and reduced Dataset B build time from 8.51 s to 0.93 s within the same ablation run.
 
-The recall ceiling and build time slowdown were caused by combining initial layer 0 link allocation `new_node_degree = "M0"` (32 links) with `keep_pruned = true` in neighbor selection. When `keep_pruned` was enabled, candidates rejected by the heuristic were backfilled into node neighbor lists up to degree 32. In clustered distributions, these backfilled edges formed dense local intra-cluster connections that crowded out inter-cluster bridges and triggered massive reverse-link overflow reselections during insertions.
-
-Changing the default construction options to `new_node_degree = "M"` (16 links) and `keep_pruned = false` aligns HNSWDB with the reference algorithm:
-- Eliminates unreachable nodes on Dataset B, reducing unreachable count from 166–505 down to single digits (see table above).
-- Exceeds target T5 on Dataset B, reaching full recall convergence.
-- Substantially accelerates single-thread construction time across both Dataset B and Fashion-MNIST as measured in the ablation table above.
+Protecting each node's last incoming edge reduced BFS-unreachable nodes to 0 without improving recall (0.9726), so pure in-edge starvation does not explain the gap. Leading hypothesis, not isolated by a direct test: back-filled intra-cluster links crowd out long-range links and reduce navigability. About 9.32 nodes per index still fail self-retrieval, so target T5 remains a MISS.
+<!-- END GENERATED -->
 
 ---
 
@@ -224,8 +211,6 @@ Changing the default construction options to `new_node_degree = "M"` (16 links) 
 Measured distance computations per insert across datasets (diagnostics counters) and estimated pure SIMD arithmetic share using kernel latencies from `results/raw/kernel_microbench.json`:
 
 <!-- BEGIN GENERATED table=work_counting run_id=work_counting_20261010_181658_811df090 -->
-**Dataset**: unknown (? x ?d) | **M**=? | **efC**=? | **k**=?
-
 | Dataset | Dimension | Elements | Distance Computations / Insert | Total Build Distances | SIMD Kernel Latency (ns) | Est. Pure Kernel Time (s) | Measured Build Time (s) | Pure Kernel Share (%) |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | A | 32 | 5,000 | 1573.3 | 7,866,263 | 7.55 | 0.059 | 0.165 | 36.0% |

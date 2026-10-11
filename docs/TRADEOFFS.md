@@ -38,8 +38,6 @@ Index build performance is empirically evaluated in `results/raw/work_counting_b
 Distance computation throughput measured across vector dimensions on host CPU (AVX2+FMA):
 
 <!-- BEGIN GENERATED table=kernel_microbench run_id=kernel_microbench -->
-**Dataset**: unknown (? x ?d) | **M**=? | **efC**=? | **k**=?
-
 **SIMD Kernel**: avx2 (AVX2+FMA)
 
 | Dimension | Latency (ns/eval) | Throughput (M-evals/s) | Effective GFLOPS |

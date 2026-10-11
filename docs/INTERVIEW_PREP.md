@@ -64,15 +64,12 @@ When an interviewer asks for a comprehensive architectural walkthrough (10 minut
 - **Result:** Retracted the unproven claim completely; built regression tests to permanently prevent unfalsified hypotheses from entering docs; and redirected effort toward isolating the actual construction mechanism.
 
 ### Story 3: The Clustered-Data Graph Construction Ablation
-- **Situation:** On synthetic Dataset B ($20,000 \times 64\text{d}$, 50 Gaussian clusters, $\sigma=0.1$), HNSWDB reached an early recall plateau at $ef_c=100$, whereas FAISS and hnswlib achieved near-perfect recall. Earlier reports dismissed this as an inherent "algorithmic limitation".
-- **Task:** Isolate the construction difference between HNSWDB and hnswlib that accounted for the connectivity gap.
-- **Action:**
-  1. Ran 1-NN self-retrieval diagnostics across all 20,000 nodes, discovering that 505 nodes in HNSWDB were search-unreachable, compared to only 7 in hnswlib.
-  2. Analyzed reference source code (Malkov & Yashunin 2018) and isolated two key algorithmic divergences during neighbor selection:
-     - HNSWDB was using `new_node_degree = M` (16) on Layer 0 during initial insertion instead of $M_0$ (32).
-     - HNSWDB's heuristic pruning discarded non-diverse candidates without retaining pruned elements (`keep_pruned = false`).
-  3. Designed a 10-configuration factorial ablation matrix (`ablations_dataset_b.json`).
-- **Result:** Setting Layer 0 candidate selection to $M_0$ with `keep_pruned = true` dropped unreachable nodes from 505 down to 2, proving the exact mechanism and replacing speculation with empirical ablation evidence.
+
+<!-- BEGIN GENERATED table=phase3_conclusion run_id=ablations-9faf2a74 -->
+Ablations on Dataset B (sigma 0.1, M=16, efC=100) over a 5x5 data-seed by build-seed matrix show that the recall gap came from the original construction defaults: each new node selected M0 neighbors and back-filled candidates rejected by the neighbor-selection heuristic (new_node_degree="M0", keep_pruned=true). Switching to reference-style semantics (new_node_degree="M", keep_pruned=false) raised mean recall@10 at ef=200 from 0.9972 to 0.9998, reduced the mean number of nodes that fail 1-NN self-retrieval from 166.16 to 9.32, and reduced Dataset B build time from 8.51 s to 0.93 s within the same ablation run.
+
+Protecting each node's last incoming edge reduced BFS-unreachable nodes to 0 without improving recall (0.9726), so pure in-edge starvation does not explain the gap. Leading hypothesis, not isolated by a direct test: back-filled intra-cluster links crowd out long-range links and reduce navigability. About 9.32 nodes per index still fail self-retrieval, so target T5 remains a MISS.
+<!-- END GENERATED -->
 
 ---
 
@@ -128,11 +125,11 @@ When an interviewer asks for a comprehensive architectural walkthrough (10 minut
 
 ### Q11: "Where does HNSWDB lose against FAISS or hnswlib, and what was measured?"
 > "HNSWDB loses in two measured areas:
-> 1. **Single-Thread Build Time on Low Dimensions:** On 32d and 64d, hnswlib builds 1.5 to 2.3 times faster. Our work-counting study revealed that pure SIMD distance math accounts for only 36 percent of execution on 32d; the remaining 64 percent is graph bookkeeping (heaps, neighbor pruning, list scans). On 784d (Fashion-MNIST), where distance math accounts for over 94 percent of work, the build gap narrows to within 5 percent.
-> 2. **Tightly-Clustered Data at Low $ef_c$:** On synthetic data with 50 tight Gaussian clusters ($\sigma=0.1$) at $ef_c=100$, HNSWDB achieves lower recall due to aggressive heuristic link pruning during overflow reselection."
+> 1. **Single-Thread Build Time on Low Dimensions:** On low dimensions (32d, 64d), hnswlib builds faster. See the work-counting table in [INVESTIGATIONS.md](INVESTIGATIONS.md).
+> 2. **Tightly-Clustered Data at Low $ef_c$:** A small number of nodes remain unreachable on tightly clustered data at low $ef_c$. See target T5 in [REPORT.md](../REPORT.md) and Story 3."
 
 ### Q12: "Explain the clustered-data finding and your ablation study outcome."
-> "On tight Gaussian clusters, vectors within a cluster have almost identical pairwise distances. During construction, when a node's neighbor list overflows ($> M_0$), heuristic pruning discards candidates that are closer to an already-selected neighbor than to the base node. Because intra-cluster distances are tiny, older nodes get pruned from neighbor lists and lose incoming edges. Our 10-configuration ablation study proved that configuring initial Layer 0 allocation to $M_0$ with `keep_pruned = true` eliminates link starvation, reducing search-unreachable nodes from 505 down to 2 and restoring high recall."
+> "See Story 3 above and the detailed ablation analysis in [INVESTIGATIONS.md](INVESTIGATIONS.md). A 25-seed matrix and ablation study traced the recall gap to the original construction defaults (new_node_degree='M0', keep_pruned=true). Switching to reference-style semantics (new_node_degree='M', keep_pruned=false) closed the recall gap and substantially cut build time."
 
 ---
 
