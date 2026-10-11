@@ -246,6 +246,14 @@
       "sha256": "9e23db7b9beb529122394e191c51f18da521cd6fb299c0ba1f300cf1b5ea7a4d",
       "state": "raw_result",
       "size_bytes": 1152
+    },
+    {
+      "file": "self_retrieval_fashion_mnist_50033fba.json",
+      "run_id": "self_retrieval_fashion_mnist_20261011_094933_50033fba",
+      "dataset": "fashion_mnist",
+      "label": "Fashion-MNIST Self-Retrieval (60K x 784d, sample 5000, ef=400)",
+      "sha256": "2e472a72d3caa3ae375f7b383a2f266124895d8bcac5b2575aa284f805eed1d0",
+      "size_bytes": 1494
     }
   ],
   "last_updated": "2026-10-10T17:57:08.503803+00:00"

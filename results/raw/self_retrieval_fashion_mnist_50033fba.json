@@ -1,0 +1,61 @@
+{
+  "run_id": "self_retrieval_fashion_mnist_20261011_094933_50033fba",
+  "benchmark": "self_retrieval_fashion_mnist",
+  "dataset": "fashion_mnist",
+  "git_commit": "5f285b8212ab0e2d1d44f5841814038a5ae5e7fb",
+  "timestamp": "2026-10-11T09:49:33.449472",
+  "params": {
+    "M": 16,
+    "ef_construction": 100,
+    "ef_search": 400,
+    "sample_size": 5000,
+    "seed": 42,
+    "num_threads": 1
+  },
+  "dataset_info": {
+    "n_train": 60000,
+    "dim": 784,
+    "metric": "l2"
+  },
+  "metrics": {
+    "self_retrieval_rate": 0.9976,
+    "unreachable_nodes": 12,
+    "sample_size": 5000,
+    "build_time_s": 21.4165,
+    "search_time_s": 4.7457
+  },
+  "env": {
+    "cpu_model": "Intel(R) Core(TM) i7-8650U CPU @ 1.90GHz",
+    "physical_cores": 4,
+    "logical_cores": 8,
+    "cpu_clock_mhz": 1910.0,
+    "ram_gb": 15.84,
+    "os": "Windows",
+    "os_release": "11",
+    "os_version": "10.0.22621",
+    "machine": "AMD64",
+    "python_version": "3.12.6",
+    "compiler": "MSVC 2022 (cl.exe 19.40)",
+    "cmake_build_type": "Release",
+    "cmake_flags": "/O2 /MD /arch:AVX2 (MSVC)",
+    "git_commit": "5f285b8212ab0e2d1d44f5841814038a5ae5e7fb",
+    "active_simd_kernel": "avx2",
+    "process_affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "process_priority": "32",
+    "versions": {
+      "hnswdb": "0.1.0",
+      "numpy": "2.3.5",
+      "faiss": "1.15.1",
+      "hnswlib": "0.8.0"
+    }
+  }
+}

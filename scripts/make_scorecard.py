@@ -44,7 +44,7 @@ def evaluate_scorecard() -> list[dict]:
     targets = load_targets()
     results = []
 
-    fmnist_data = find_result_by_name("fashion_mnist")
+    fmnist_data = find_result_by_name("bench_fashion_mnist")
     dataset_b_data = find_result_by_name("bench_B_s01")
     inv_data = find_result_by_name("investigation_recall_gap")
     matrix_data = find_result_by_name("seed_matrix_dataset_b")
@@ -56,7 +56,8 @@ def evaluate_scorecard() -> list[dict]:
             "id": tid,
             "description": desc,
             "value": None,
-            "status": "NOT RUN"
+            "status": "NOT RUN",
+            "notes": ""
         }
 
         if tid == "T1":
@@ -117,27 +118,48 @@ def evaluate_scorecard() -> list[dict]:
 
         elif tid == "T4":
             # Corrected self-retrieval rate >= 0.999 on Dataset B and Fashion-MNIST
+            # Minimum across both datasets, with per-dataset values shown in notes
+            fmn_self_ret = find_result_by_name("self_retrieval_fashion_mnist")
+            rate_db = None
+            rate_fmn = None
+
             if matrix_data and "engines" in matrix_data and "hnswdb_cured" in matrix_data["engines"]:
-                unreach = matrix_data["engines"]["hnswdb_cured"].get("unreachable_mean", 9.3)
-                rate = (20000 - unreach) / 20000.0
-                entry["value"] = round(rate, 6)
-                entry["status"] = "PASS" if rate >= 0.999 else "MISS"
-            elif inv_data and "h5_diagnostics" in inv_data:
-                unreach = inv_data["h5_diagnostics"].get("unreachable_nodes", 505)
-                rate = (20000 - unreach) / 20000.0
-                entry["value"] = round(rate, 6)
-                entry["status"] = "PASS" if rate >= 0.999 else "MISS"
+                unreach_db = matrix_data["engines"]["hnswdb_cured"].get("unreachable_mean", 9.32)
+                rate_db = (20000.0 - unreach_db) / 20000.0
+
+            if fmn_self_ret and "metrics" in fmn_self_ret:
+                rate_fmn = fmn_self_ret["metrics"].get("self_retrieval_rate")
+
+            if rate_db is not None and rate_fmn is not None:
+                min_rate = min(rate_db, rate_fmn)
+                entry["value"] = round(min_rate, 6)
+                entry["status"] = "PASS" if min_rate >= 0.999 else "MISS"
+                entry["notes"] = f"Dataset B: {rate_db:.4f}, Fashion-MNIST: {rate_fmn:.4f}"
+            else:
+                entry["status"] = "NOT RUN"
+                entry["notes"] = "Missing dataset"
 
         elif tid == "T5":
             # Unreachable nodes == 0 (Dataset B mean, Fashion-MNIST)
+            # Maximum across both datasets, with per-dataset values shown in notes
+            fmn_self_ret = find_result_by_name("self_retrieval_fashion_mnist")
+            unreach_db = None
+            unreach_fmn = None
+
             if matrix_data and "engines" in matrix_data and "hnswdb_cured" in matrix_data["engines"]:
-                unreach = matrix_data["engines"]["hnswdb_cured"].get("unreachable_mean", 9.3)
-                entry["value"] = unreach
-                entry["status"] = "PASS" if unreach == 0 else "MISS"
-            elif inv_data and "h5_diagnostics" in inv_data:
-                unreach = inv_data["h5_diagnostics"].get("unreachable_nodes", 505)
-                entry["value"] = unreach
-                entry["status"] = "PASS" if unreach == 0 else "MISS"
+                unreach_db = matrix_data["engines"]["hnswdb_cured"].get("unreachable_mean", 9.32)
+
+            if fmn_self_ret and "metrics" in fmn_self_ret:
+                unreach_fmn = fmn_self_ret["metrics"].get("unreachable_nodes")
+
+            if unreach_db is not None and unreach_fmn is not None:
+                max_unreach = max(float(unreach_db), float(unreach_fmn))
+                entry["value"] = round(max_unreach, 4)
+                entry["status"] = "PASS" if max_unreach == 0 else "MISS"
+                entry["notes"] = f"Dataset B mean: {unreach_db:.2f}, Fashion-MNIST (in sample): {unreach_fmn}"
+            else:
+                entry["status"] = "NOT RUN"
+                entry["notes"] = "Missing dataset"
 
         elif tid == "T6":
             # HNSWDB single-thread vs multi-thread build recall difference < 0.003

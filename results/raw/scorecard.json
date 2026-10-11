@@ -4,79 +4,92 @@
       "id": "T1",
       "description": "Fashion-MNIST (M=16, efC=100): recall@10 >= 0.99 at some ef <= 100 and >= 0.999 at some ef <= 400",
       "value": 0.99917,
-      "status": "PASS"
+      "status": "PASS",
+      "notes": ""
     },
     {
       "id": "T2",
       "description": "Dataset B (sigma=0.1, efC=100): recall@10 at ef=200, mean over 5 data seeds x 5 build seeds, >= 0.999",
       "value": 0.999808,
-      "status": "PASS"
+      "status": "PASS",
+      "notes": ""
     },
     {
       "id": "T3",
       "description": "Dataset B: mean recall gap vs hnswlib (same seeds) <= 0.002",
       "value": 0.000476,
-      "status": "PASS"
+      "status": "PASS",
+      "notes": ""
     },
     {
       "id": "T4",
       "description": "Corrected self-retrieval rate >= 0.999 on Dataset B and on Fashion-MNIST",
-      "value": 0.999534,
-      "status": "PASS"
+      "value": 0.9976,
+      "status": "MISS",
+      "notes": "Dataset B: 0.9995, Fashion-MNIST: 0.9976"
     },
     {
       "id": "T5",
       "description": "Unreachable nodes == 0 (Dataset B mean, Fashion-MNIST)",
-      "value": 9.32,
-      "status": "MISS"
+      "value": 12.0,
+      "status": "MISS",
+      "notes": "Dataset B mean: 9.32, Fashion-MNIST (in sample): 12"
     },
     {
       "id": "T6",
       "description": "HNSWDB single-thread vs multi-thread build recall difference < 0.003",
       "value": 0.001356,
-      "status": "PASS"
+      "status": "PASS",
+      "notes": ""
     },
     {
       "id": "T7",
       "description": "Sequential QPS at recall@10 = 0.99 within 3x of hnswlib (Fashion-MNIST, equal-recall interpolation)",
       "value": 0.73,
-      "status": "PASS"
+      "status": "PASS",
+      "notes": ""
     },
     {
       "id": "T8",
       "description": "Build time, 1 thread, within 3x of hnswlib on Fashion-MNIST and Dataset B",
       "value": 1.05,
-      "status": "PASS"
+      "status": "PASS",
+      "notes": ""
     },
     {
       "id": "T9",
       "description": "Build time at max physical threads within 3x of hnswlib (MISS is acceptable if reported)",
       "value": 1.39,
-      "status": "PASS"
+      "status": "PASS",
+      "notes": ""
     },
     {
       "id": "T10",
       "description": "RSS delta within 15% of hnswlib on Fashion-MNIST",
       "value": 0.0354,
-      "status": "PASS"
+      "status": "PASS",
+      "notes": ""
     },
     {
       "id": "T11",
       "description": "Approximation ratio of exact search == 1.0 +/- 1e-6; Fashion-MNIST ratio <= 1.05",
       "value": 1.000041,
-      "status": "PASS"
+      "status": "PASS",
+      "notes": ""
     },
     {
       "id": "T12",
       "description": "All C++ and Python tests pass (counts from run output)",
       "value": "9 C++ / 57 Python passed",
-      "status": "PASS"
+      "status": "PASS",
+      "notes": ""
     },
     {
       "id": "T13",
       "description": "Sanitizers: zero findings (status NOT RUN if not executed)",
       "value": "NOT RUN (Windows host)",
-      "status": "NOT RUN"
+      "status": "NOT RUN",
+      "notes": ""
     }
   ]
 }

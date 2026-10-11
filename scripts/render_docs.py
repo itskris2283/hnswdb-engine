@@ -223,12 +223,13 @@ def format_recall_table(data: dict, table_name: str) -> str:
         if os.path.exists(scorecard_path):
             with open(scorecard_path, "r", encoding="utf-8") as sc_f:
                 sc_data = json.load(sc_f)
-            lines.append("| ID | Target Description | Value | Status |")
-            lines.append("| :--- | :--- | :--- | :--- |")
+            lines.append("| ID | Target Description | Value | Status | Notes |")
+            lines.append("| :--- | :--- | :--- | :--- | :--- |")
             for t in sc_data.get("targets", []):
                 val = f"{t['value']:.4f}" if isinstance(t["value"], float) else str(t["value"])
                 status_badge = f"**{t['status']}**"
-                lines.append(f"| `{t['id']}` | {t['description']} | `{val}` | {status_badge} |")
+                notes_str = t.get("notes", "")
+                lines.append(f"| `{t['id']}` | {t['description']} | `{val}` | {status_badge} | {notes_str} |")
             lines.append("")
             lines.append("*Target T5 uses the self-retrieval unreachable metric.*")
         else:
