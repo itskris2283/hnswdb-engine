@@ -92,7 +92,7 @@
     {
       "id": "T7",
       "description": "Sequential QPS at recall@10 = 0.99 within 3x of hnswlib (Fashion-MNIST, equal-recall interpolation)",
-      "value": 0.7321,
+      "value": 0.7457,
       "status": "PASS",
       "raw_files": [
         "bench_fashion_mnist_0a9f92db.json",
@@ -104,8 +104,8 @@
         "fashion_mnist_20261011_042950_723b5b0a",
         "fashion_mnist_20261011_043826_b3b2cd25"
       ],
-      "aggregation": "Median of (hnswlib seq QPS / HNSWDB seq QPS at ef=50, R~0.995) across 3 Fashion-MNIST runs",
-      "notes": "Ratio = hnswlib seq QPS / HNSWDB seq QPS at ef=50 (R~0.995). Runs: 0.7321, 0.5701, 1.1016; median across 3 runs = 0.7321"
+      "aggregation": "Median of (hnswlib seq QPS / HNSWDB seq QPS at recall@10 = 0.99 equal-recall interpolation) across 3 Fashion-MNIST runs",
+      "notes": "Ratio = hnswlib seq QPS / HNSWDB seq QPS at recall@10 = 0.99 (equal-recall interpolation). Runs: 0.7457, 0.5508, 1.0401; median across 3 runs = 0.7457"
     },
     {
       "id": "T8",

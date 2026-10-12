@@ -307,18 +307,36 @@ def evaluate_scorecard() -> tuple[str, list[dict]]:
                 entry["notes"] = f"Dataset B (seed_matrix_dataset_b.json); |1T - 4T| build recall difference"
 
         elif tid == "T7":
-            # Sequential QPS at recall@10 = 0.99 within 3x of hnswlib (Fashion-MNIST)
-            # T7 value = hnswlib sequential QPS at recall@10 = 0.99 divided by HNSWDB's (<= 3 passes), on Fashion-MNIST
-            # Evaluated at ef=50 (where recall ~0.995). Uses median across 3 Fashion-MNIST runs.
+            # Sequential QPS at recall@10 = 0.99 within 3x of hnswlib (Fashion-MNIST, equal-recall interpolation)
             entry["raw_files"] = [fn for fn, _, _ in fm_runs]
             entry["run_ids"] = [rid for _, rid, _ in fm_runs]
-            entry["aggregation"] = "Median of (hnswlib seq QPS / HNSWDB seq QPS at ef=50, R~0.995) across 3 Fashion-MNIST runs"
+            entry["aggregation"] = "Median of (hnswlib seq QPS / HNSWDB seq QPS at recall@10 = 0.99 equal-recall interpolation) across 3 Fashion-MNIST runs"
             ratios = []
+
+            def interp_qps_at_recall(ef_results, target_recall=0.99):
+                import numpy as np
+                results = sorted(ef_results, key=lambda r: r.get("recall_at_k", 0.0))
+                recalls = [r.get("recall_at_k", 0.0) for r in results]
+                qps_vals = [r.get("latency", {}).get("sequential_qps", 0.0) for r in results]
+                if not recalls:
+                    return 0.0
+                if target_recall <= recalls[0]:
+                    return qps_vals[0]
+                if target_recall >= recalls[-1]:
+                    return qps_vals[-1]
+                for i in range(len(recalls) - 1):
+                    r1, r2 = recalls[i], recalls[i + 1]
+                    if r1 <= target_recall <= r2:
+                        alpha = (target_recall - r1) / (r2 - r1) if abs(r2 - r1) > 1e-9 else 0.0
+                        q1, q2 = max(1.0, qps_vals[i]), max(1.0, qps_vals[i + 1])
+                        return float(np.exp(np.log(q1) + alpha * (np.log(q2) - np.log(q1))))
+                return qps_vals[-1]
+
             for _, _, d in fm_runs:
                 h_seed = next(iter(d["engines"]["hnswdb"].values()))
                 hl_seed = next(iter(d["engines"]["hnswlib"].values()))
-                h_qps = h_seed["ef_results"][1]["latency"]["sequential_qps"]
-                hl_qps = hl_seed["ef_results"][1]["latency"]["sequential_qps"]
+                h_qps = interp_qps_at_recall(h_seed.get("ef_results", []), 0.99)
+                hl_qps = interp_qps_at_recall(hl_seed.get("ef_results", []), 0.99)
                 ratio = hl_qps / h_qps if h_qps > 0 else 999.0
                 ratios.append(ratio)
             if ratios:
@@ -326,7 +344,7 @@ def evaluate_scorecard() -> tuple[str, list[dict]]:
                 med_ratio = ratios_sorted[len(ratios_sorted) // 2]
                 entry["value"] = round(med_ratio, 4)
                 entry["status"] = "PASS" if med_ratio <= 3.0 else "MISS"
-                entry["notes"] = f"Ratio = hnswlib seq QPS / HNSWDB seq QPS at ef=50 (R~0.995). Runs: {ratios[0]:.4f}, {ratios[1]:.4f}, {ratios[2]:.4f}; median across 3 runs = {med_ratio:.4f}"
+                entry["notes"] = f"Ratio = hnswlib seq QPS / HNSWDB seq QPS at recall@10 = 0.99 (equal-recall interpolation). Runs: {ratios[0]:.4f}, {ratios[1]:.4f}, {ratios[2]:.4f}; median across 3 runs = {med_ratio:.4f}"
 
         elif tid == "T8":
             # Build time, 1 thread, within 3x of hnswlib on Fashion-MNIST and Dataset B

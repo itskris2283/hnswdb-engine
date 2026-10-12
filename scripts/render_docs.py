@@ -321,7 +321,7 @@ def format_recall_table(data: dict, table_name: str) -> str:
                 lines.append(f"| `{t['id']}` | {t['description']} | `{val}` | {status_badge} | {notes_str} |")
             lines.append("")
             lines.append("*Target T5 uses the self-retrieval unreachable metric.*")
-            lines.append("*Ratio definitions: T7 = hnswlib sequential QPS / HNSWDB sequential QPS at recall@10 = 0.99 (evaluated at ef=50, R~0.995; <= 3 passes) on Fashion-MNIST (median across 3 runs). T8 = max(Fashion-MNIST build ratio, Dataset B build ratio) of HNSWDB single-thread build time / hnswlib single-thread build time (Fashion-MNIST uses median across 3 runs). T10 = |HNSWDB RSS - hnswlib RSS| / hnswlib RSS on Fashion-MNIST (median across 3 runs).*")
+            lines.append("*Ratio definitions: T7 = hnswlib sequential QPS / HNSWDB sequential QPS at recall@10 = 0.99 (equal-recall interpolation; <= 3 passes) on Fashion-MNIST (median across 3 runs). T8 = max(Fashion-MNIST build ratio, Dataset B build ratio) of HNSWDB single-thread build time / hnswlib single-thread build time (Fashion-MNIST uses median across 3 runs). T10 = |HNSWDB RSS - hnswlib RSS| / hnswlib RSS on Fashion-MNIST (median across 3 runs).*")
             csr_files = [f for f in sorted(os.listdir(RAW_DIR)) if f.startswith("consistent_self_retrieval_") and f.endswith(".json")]
             if csr_files:
                 with open(os.path.join(RAW_DIR, csr_files[-1]), "r", encoding="utf-8") as cf:
