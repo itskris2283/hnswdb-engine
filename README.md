@@ -182,7 +182,7 @@ Baseline means use fewer builds than HNSWDB's; compare with care.
 Baseline means use fewer builds than HNSWDB's; compare with care.
 <!-- END GENERATED -->
 
-For detailed analysis, investigations, and trade-offs, see [TRADEOFFS.md](docs/TRADEOFFS.md), [BENCHMARKS.md](docs/BENCHMARKS.md), and [INVESTIGATIONS.md](docs/INVESTIGATIONS.md). Relative speed varies between runs on this host; treat as parity.
+For detailed analysis, investigations, and trade-offs, see [TRADEOFFS.md](docs/TRADEOFFS.md), [BENCHMARKS.md](docs/BENCHMARKS.md), and [INVESTIGATIONS.md](docs/INVESTIGATIONS.md). Gaps in the "Where HNSWDB Loses" table are computed from a single run per workload; see the Source column. Relative speed varies between runs on this host.
 
 ---
 
