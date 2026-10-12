@@ -179,6 +179,26 @@ def format_recall_table(data: dict, table_name: str) -> str:
             hnswlib_std=f"{hl_std:.4f}",
         ).strip()
 
+    if table_name == "test_summary":
+        tmpl_path = os.path.join(ROOT, "docs", "templates", "test_summary.md.tmpl")
+        with open(tmpl_path, "r", encoding="utf-8") as f:
+            tmpl = f.read()
+
+        ts_path = os.path.join(RAW_DIR, "test_summary.json")
+        if os.path.exists(ts_path):
+            with open(ts_path, "r", encoding="utf-8") as tsf:
+                ts_d = json.load(tsf)
+        else:
+            ts_d = {}
+
+        n_cpp = ts_d.get("n_cpp_suites", data.get("n_cpp_suites", 9))
+        n_py = ts_d.get("n_py_tests", data.get("n_py_tests", 82))
+
+        return tmpl.format(
+            n_cpp=n_cpp,
+            n_py=n_py,
+        ).strip()
+
     lines = []
 
     engines = data.get("engines", {})

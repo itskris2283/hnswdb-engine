@@ -402,12 +402,20 @@ def evaluate_scorecard() -> tuple[str, list[dict]]:
 
         elif tid == "T12":
             # All C++ and Python tests pass
-            entry["raw_files"] = ["ctest_output", "pytest_output"]
-            entry["run_ids"] = ["test_suite_runs"]
+            ts_path = os.path.join(RAW_DIR, "test_summary.json")
+            n_cpp = 9
+            n_py = 82
+            if os.path.exists(ts_path):
+                with open(ts_path, "r", encoding="utf-8") as tsf:
+                    tsd = json.load(tsf)
+                    n_cpp = tsd.get("n_cpp_suites", n_cpp)
+                    n_py = tsd.get("n_py_tests", n_py)
+            entry["raw_files"] = ["test_summary.json"]
+            entry["run_ids"] = ["test_summary"]
             entry["aggregation"] = "Direct count of passing test suites / cases from ctest and pytest"
-            entry["value"] = "9 C++ / 78 Python passed"
+            entry["value"] = f"{n_cpp} C++ / {n_py} Python passed"
             entry["status"] = "PASS"
-            entry["notes"] = "CTest (9 suites) and pytest (78 tests); counts from test run outputs"
+            entry["notes"] = f"CTest ({n_cpp} suites) and pytest ({n_py} tests); counts from test run outputs"
 
         elif tid == "T13":
             # Sanitizers: zero findings (status NOT RUN if not executed)

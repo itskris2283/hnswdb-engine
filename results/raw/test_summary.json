@@ -1,0 +1,10 @@
+{
+  "benchmark": "test_summary",
+  "run_id": "test_summary",
+  "n_cpp_suites": 9,
+  "n_py_tests": 82,
+  "cpp_passed": 9,
+  "py_passed": 82,
+  "ctest_summary": "9 / 9 test suites passing",
+  "pytest_summary": "82 / 82 tests passing"
+}

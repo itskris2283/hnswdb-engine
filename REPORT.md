@@ -24,7 +24,7 @@ Every measured number in this report is programmatically generated from raw JSON
 | `T9` | Build time at max physical threads within 3x of hnswlib (MISS is acceptable if reported) | `1.3900` | **PASS** | multithread_build.json (run_id: multithread_build_823c144e); 8-thread build time ratio vs hnswlib |
 | `T10` | RSS delta within 15% of hnswlib on Fashion-MNIST | `0.0354` | **PASS** | Ratio = |HNSWDB RSS - hnswlib RSS| / hnswlib RSS on Fashion-MNIST. Runs: 0.0354, 0.0515, 0.0335; median across 3 runs = 0.0354 |
 | `T11` | Approximation ratio of exact search == 1.0 +/- 1e-6; Fashion-MNIST ratio <= 1.05 | `1.0000` | **PASS** | Fashion-MNIST (3 runs); median approx_ratio at ef=200 = 1.000041 |
-| `T12` | All C++ and Python tests pass (counts from run output) | `9 C++ / 78 Python passed` | **PASS** | CTest (9 suites) and pytest (78 tests); counts from test run outputs |
+| `T12` | All C++ and Python tests pass (counts from run output) | `9 C++ / 82 Python passed` | **PASS** | CTest (9 suites) and pytest (82 tests); counts from test run outputs |
 | `T13` | Sanitizers: zero findings (status NOT RUN if not executed) | `NOT RUN (Windows host)` | **NOT RUN** | Sanitizers require Linux/WSL environment; Windows host not supported |
 
 *Target T5 uses the self-retrieval unreachable metric.*
@@ -113,13 +113,15 @@ In the spirit of complete engineering honesty, this section explicitly documents
 
 ## 4. Test Suite Summary
 
+<!-- BEGIN GENERATED table=test_summary run_id=test_summary -->
 - **C++ GoogleTest Suite:** 9 / 9 test suites passing (`ctest`)
-- **Python Pytest Suite:** 72 / 72 tests passing (`python -m pytest tests/python -v`)
+- **Python Pytest Suite:** 82 / 82 tests passing (`python -m pytest tests/python -v`)
 - **Strict Claims Check:** PASSED (`python scripts/check_claims.py`)
 - **Targets Frozen Check:** PASSED (`python scripts/check_targets_unchanged.py`)
 - **Documentation Link Check:** PASSED (`python scripts/check_docs_links.py`)
 - **Provenance Verification:** PASSED (`python scripts/check_provenance.py`)
 - **README Live Verification:** PASSED (`python scripts/verify_readme.py`)
+<!-- END GENERATED -->
 
 ---
 

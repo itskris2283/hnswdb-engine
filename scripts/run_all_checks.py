@@ -69,6 +69,11 @@ def main():
     all_logs.append(out)
     if code != 0: overall_pass = False
 
+    # 9. Test Counts Consistency
+    code, out = run_command([sys.executable, "-m", "pytest", "tests/python/test_counts_consistent.py", "-v"])
+    all_logs.append(out)
+    if code != 0: overall_pass = False
+
     summary = f"OVERALL STATUS: {'ALL CHECKS PASSED' if overall_pass else 'FAILED'}\n"
     all_logs.append(summary)
 

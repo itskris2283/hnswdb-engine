@@ -329,6 +329,14 @@
       "label": "Consistent Full-Index Self-Retrieval (Dataset B 20K, Fashion-MNIST 60K)",
       "sha256": "fc6a5671e3d1cc44f423c06685eed5f55678d424623b47e0e0fc1fa986841cbe",
       "size_bytes": 6817
+    },
+    {
+      "file": "test_summary.json",
+      "run_id": "test_summary",
+      "dataset": "all",
+      "label": "Test Suite Summary (CTest and PyTest)",
+      "sha256": "9cd5a0ae57086a150faa20e854ae38471026395a296474aa1ce131546475455a",
+      "size_bytes": 234
     }
   ],
   "last_updated": "2026-10-12T10:00:26.344312+00:00"
