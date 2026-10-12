@@ -138,8 +138,8 @@
       "run_ids": [
         "multithread_build_20261010_180617_73c07096"
       ],
-      "aggregation": "Build time ratio at max physical threads (8T) vs hnswlib on Dataset A",
-      "notes": "multithread_build.json (run_id: multithread_build_823c144e); 8-thread build time ratio vs hnswlib"
+      "aggregation": "Maximum build time ratio at max physical threads (4 physical threads) vs hnswlib across Dataset B and Fashion-MNIST",
+      "notes": "multithread_build.json (run_id: multithread_build_20261010_180617_73c07096); 4 physical threads (host maximum). Ratios vs hnswlib: Dataset B: 1.39x, Fashion-MNIST: 0.88x. Scorecard uses max ratio (1.39x)"
     },
     {
       "id": "T10",
