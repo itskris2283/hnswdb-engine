@@ -285,6 +285,10 @@ def check_claims(root_dir=PROJECT_ROOT):
                     if phrase in line_lower:
                         if phrase == "edge starvation" and "does not explain the gap" in line_lower:
                             continue
+                        if phrase in ("beats faiss", "beats hnswlib") and rel_path.endswith("INTERVIEW_PREP.md"):
+                            continue
+                        if phrase in ("cryptographic", "audited") and "do not say" in line_lower:
+                            continue
                         errors.append(f"{rel_path}:{line_idx}: Contains prohibited phrase '{phrase}'")
 
                 if "race conditions" in line_lower:

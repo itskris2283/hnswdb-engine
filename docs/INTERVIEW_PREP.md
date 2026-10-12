@@ -144,10 +144,20 @@ Be skeptical of your own system. Never make these claims:
 | **"Claiming the recall gap is an inherent algorithmic limitation of HNSW"** | False: hnswlib achieves high recall on the identical dataset at $ef_c=100$. | "It is an implementation-specific construction weakness related to candidate degree allocation and heuristic pruning." |
 | **"Claiming ThreadSanitizer verified cleanliness on Windows"** | The local development machine is Windows MSVC where TSan cannot run. | "Linux sanitizer workflows (ASan, UBSan, TSan) are configured in GitHub Actions CI; local host status is honestly reported as NOT RUN." |
 | **"Claiming 3 million duplicate links existed"** | Mathematically impossible in a 5,000-node graph ($5000 \times 32 = 160,000$ maximum links). | "Invariant unit tests verify 0 duplicate links exist in snapshot graphs; our ablation study confirmed dedup had no measurable effect on recall." |
+| **"Claiming HNSWDB beats hnswlib or FAISS on recall"** | False: the differences are within noise (e.g. the T3 gap is smaller than hnswlib's standard deviation across the 25-build matrix). | "HNSWDB and reference baselines achieve recall parity; minor differences are within random seed noise." |
+| **"Claiming HNSWDB has no unreachable nodes"** | False: on tightly clustered synthetic data, HNSWDB averages 9.32 unreachable nodes per index under 1-NN self-retrieval (target T5 is an honest MISS). | "HNSWDB averages 9.32 unreachable nodes on Dataset B; baselines also exhibit unreachable nodes under self-retrieval." |
 
 ---
 
-## 6. Script: "Tell Me About a Time You Were Wrong"
+## 6. How to Describe the Verification Pipeline
+
+Say: "Benchmark tables are rendered from raw result files by scripts, and automated checks fail if a table is hand-edited, a banned claim appears, or the frozen target file changes. It is a local consistency guard, not a security mechanism."
+
+Do not say: "cryptographic", "audited", or that the targets are tamper-proof. The freeze is a git tag plus a script in the same repository.
+
+---
+
+## 7. Script: "Tell Me About a Time You Were Wrong"
 
 > *"When investigating our recall plateau on tightly-clustered synthetic data ($\sigma=0.1$), I initially hypothesized that duplicate link insertions during edge backfilling were causing graph connectivity loss. I implemented candidate deduplication and convinced myself it was the solution, even drafting notes attributing recall recovery to this fix.*
 >
