@@ -1,0 +1,269 @@
+================================================================================
+HNSWDB FINAL DEFECT CLEANUP & VERIFICATION REPORT (Tasks F1 to F10)
+================================================================================
+Date: 2026-10-12
+Host Environment: Windows 11 AMD64, MSVC 2022 (cl.exe 19.40), Python 3.12.6
+
+1. SUMMARY OF COMPLETED TASKS (F1 to F10)
+--------------------------------------------------------------------------------
+
+Task F1: Add missing self-retrieval rows to "Where HNSWDB Loses"
+  - Motivation: scripts/where_it_loses.py previously omitted self-retrieval
+    comparisons even though HNSWDB's failure rate exceeds baseline failure rates
+    by more than the 5% threshold.
+  - Files changed:
+    * scripts/where_it_loses.py: Added rows for Dataset B mean self-retrieval
+      failures (HNSWDB vs best baseline from seed_matrix_dataset_b.json and
+      baseline_self_retrieval_2796e161.json) and Fashion-MNIST self-retrieval
+      failures (HNSWDB vs baselines from self_retrieval_fashion_mnist_50033fba.json
+      and baseline_self_retrieval_2796e161.json). Relative gaps show absolute
+      difference and ratio computed directly from raw data.
+    * tests/python/test_where_it_loses.py: Added test_where_it_loses_includes_self_retrieval
+      asserting that self-retrieval comparison rows are always generated when the
+      5% threshold is met.
+    * README.md: Regenerated "Where HNSWDB Loses" block.
+    * results/raw/where_it_loses.json: Generated with new content hash run_id.
+
+Task F2: Label sample sizes wherever failure counts appear
+  - Motivation: Baseline failure counts represent means over 5 builds (one per
+    data seed) on Dataset B and 1 build on Fashion-MNIST, whereas HNSWDB's counts
+    represent means over 25 builds (5 data seeds x 5 build seeds) on Dataset B.
+  - Files changed:
+    * scripts/render_docs.py: Updated column headers in readme_clustered_matrix
+      and seed_matrix to "Unreachable nodes (self-retrieval, mean over n builds)".
+      Added explicit "n=" sample size labels (n=25 for HNSWDB, n=5 for Dataset B
+      baselines, n=1 for Fashion-MNIST). Added generated note below tables:
+      "Baseline means use fewer builds than HNSWDB's; compare with care."
+    * scripts/where_it_loses.py: Labeled sample sizes in workload/metric descriptors
+      (n=25 vs n=5 for Dataset B, n=1 vs n=1 for Fashion-MNIST).
+    * README.md and docs/INVESTIGATIONS.md: Re-rendered generated blocks.
+
+Task F3: Fix resume bullet 1 wording
+  - Motivation: Standardize resume bullet 1 phrasing to describe test coverage
+    consistently with the test suite architecture.
+  - Files changed:
+    * docs/templates/resume_bullets.md.tmpl: Updated bullet 1 to read
+      "...with {n_cpp} C++ test suites and {n_py} Python tests; ...".
+    * docs/RESUME_BULLETS.md: Re-rendered generated resume bullets and provenance table.
+    * tests/python/test_resume_bullets.py: Verified provenance and formatting.
+
+Task F4: Align documents with code and CLI
+  - Motivation: Address remaining documentation discrepancies from earlier milestones.
+  - Files changed:
+    * docs/PUSH_CHECKLIST.md: Updated build directory references from
+      ctest --test-dir build to ctest --test-dir build/rel.
+    * CLI verification: Verified hnswdb --help and hnswdb build --help. The options
+      are --input (-i), --out (-o), --dim (-d), --metric (-m), --M, --ef-construction,
+      --seed, and --threads (-t). README already accurately reflects these flags.
+    * docs/DESIGN.md Section 7: Updated layer_entry options to "closest" (default)
+      and "all", matching include/hnswdb/hnsw_index.h and bindings/pybind_module.cpp
+      (retracted stale mention of "single").
+
+Task F5: Qualify single-run gaps in README
+  - Motivation: Make clear that single-run latency and throughput measurements are
+    subject to host variability.
+  - Files changed:
+    * README.md: Replaced single-run speed sentence with verbatim approved text:
+      "Gaps in the \"Where HNSWDB Loses\" table are computed from a single run per workload; see the Source column. Relative speed varies between runs on this host."
+
+Task F6: Move reproduction commands out of README
+  - Motivation: Keep README focused and concise while preserving comprehensive,
+    reproducible verification commands in a dedicated reference document.
+  - Files changed:
+    * docs/REPRODUCE.md: Created with the full, ordered list of reproduction
+      commands previously in README Testing section and REPORT Section 6.
+    * README.md: Trimmed Testing section to standard CTest and PyTest invocations
+      with a markdown link to docs/REPRODUCE.md.
+    * REPORT.md: Updated Section 6 to reference docs/REPRODUCE.md.
+    * scripts/check_repro_commands.py: Updated parser to inspect docs/REPRODUCE.md;
+      all 21 referenced commands verified.
+
+Task F7: Check text encodings and sizes
+  - Motivation: Guarantee that all documentation files are clean UTF-8 without
+    BOM, null characters, or out-of-BMP symbols, and strictly within size caps.
+  - Files changed:
+    * Verified REPORT.md (13.86 KB) and docs/INTERVIEW_PREP.md (20.37 KB):
+      Both are valid UTF-8, contain zero BOM, zero null bytes, zero characters
+      outside BMP, with maximum line length <= 616 bytes, well under 200 KB limit.
+    * tests/python/test_text_encoding.py: Added test_report_and_interview_prep_explicit
+      to assert encoding and size constraints in the automated test suite.
+
+Task F8: Ban overclaiming vocabulary and add T3 noise note
+  - Motivation: Prevent ungrounded security or auditing claims and clarify small
+    statistical differences.
+  - Files changed:
+    * scripts/check_claims.py: Added "cryptographic" and "audited" to BANNED_PHRASES.
+    * REPORT.md: Renamed sections from "Audited Scorecard" to "Scorecard (computed
+      by script from raw results)".
+    * docs/templates/t3_note.md.tmpl: Created template for statistical noise note:
+      "The T3 difference ({diff}) is smaller than the standard deviation of hnswlib's recall across the 25-build matrix ({hnswlib_std}); treat HNSWDB and hnswlib as at parity on this metric."
+    * scripts/render_docs.py: Added t3_noise_note formatter extracting diff (0.0005)
+      and hnswlib_std (0.0015) from results/raw/seed_matrix_dataset_b.json.
+    * REPORT.md: Rendered generated block under the scorecard.
+
+Task F9: Write interview talking points on verification
+  - Motivation: Prepare precise interview responses detailing how verification
+    mechanisms operate without overclaiming.
+  - Files changed:
+    * docs/INTERVIEW_PREP.md: Added Section 6 "How to Describe the Verification
+      Pipeline" verbatim.
+    * docs/INTERVIEW_PREP.md: Added two new forbidden claims to Section 5:
+      banning claims of cryptographic guarantees and external audits.
+    * scripts/check_claims.py: Enhanced negative-guidance parser to allow forbidden
+      terms when explicitly discussing banned terms or corrections.
+
+Task F10: Final verification run and report generation
+  - Files changed:
+    * Executed full check suite via scripts/run_all_checks.py.
+    * Updated results/raw/run_all_checks.txt, results/raw/check_claims.txt,
+      results/raw/provenance_check.txt.
+    * Generated results/raw/patch_report2.txt.
+    * Registered new and updated artifacts in results/raw/MANIFEST.json.
+
+
+2. CLI HELP OUTPUTS (Task F4 Verification)
+--------------------------------------------------------------------------------
+
+Command: hnswdb --help
+--------------------------------------------------------------------------------
+ Usage: hnswdb [OPTIONS] COMMAND [ARGS]...                                     
+                                                                               
+ HNSWDB Approximate Nearest Neighbor Vector Database CLI                       
+                                                                               
++- Options -------------------------------------------------------------------+
+| --install-completion          Install completion for the current shell.     |
+| --show-completion             Show completion for the current shell, to     |
+|                               copy it or customize the installation.        |
+| --help                        Show this message and exit.                   |
++-----------------------------------------------------------------------------+
++- Commands ------------------------------------------------------------------+
+| build   Build an HNSW index from a vector dataset and save to disk.         |
+| query   Query an HNSW index with query vectors.                             |
+| info    Display detailed JSON statistics of an index.                       |
+| bench   Run latency and throughput benchmarks against an existing index.    |
+| serve   Start the HNSWDB REST API server.                                   |
++-----------------------------------------------------------------------------+
+
+Command: hnswdb build --help
+--------------------------------------------------------------------------------
+ Usage: hnswdb build [OPTIONS]                                                 
+                                                                               
+ Build an HNSW index from a vector dataset and save to disk.                   
+                                                                               
++- Options -------------------------------------------------------------------+
+| *  --input            -i      TEXT     Input vector file (.npy or .fvecs)   |
+|                                        [required]                           |
+| *  --out              -o      TEXT     Output index file path (.hdb)        |
+|                                        [required]                           |
+|    --dim              -d      INTEGER  Vector dimension                     |
+|    --metric           -m      TEXT     Distance metric: l2, ip, cosine      |
+|                                        [default: l2]                        |
+|    --M                        INTEGER  HNSW M parameter (2..128)            |
+|                                        [default: 16]                        |
+|    --ef-construction          INTEGER  ef_construction parameter            |
+|                                        [default: 200]                       |
+|    --seed                     INTEGER  Random seed for level generator      |
+|                                        [default: 42]                        |
+|    --threads          -t      INTEGER  Number of worker threads (0 =        |
+|                                        hardware concurrency)                |
+|                                        [default: 0]                         |
+|    --help                              Show this message and exit.          |
++-----------------------------------------------------------------------------+
+
+
+3. TEXT ENCODINGS AND SIZE SUMMARY (Task F7 Verification)
+--------------------------------------------------------------------------------
+
+| File Path | Size (Bytes) | Size (KB) | Lines | UTF-8 Valid | BOM Present | Null Bytes | Non-BMP Chars | Max Line Length |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| `REPORT.md` | 14,189 | 13.86 KB | 145 | YES | NO | 0 | 0 | 616 |
+| `docs/INTERVIEW_PREP.md` | 20,859 | 20.37 KB | 170 | YES | NO | 0 | 0 | 616 |
+
+Both files remain well below the 200 KB threshold and conform strictly to ASCII / BMP UTF-8 encoding requirements without byte order marks or null bytes.
+
+
+4. EXPLICIT NOTES ON VALUES DIFFERING FROM INITIAL DESCRIPTIONS
+--------------------------------------------------------------------------------
+
+1. Baseline Unreachable Node Sample Sizes:
+   - Initial description mentioned baseline unreachable counts as means over n builds.
+   - Raw measurement in results/raw/baseline_self_retrieval_2796e161.json evaluated:
+     * Dataset B: n=5 builds (seeds 0 through 4, 1 build per data seed).
+       hnswlib: 3.00 unreachable mean; FAISS: 5.40 unreachable mean.
+     * Fashion-MNIST: n=1 build.
+       hnswlib: 11 unreachable nodes; FAISS: 24 unreachable nodes.
+   - In contrast, HNSWDB's Dataset B numbers use n=25 builds (5 data seeds x 5 build seeds)
+     averaging 9.32 unreachable nodes.
+   - All generated tables and notes explicitly label these sample sizes (n=25 vs n=5 / n=1)
+     and include the qualifying note: "Baseline means use fewer builds than HNSWDB's; compare with care."
+
+2. Test Suite Counts:
+   - Target T12 records "9 C++ / 78 Python passed" based on test execution at scorecard
+     freeze.
+   - Addition of test_report_and_interview_prep_explicit in Task F7 brought the current
+     Python test count to 79 tests. All 79 pass.
+
+3. Target T13 Environment:
+   - Sanitizers were not executed due to Windows host environment constraints; status is
+     honestly reported as "NOT RUN (Windows host)".
+
+4. Target T3 Noise Magnitude:
+   - The absolute difference between HNSWDB (cured) recall (0.999808) and hnswlib recall
+     (0.999332) is 0.000476 (~0.0005).
+   - This difference is smaller than the standard deviation of hnswlib across the 25 builds
+     (0.001505, ~0.0015), confirming performance parity rather than a statistically
+     significant edge.
+
+
+5. FINAL SCORECARD (Computed by script from raw results)
+--------------------------------------------------------------------------------
+
+| ID | Description | Value | Status |
+| :--- | :--- | :--- | :--- |
+| T1 | Fashion-MNIST (M=16, efC=100): recall@10 >= 0.99 at ef<=100 and >= 0.999 at ef<=400 | 0.99917 | PASS |
+| T2 | Dataset B (sigma=0.1, efC=100): recall@10 at ef=200, mean over 5x5 seeds >= 0.999 | 0.999808 | PASS |
+| T3 | Dataset B: mean recall gap vs hnswlib (same seeds) <= 0.002 | 0.000476 | PASS |
+| T4 | Corrected self-retrieval rate >= 0.999 on Dataset B and Fashion-MNIST | 0.9976 | MISS |
+| T5 | Unreachable nodes == 0 (Dataset B mean, Fashion-MNIST) | 12.0 | MISS |
+| T6 | HNSWDB single-thread vs multi-thread build recall difference < 0.003 | 0.001356 | PASS |
+| T7 | Sequential QPS at recall@10 = 0.99 within 3x of hnswlib (Fashion-MNIST) | 0.7321 | PASS |
+| T8 | Build time, 1 thread, within 3x of hnswlib on Fashion-MNIST and Dataset B | 0.6164 | PASS |
+| T9 | Build time at max physical threads within 3x of hnswlib | 1.39 | PASS |
+| T10 | RSS delta within 15% of hnswlib on Fashion-MNIST | 0.0354 | PASS |
+| T11 | Approx ratio exact search == 1.0 +/- 1e-6; Fashion-MNIST <= 1.05 | 1.000041 | PASS |
+| T12 | All C++ and Python tests pass | 9 C++ / 78 Python passed | PASS |
+| T13 | Sanitizers: zero findings (status NOT RUN if not executed) | NOT RUN (Windows host) | NOT RUN |
+
+Scorecard Summary: 10 PASS, 2 MISS (T4: 0.9976 self-retrieval; T5: 12 unreachable nodes), 1 NOT RUN (T13: Windows host).
+
+
+6. VERIFICATION AND CHECKER RESULTS
+--------------------------------------------------------------------------------
+1. CTest (C++ test suite):
+   - Status: PASSED (9/9 test suites passed, 100%)
+   - Suites: test_distance, test_flat_index, test_hnsw_basic, test_hnsw_invariants,
+     test_hnsw_delete, test_errors, test_metadata_filter, test_serialization, test_concurrency.
+
+2. Pytest (Python test suite):
+   - Status: PASSED (79/79 tests passed, 100%)
+
+3. Targets Freeze Check (scripts/check_targets_unchanged.py):
+   - Status: PASSED (benchmarks/targets.json strictly matches git tag round5-targets-frozen)
+
+4. Strict Claims Checker (scripts/check_claims.py):
+   - Status: PASSED (All claims, scoped allowlists, and evidence paths verified successfully)
+
+5. Provenance Checker (scripts/check_provenance.py):
+   - Status: PASSED (25 valid run_id files verified in results/raw/)
+
+6. Documentation Link Checker (scripts/check_docs_links.py):
+   - Status: PASSED (All documentation links and relative paths resolve successfully)
+
+7. Reproduction Commands Checker (scripts/check_repro_commands.py):
+   - Status: PASSED (All 21 reproduction scripts in docs/REPRODUCE.md exist and compile)
+
+8. README Verification (scripts/verify_readme.py):
+   - Status: PASSED (REST API examples and Python quickstart code execute and pass)
+
+OVERALL STATUS: ALL CHECKS PASSED. All defects cleanly resolved.
+================================================================================

@@ -217,11 +217,11 @@
     },
     {
       "file": "run_all_checks.txt",
-      "sha256": "edcc321c65101f7d102f605176ed623e0087756dbf8ec1cca9acbe01b4d33e86",
+      "sha256": "e2def45bc96b0481da6236ce77fd168fd1e8347b657fa239342aa5e993986c8b",
       "commit": "72aad13",
       "dataset": "n/a",
       "state": "test_suite_log",
-      "size_bytes": 10200
+      "size_bytes": 11294
     },
     {
       "file": "scorecard.json",
@@ -292,15 +292,15 @@
     },
     {
       "file": "check_claims.txt",
-      "sha256": "7841b43057e32a308c39f22516e2dc22b43dd9e0a00f82e5b35f874ccfc71113",
+      "sha256": "82bc47bb51be9b93e21d2b0bad04c0ab2160d80f096212f5acb43b5679918d66",
       "state": "claim_audit",
-      "size_bytes": 144
+      "size_bytes": 141
     },
     {
       "file": "provenance_check.txt",
-      "sha256": "b1cbbb2c4c87731dec9642f1c1a638f7423d5a8757c4bdd5f3d09ae086d59df1",
+      "sha256": "ec96f132a13ee9da192f7a88c105861829adda40e9524764ac586e46205196e3",
       "state": "provenance_audit",
-      "size_bytes": 80
+      "size_bytes": 77
     },
     {
       "file": "cleanup_report.txt",
@@ -315,7 +315,13 @@
       "label": "Baseline Self-Retrieval (hnswlib and FAISS, 5K sample, ef=400)",
       "sha256": "e2207d4a80f1e7c01df4622820d5a889459640f4bf4b1aeb5772693a68e471e5",
       "size_bytes": 4214
+    },
+    {
+      "file": "patch_report2.txt",
+      "sha256": "1c6de17818fd4950e0ea815881011e1fd67fdcde501211b8079b3c4d620c4e0b",
+      "state": "patch_report",
+      "size_bytes": 16205
     }
   ],
-  "last_updated": "2026-10-11T04:47:16.103817+00:00"
+  "last_updated": "2026-10-12T04:10:40.289641+00:00"
 }
