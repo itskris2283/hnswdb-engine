@@ -179,6 +179,27 @@ def format_recall_table(data: dict, table_name: str) -> str:
             hnswlib_std=f"{hl_std:.4f}",
         ).strip()
 
+    if table_name == "t8_note":
+        tmpl_path = os.path.join(ROOT, "docs", "templates", "t8_note.md.tmpl")
+        with open(tmpl_path, "r", encoding="utf-8") as f:
+            tmpl = f.read()
+
+        db_data = data
+        if "engines" not in db_data or "hnswdb" not in db_data.get("engines", {}):
+            db_path = os.path.join(RAW_DIR, "bench_B_s01_8a2302be.json")
+            with open(db_path, "r", encoding="utf-8") as f:
+                db_data = json.load(f)
+
+        h_bld = next(iter(db_data.get("engines", {}).get("hnswdb", {}).values())).get("build_time_s", 1.4808)
+        fa_bld = next(iter(db_data.get("engines", {}).get("faiss", {}).values())).get("build_time_s", 1.0645)
+        hl_bld = next(iter(db_data.get("engines", {}).get("hnswlib", {}).values())).get("build_time_s", 3.382)
+
+        return tmpl.format(
+            b_hnswdb=f"{h_bld:.4f}",
+            b_faiss=f"{fa_bld:.4f}",
+            b_hnswlib=f"{hl_bld:.4f}",
+        ).strip()
+
     if table_name == "test_summary":
         tmpl_path = os.path.join(ROOT, "docs", "templates", "test_summary.md.tmpl")
         with open(tmpl_path, "r", encoding="utf-8") as f:

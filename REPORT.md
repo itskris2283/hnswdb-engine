@@ -36,6 +36,10 @@ Every measured number in this report is programmatically generated from raw JSON
 The T3 difference (0.0005) is smaller than the standard deviation of hnswlib's recall across the 25-build matrix (0.0015); treat HNSWDB and hnswlib as at parity on this metric.
 <!-- END GENERATED -->
 
+<!-- BEGIN GENERATED table=t8_note run_id=B_s01_20261010_174800_8a2302be -->
+Build-time ratios come from single builds and vary between sessions on this host. Dataset B single-thread build times in the primary run: HNSWDB 1.4808 s, FAISS 1.0645 s, hnswlib 3.3820 s. Do not read T8 as evidence that HNSWDB builds faster than hnswlib.
+<!-- END GENERATED -->
+
 *Note on T5 (MISS): On tightly-clustered synthetic data ($\sigma=0.1$), HNSWDB exhibits 9.32 mean unreachable nodes (target is 0). This limitation is investigated and documented in Section 2 and [INVESTIGATIONS.md](docs/INVESTIGATIONS.md).*
 
 ### Phase 3 Conclusion: Clustered-Data Gap Analysis
