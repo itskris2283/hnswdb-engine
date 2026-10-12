@@ -455,7 +455,7 @@ def evaluate_scorecard() -> tuple[str, list[dict]]:
 
         results.append(entry)
 
-    top_run_id = "multiple runs; see Notes"
+    top_run_id = "multiple"
     return top_run_id, results
 
 

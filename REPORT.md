@@ -8,7 +8,7 @@ Every measured number in this report is programmatically generated from raw JSON
 
 ### Scorecard (computed by script from raw results)
 
-<!-- BEGIN GENERATED table=scorecard run_id="multiple runs; see Notes" -->
+<!-- BEGIN GENERATED table=scorecard run_id=multiple -->
 **Scorecard (multiple datasets)**
 
 | ID | Target Description | Value | Status | Notes |
@@ -60,8 +60,8 @@ In the spirit of complete engineering honesty, this section explicitly documents
 | Earlier Claim / Metric | Round / Context | Error Identified | Correction & Evidence |
 | :--- | :--- | :--- | :--- |
 | **"3,080,326 duplicate links"** | Round 2 / docs/INVESTIGATIONS.md | Claimed duplicate link count in a 5,000-node index ($M=16, M_0=32$). | Retracted as mathematically impossible: layer 0 holds at most $5,000 \times 32 = 160,000$ links total. Invariant tests confirm 0 duplicate links exist. |
-| **"Recall 0.9912 -> 0.9994 from dedup fix"** | Round 2 / docs/INVESTIGATIONS.md | Attributed a recall jump to deduplication logic. | Retracted: the deduplication change was never shown to affect recall. Where raw comparison data exists, see results/raw/bug_after_dataset_a.json; otherwise no raw evidence was retained. |
-| **Dedup fix effect** | Round 3 / docs/INVESTIGATIONS.md | Claimed dedup resolved clustered-data recall plateau. | Retracted: the deduplication change was never shown to affect recall. Where raw comparison data exists, see results/raw/bug_after_dataset_b.json; otherwise no raw evidence was retained. |
+| **"Recall 0.9912 -> 0.9994 from dedup fix"** | Round 2 / docs/INVESTIGATIONS.md | Attributed a recall jump to deduplication logic. | Retracted: the deduplication change was never shown to affect recall. Raw comparison data: results/raw/bug_after_dataset_a.json. |
+| **Dedup fix effect** | Round 3 / docs/INVESTIGATIONS.md | Claimed dedup resolved clustered-data recall plateau. | Retracted: the deduplication change was never shown to affect recall. Raw comparison data: results/raw/bug_after_dataset_b.json. |
 | **"Matches and surpasses baselines"** | Round 2-3 / README.md, REPORT.md | Headline claimed HNSWDB matches and surpasses FAISS and hnswlib. | Retracted: earlier versions were weaker on clustered data and slower to build; current comparisons are in the generated tables. |
 | **CI and Sanitizer PASS claims** | Round 2-3 / REPORT.md, README.md | Claimed clean ThreadSanitizer (TSan) status and passing CI. | Retracted: MSVC on Windows does not support TSan. Local host did not run Linux sanitizers. Workflow defined in `.github/workflows/ci.yml`. Status is honest `NOT RUN (Windows host)`. |
 | **FAISS template specialization attribution** | Round 2-3 / docs/TRADEOFFS.md | Attributed FAISS's build-time advantage to `L2SqrSIMD16Ext` template specialization. | Retracted: L2SqrSIMD16Ext is an hnswlib function, not FAISS's. Template specialization was never shown to explain any gap. Same-run ablations show most of the earlier build-time gap came from the original construction defaults. |

@@ -780,6 +780,20 @@ def render_file(filepath: str, raw_results: dict, check_only: bool = False) -> t
         i += 1
 
     new_content = "\n".join(new_lines)
+    if os.path.basename(filepath) == "REPORT.md":
+        def resolve_corrections(m):
+            target = m.group(1).strip()
+            fname = os.path.basename(target)
+            if os.path.exists(os.path.join(RAW_DIR, fname)):
+                return f"Raw comparison data: {target}."
+            return "No raw evidence was retained."
+
+        new_content = re.sub(
+            r"Where raw comparison data exists, see ([^;]+);\s*otherwise no raw evidence was retained\.",
+            resolve_corrections,
+            new_content
+        )
+
     if new_content != content:
         changed = True
         if not check_only:
