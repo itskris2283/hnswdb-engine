@@ -24,7 +24,7 @@ Every measured number in this report is programmatically generated from raw JSON
 | `T9` | Build time at max physical threads within 3x of hnswlib (MISS is acceptable if reported) | `1.3900` | **PASS** | multithread_build.json (run_id: multithread_build_823c144e); 8-thread build time ratio vs hnswlib |
 | `T10` | RSS delta within 15% of hnswlib on Fashion-MNIST | `0.0354` | **PASS** | Ratio = |HNSWDB RSS - hnswlib RSS| / hnswlib RSS on Fashion-MNIST. Runs: 0.0354, 0.0515, 0.0335; median across 3 runs = 0.0354 |
 | `T11` | Approximation ratio of exact search == 1.0 +/- 1e-6; Fashion-MNIST ratio <= 1.05 | `1.0000` | **PASS** | Fashion-MNIST (3 runs); median approx_ratio at ef=200 = 1.000041 |
-| `T12` | All C++ and Python tests pass (counts from run output) | `9 C++ / 76 Python passed` | **PASS** | CTest (9 suites) and pytest (76 tests); counts from test run outputs |
+| `T12` | All C++ and Python tests pass (counts from run output) | `9 C++ / 78 Python passed` | **PASS** | CTest (9 suites) and pytest (78 tests); counts from test run outputs |
 | `T13` | Sanitizers: zero findings (status NOT RUN if not executed) | `NOT RUN (Windows host)` | **NOT RUN** | Sanitizers require Linux/WSL environment; Windows host not supported |
 
 *Target T5 uses the self-retrieval unreachable metric.*

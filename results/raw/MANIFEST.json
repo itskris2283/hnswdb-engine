@@ -133,31 +133,31 @@
     },
     {
       "file": "check_claims_before.txt",
-      "sha256": "252f07bb71d92e69d31d0393297f6e77471936891f527cd3bb193345fa1ffc00",
+      "sha256": "97a7f7938e9c36b8dc14198fe4bde8a7d6b1d28248ae9e5bad86dc58af8a1388",
       "state": "raw_result",
-      "size_bytes": 14814
+      "size_bytes": 14811
     },
     {
       "file": "claims_check_after.txt",
-      "sha256": "08394dca5b10efb3c571ea648e00613f744c1813284518898a9e3f6c35ccf516",
+      "sha256": "7a99c9da514559beb1c5329d272139537ed8d5b6e2c0a6931b15858b091e060a",
       "commit": "72aad13",
       "dataset": "n/a",
       "state": "claim_audit",
-      "size_bytes": 270
+      "size_bytes": 134
     },
     {
       "file": "claims_check_before.txt",
-      "sha256": "b4ca1acea4c38bdb8a53f9653db8c1c9ee633acd5f5fd1ea4c280d9b5953a471",
+      "sha256": "9c6f720b942fe5dabb5f833b0e6f4ad52ee29593761649c2908735eea35c61c6",
       "commit": "72aad13",
       "dataset": "n/a",
       "state": "claim_audit",
-      "size_bytes": 2564
+      "size_bytes": 1282
     },
     {
       "file": "claims_check_round4_before.txt",
-      "sha256": "7b420af8c0670afa3f377cc073a99aa630d548f20d5d976aa531f4a646805c51",
+      "sha256": "79d5be92a5ce894b0a9b22a7fcf098f4031f5427ef87e7caef8381e4d86e6811",
       "state": "raw_result",
-      "size_bytes": 504
+      "size_bytes": 252
     },
     {
       "file": "decomposition_dataset_b.json",
@@ -205,9 +205,9 @@
     },
     {
       "file": "provenance_check_before.txt",
-      "sha256": "5894991197847d71bd6cd3b068a1d379d6bae26db6b237017387fc5729ffe6f5",
+      "sha256": "ff68748ab7c43d2f12efefb988e92ebcc2173ae055782752a8b3e1935bd51d3e",
       "state": "raw_result",
-      "size_bytes": 348
+      "size_bytes": 173
     },
     {
       "file": "query_work_counting.json",
@@ -225,7 +225,7 @@
     },
     {
       "file": "scorecard.json",
-      "sha256": "d0db98e44b80510986beb8907d6eca8f8c13c2ca653eec42e7dea37ae573aed6",
+      "sha256": "a77231243b624a9c37c23213879ca6aa23faac4cfcceb3ed2b4f23a0aa635b17",
       "state": "raw_result",
       "size_bytes": 8627,
       "run_id": "multiple runs; see Notes"
@@ -238,9 +238,9 @@
     },
     {
       "file": "test_ceiling_before.txt",
-      "sha256": "1cd6e0cae091d98ec4225f5689a1312b9c68163fd6214dcab4e975d2130a4e8f",
+      "sha256": "436e6d75ca0cea5386580c856cb8583d5feac34c52364a9a531969980ee6cbd8",
       "state": "raw_result",
-      "size_bytes": 2678
+      "size_bytes": 2675
     },
     {
       "file": "work_counting_build.json",
@@ -284,23 +284,23 @@
     },
     {
       "file": "where_it_loses.json",
-      "run_id": "where_it_loses_c7b365cb",
+      "run_id": "where_it_loses_cd1aa480",
       "dataset": "cross_dataset",
       "label": "Where HNSWDB Loses (>5% Gap)",
-      "sha256": "574cf55e9d7928a36b938c64092e37b2a9e2b4e3ea274b37606c22fde718c8ac",
-      "size_bytes": 3935
+      "sha256": "e1612271fd9040081ff7aabfd8ce1643498db4072eb0a6c8ac2a528985b5dbd6",
+      "size_bytes": 4693
     },
     {
       "file": "check_claims.txt",
-      "sha256": "4e72e8e1e9f3c3a192fed6c796fa67a2ad8e446c07b0394acdaf15c9973bdcb5",
+      "sha256": "7841b43057e32a308c39f22516e2dc22b43dd9e0a00f82e5b35f874ccfc71113",
       "state": "claim_audit",
-      "size_bytes": 290
+      "size_bytes": 144
     },
     {
       "file": "provenance_check.txt",
-      "sha256": "ce11f3ca5f9cbcfc83a5edcac12afe6a6e014d4ca56c394ea098167ed048c7a1",
+      "sha256": "b1cbbb2c4c87731dec9642f1c1a638f7423d5a8757c4bdd5f3d09ae086d59df1",
       "state": "provenance_audit",
-      "size_bytes": 162
+      "size_bytes": 80
     },
     {
       "file": "cleanup_report.txt",

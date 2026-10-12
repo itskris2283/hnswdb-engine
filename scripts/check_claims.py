@@ -391,17 +391,31 @@ def check_claims(root_dir=PROJECT_ROOT):
 
 
 def main():
-    print("Running Strict Claims and Consistency Checker (Round 5)...")
+    import argparse
+    parser = argparse.ArgumentParser(description="Check claims and consistency")
+    parser.add_argument("--output", "-o", type=str, help="Output file path (written in UTF-8)")
+    args = parser.parse_args()
+
+    out_lines = ["Running Strict Claims and Consistency Checker (Round 5)..."]
     errors = check_claims()
 
     if errors:
-        print(f"\nFAILED: Found {len(errors)} issue(s):")
+        out_lines.append(f"\nFAILED: Found {len(errors)} issue(s):")
         for err in errors:
-            print(f"  FAIL: {err}")
-        return 1
+            out_lines.append(f"  FAIL: {err}")
+        code = 1
     else:
-        print("\nPASSED: All claims, scoped allowlists, and evidence paths verified successfully.")
-        return 0
+        out_lines.append("\nPASSED: All claims, scoped allowlists, and evidence paths verified successfully.")
+        code = 0
+
+    out_text = "\n".join(out_lines) + "\n"
+    print(out_text, end="")
+
+    if args.output:
+        with open(args.output, "w", encoding="utf-8", newline="\n") as f:
+            f.write(out_text)
+
+    return code
 
 
 if __name__ == "__main__":

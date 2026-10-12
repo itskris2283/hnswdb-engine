@@ -1,4 +1,4 @@
-﻿python : C:\Users\lenovo\AppData\Local\Programs\Python\Python312\Lib\site-packages\pytest_asyncio\plugin.py:207: 
+python : C:\Users\lenovo\AppData\Local\Programs\Python\Python312\Lib\site-packages\pytest_asyncio\plugin.py:207: 
 PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
 At line:1 char:1
 + python -m pytest tests/python/test_ceiling.py -k test_self_retrieval_ ...

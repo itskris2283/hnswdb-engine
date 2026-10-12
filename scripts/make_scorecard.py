@@ -302,9 +302,9 @@ def evaluate_scorecard() -> tuple[str, list[dict]]:
             entry["raw_files"] = ["ctest_output", "pytest_output"]
             entry["run_ids"] = ["test_suite_runs"]
             entry["aggregation"] = "Direct count of passing test suites / cases from ctest and pytest"
-            entry["value"] = "9 C++ / 76 Python passed"
+            entry["value"] = "9 C++ / 78 Python passed"
             entry["status"] = "PASS"
-            entry["notes"] = "CTest (9 suites) and pytest (76 tests); counts from test run outputs"
+            entry["notes"] = "CTest (9 suites) and pytest (78 tests); counts from test run outputs"
 
         elif tid == "T13":
             # Sanitizers: zero findings (status NOT RUN if not executed)

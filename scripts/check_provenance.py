@@ -149,10 +149,12 @@ def main():
     parser = argparse.ArgumentParser(description="Check provenance of generated blocks in docs")
     parser.add_argument("--strict", action="store_true")
     parser.add_argument("--file", type=str, help="Check a specific file")
+    parser.add_argument("--output", "-o", type=str, help="Output file path (written in UTF-8)")
     args = parser.parse_args()
 
+    out_lines = []
     valid_run_ids = load_raw_run_ids()
-    print(f"Found {len(valid_run_ids)} valid run_id(s) in results/raw/")
+    out_lines.append(f"Found {len(valid_run_ids)} valid run_id(s) in results/raw/")
 
     if args.file:
         files = [args.file]
@@ -172,13 +174,22 @@ def main():
     all_errors.extend(check_claims_allowlist())
 
     if all_errors:
-        print(f"\n{len(all_errors)} provenance issue(s) found:")
+        out_lines.append(f"\n{len(all_errors)} provenance issue(s) found:")
         for err in all_errors:
-            print(f"  FAIL: {err}")
-        return 1
+            out_lines.append(f"  FAIL: {err}")
+        code = 1
     else:
-        print("\nPASS: All provenance checks passed")
-        return 0
+        out_lines.append("\nPASS: All provenance checks passed")
+        code = 0
+
+    out_text = "\n".join(out_lines) + "\n"
+    print(out_text, end="")
+
+    if args.output:
+        with open(args.output, "w", encoding="utf-8", newline="\n") as f:
+            f.write(out_text)
+
+    return code
 
 
 if __name__ == "__main__":

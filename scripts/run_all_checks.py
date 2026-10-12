@@ -43,12 +43,14 @@ def main():
     if code != 0: overall_pass = False
 
     # 4. Check Claims
-    code, out = run_command([sys.executable, "scripts/check_claims.py"])
+    claims_out = os.path.join(PROJECT_ROOT, "results", "raw", "check_claims.txt")
+    code, out = run_command([sys.executable, "scripts/check_claims.py", "--output", claims_out])
     all_logs.append(out)
     if code != 0: overall_pass = False
 
     # 5. Check Provenance
-    code, out = run_command([sys.executable, "scripts/check_provenance.py"])
+    prov_out = os.path.join(PROJECT_ROOT, "results", "raw", "provenance_check.txt")
+    code, out = run_command([sys.executable, "scripts/check_provenance.py", "--output", prov_out])
     all_logs.append(out)
     if code != 0: overall_pass = False
 

@@ -51,12 +51,14 @@ def test_where_it_loses_numbers_appear_in_source():
 
     for row in rows:
         source_str = row["source"]
-        raw_filename = source_str.split(":")[0].strip()
-        raw_filepath = os.path.join(RAW_DIR, raw_filename)
-        assert os.path.exists(raw_filepath), f"Source file does not exist: {raw_filepath}"
-
-        with open(raw_filepath, "r", encoding="utf-8") as rf:
-            raw_text = rf.read()
+        source_parts = [p.strip() for p in source_str.split(";")]
+        all_raw_text = ""
+        for sp in source_parts:
+            raw_filename = sp.split(":")[0].strip()
+            raw_filepath = os.path.join(RAW_DIR, raw_filename)
+            assert os.path.exists(raw_filepath), f"Source file does not exist: {raw_filepath}"
+            with open(raw_filepath, "r", encoding="utf-8") as rf:
+                all_raw_text += rf.read()
 
         # Extract numeric tokens from hnswdb and best_baseline
         for col_name in ["hnswdb", "best_baseline"]:
@@ -65,8 +67,8 @@ def test_where_it_loses_numbers_appear_in_source():
             assert num_matches, f"No number found in {col_name}: {val_str}"
             for num in num_matches:
                 # The exact number must appear in the raw JSON file
-                assert num in raw_text, (
-                    f"Number {num} from {col_name}='{val_str}' not found in raw file {raw_filename}"
+                assert num in all_raw_text, (
+                    f"Number {num} from {col_name}='{val_str}' not found in raw files for {source_str}"
                 )
 
 
@@ -87,3 +89,17 @@ def test_where_it_loses_matches_independent_recomputation():
         assert row["best_baseline"] == exp["best_baseline"]
         assert row["gap"] == f"**{exp['gap']}**"
         assert row["source"] == exp["source"]
+
+
+def test_where_it_loses_includes_self_retrieval():
+    rows = extract_where_it_loses_table_rows()
+    self_retrieval_rows = [
+        r for r in rows
+        if "self-retrieval" in r["metric"].lower() or "unreachable" in r["metric"].lower()
+    ]
+    assert len(self_retrieval_rows) >= 2, (
+        f"Expected at least 2 self-retrieval failure rows (Dataset B and Fashion-MNIST), found {len(self_retrieval_rows)}"
+    )
+    workloads = [r["workload"] for r in self_retrieval_rows]
+    assert any("Dataset B" in w for w in workloads), "Dataset B self-retrieval row missing from where_it_loses"
+    assert any("Fashion-MNIST" in w for w in workloads), "Fashion-MNIST self-retrieval row missing from where_it_loses"

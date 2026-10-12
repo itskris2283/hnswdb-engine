@@ -159,7 +159,7 @@ Evaluated on **Fashion-MNIST** (60,000 train vectors, 10,000 test vectors, 784 d
 
 ### Where HNSWDB Loses Relative to Baselines
 
-<!-- BEGIN GENERATED table=where_it_loses run_id=where_it_loses_c7b365cb -->
+<!-- BEGIN GENERATED table=where_it_loses run_id=where_it_loses_cd1aa480 -->
 | Workload | Metric | HNSWDB | Best baseline (engine) | Relative gap | Source (raw file and key path) |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | Dataset A (5K x 32d) @ R=0.95 | Sequential QPS (equal recall) | 47374.2 QPS | 50858.0 QPS (hnswlib) | **-6.9%** | `equal_recall_grid.json:interpolations[dataset=A,target_recall=0.95].interpolated_sequential_qps` |
@@ -174,6 +174,8 @@ Evaluated on **Fashion-MNIST** (60,000 train vectors, 10,000 test vectors, 784 d
 | Dataset B (20K x 64d, sigma=0.1) (ef_search=10) | Recall@10 | 0.8461 | 0.8513 (hnswlib) | **-0.0052 abs** | `bench_B_s01_8a2302be.json:engines[hnswdb].seed_42.ef_results[ef=10].recall_at_k` |
 | Fashion-MNIST (60K x 784d) | Single-thread build time | 29.9403 s | 28.2293 s (FAISS) | **+6.1%** | `bench_fashion_mnist_0a9f92db.json:engines[hnswdb].seed_42.build_time_s` |
 | Dataset B (20K x 64d, sigma=0.1) | 4-thread build time | 2.522 s | 1.809 s (hnswlib) | **+39.4%** | `multithread_build.json:dataset_b.hnswdb_build_s` |
+| Dataset B (20K x 64d, sigma=0.1) | Unreachable nodes (self-retrieval) | 9.32 | 3.0 (hnswlib) | **+6.32 (3.11x)** | `seed_matrix_dataset_b.json:engines[hnswdb_cured].unreachable_mean; baseline_self_retrieval_2796e161.json:dataset_b.hnswlib.unreachable_mean` |
+| Fashion-MNIST (60K x 784d) | Unreachable nodes (self-retrieval) | 12 | 11 (hnswlib) | **+1 (1.09x)** | `self_retrieval_fashion_mnist_50033fba.json:metrics.unreachable_nodes; baseline_self_retrieval_2796e161.json:fashion_mnist.hnswlib.unreachable_count` |
 <!-- END GENERATED -->
 
 For detailed analysis, investigations, and trade-offs, see [TRADEOFFS.md](docs/TRADEOFFS.md), [BENCHMARKS.md](docs/BENCHMARKS.md), and [INVESTIGATIONS.md](docs/INVESTIGATIONS.md). Relative speed varies between runs on this host; treat as parity.

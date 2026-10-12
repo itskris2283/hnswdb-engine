@@ -188,7 +188,7 @@
     {
       "id": "T12",
       "description": "All C++ and Python tests pass (counts from run output)",
-      "value": "9 C++ / 76 Python passed",
+      "value": "9 C++ / 78 Python passed",
       "status": "PASS",
       "raw_files": [
         "ctest_output",
@@ -198,7 +198,7 @@
         "test_suite_runs"
       ],
       "aggregation": "Direct count of passing test suites / cases from ctest and pytest",
-      "notes": "CTest (9 suites) and pytest (76 tests); counts from test run outputs"
+      "notes": "CTest (9 suites) and pytest (78 tests); counts from test run outputs"
     },
     {
       "id": "T13",

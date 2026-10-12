@@ -186,60 +186,77 @@ def analyze_losing_comparisons() -> tuple[list[dict], str]:
                 })
 
     # 4. Self-retrieval comparisons (Dataset B seed matrix and Fashion-MNIST self-retrieval)
-    # Check seed matrix for measured baseline unreachable counts
+    bsr_files = [f for f in os.listdir(RAW_DIR) if f.startswith("baseline_self_retrieval_") and f.endswith(".json")]
+    bsr_data = None
+    bsr_fname = ""
+    if bsr_files:
+        bsr_fname = bsr_files[0]
+        with open(os.path.join(RAW_DIR, bsr_fname), "r", encoding="utf-8") as bf:
+            bsr_data = json.load(bf)
+
+    # Dataset B mean self-retrieval failures
     sm_path = os.path.join(RAW_DIR, "seed_matrix_dataset_b.json")
-    if os.path.exists(sm_path):
+    if os.path.exists(sm_path) and bsr_data:
         with open(sm_path, "r", encoding="utf-8") as f:
             sm = json.load(f)
         cur_unreach = sm.get("engines", {}).get("hnswdb_cured", {}).get("unreachable_mean")
-        fa_unreach = sm.get("engines", {}).get("faiss", {}).get("unreachable_mean")
-        hl_unreach = sm.get("engines", {}).get("hnswlib", {}).get("unreachable_mean")
+        db_bsr = bsr_data.get("dataset_b", {})
+        hl_unreach = db_bsr.get("hnswlib", {}).get("unreachable_mean")
+        fa_unreach = db_bsr.get("faiss", {}).get("unreachable_mean")
 
-        # Only compare if baseline self-retrieval is measured (not None)
         valid_b = []
-        if fa_unreach is not None:
-            valid_b.append((fa_unreach, "FAISS"))
         if hl_unreach is not None:
-            valid_b.append((hl_unreach, "hnswlib"))
+            valid_b.append((hl_unreach, "hnswlib", f"{bsr_fname}:dataset_b.hnswlib.unreachable_mean"))
+        if fa_unreach is not None:
+            valid_b.append((fa_unreach, "FAISS", f"{bsr_fname}:dataset_b.faiss.unreachable_mean"))
 
         if cur_unreach is not None and valid_b:
-            best_b_val, best_b_eng = min(valid_b, key=lambda x: x[0])
-            if cur_unreach > best_b_val:
-                gap = cur_unreach - best_b_val
+            best_b_val, best_b_eng, best_b_src = min(valid_b, key=lambda x: x[0])
+            if cur_unreach > best_b_val * 1.05:
+                gap_abs = cur_unreach - best_b_val
+                ratio = cur_unreach / best_b_val if best_b_val > 0 else float("inf")
                 comparisons.append({
-                    "workload": "Dataset B (20K x 64d, sigma=0.1, 50 clusters)",
-                    "metric": "Unreachable nodes (1-NN self-retrieval)",
+                    "workload": "Dataset B (20K x 64d, sigma=0.1)",
+                    "metric": "Unreachable nodes (self-retrieval)",
                     "hnswdb": f"{cur_unreach:.2f}",
-                    "best_baseline": f"{best_b_val:.2f} ({best_b_eng})",
-                    "gap": f"+{gap:.2f} nodes",
-                    "source": "seed_matrix_dataset_b.json:engines[hnswdb_cured].unreachable_mean",
+                    "best_baseline": f"{best_b_val:.1f} ({best_b_eng})",
+                    "gap": f"+{gap_abs:.2f} ({ratio:.2f}x)",
+                    "source": f"seed_matrix_dataset_b.json:engines[hnswdb_cured].unreachable_mean; {best_b_src}",
                 })
 
-    # Check Fashion-MNIST self-retrieval files
-    sr_files = [f for f in os.listdir(RAW_DIR) if f.startswith("self_retrieval_") and f.endswith(".json")]
-    for srf in sr_files:
-        with open(os.path.join(RAW_DIR, srf), "r", encoding="utf-8") as f:
-            sr_data = json.load(f)
-        # Check if baseline is measured in this file
-        h_unreach = sr_data.get("unreachable_count")
-        fa_unreach = sr_data.get("faiss_unreachable_count")
-        hl_unreach = sr_data.get("hnswlib_unreachable_count")
+    # Fashion-MNIST self-retrieval failures
+    fmn_path = os.path.join(RAW_DIR, "self_retrieval_fashion_mnist_50033fba.json")
+    if os.path.exists(fmn_path) and bsr_data:
+        with open(fmn_path, "r", encoding="utf-8") as f:
+            fmn_data = json.load(f)
+        h_unreach = fmn_data.get("metrics", {}).get("unreachable_nodes")
+        fm_bsr = bsr_data.get("fashion_mnist", {})
+        hl_unreach = fm_bsr.get("hnswlib", {}).get("unreachable_count")
+        fa_unreach = fm_bsr.get("faiss", {}).get("unreachable_count")
+
         valid_b = []
-        if fa_unreach is not None:
-            valid_b.append((fa_unreach, "FAISS"))
         if hl_unreach is not None:
-            valid_b.append((hl_unreach, "hnswlib"))
-        if h_unreach is not None and valid_b:
-            best_b_val, best_b_eng = min(valid_b, key=lambda x: x[0])
-            if h_unreach > best_b_val:
-                gap = h_unreach - best_b_val
+            valid_b.append((hl_unreach, "hnswlib", f"{bsr_fname}:fashion_mnist.hnswlib.unreachable_count"))
+        elif "hnswlib" in fm_bsr:
+            valid_b.append((None, "hnswlib (not measured)", ""))
+        if fa_unreach is not None:
+            valid_b.append((fa_unreach, "FAISS", f"{bsr_fname}:fashion_mnist.faiss.unreachable_count"))
+        elif "faiss" in fm_bsr:
+            valid_b.append((None, "FAISS (not measured)", ""))
+
+        measured_b = [b for b in valid_b if b[0] is not None]
+        if h_unreach is not None and measured_b:
+            best_b_val, best_b_eng, best_b_src = min(measured_b, key=lambda x: x[0])
+            if h_unreach > best_b_val * 1.05:
+                gap_abs = h_unreach - best_b_val
+                ratio = h_unreach / best_b_val if best_b_val > 0 else float("inf")
                 comparisons.append({
-                    "workload": "Fashion-MNIST (60K x 784d, sampled distinct vectors)",
-                    "metric": "Unreachable nodes (1-NN self-retrieval)",
+                    "workload": "Fashion-MNIST (60K x 784d)",
+                    "metric": "Unreachable nodes (self-retrieval)",
                     "hnswdb": f"{h_unreach}",
                     "best_baseline": f"{best_b_val} ({best_b_eng})",
-                    "gap": f"+{gap} nodes",
-                    "source": f"{srf}:unreachable_count",
+                    "gap": f"+{int(gap_abs)} ({ratio:.2f}x)",
+                    "source": f"self_retrieval_fashion_mnist_50033fba.json:metrics.unreachable_nodes; {best_b_src}",
                 })
 
     # Deterministic content hash for run_id
