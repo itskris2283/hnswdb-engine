@@ -30,24 +30,24 @@ def extract_python_scripts_from_block(text: str) -> list[str]:
     return scripts
 
 
-def check_file_repro_blocks(filepath: str, section_header: str) -> list[tuple[str, str]]:
-    """Extract code blocks in the specified section and check all python scripts."""
+def check_file_repro_blocks(filepath: str, section_header: str = None) -> list[tuple[str, str]]:
+    """Extract code blocks in the specified section (or whole file) and check all python scripts."""
     if not os.path.exists(filepath):
         return [("FILE_NOT_FOUND", filepath)]
 
     with open(filepath, "r", encoding="utf-8") as f:
         content = f.read()
 
-    # Find section
-    idx = content.find(section_header)
-    if idx == -1:
-        return [("SECTION_NOT_FOUND", f"{filepath}: {section_header}")]
+    section_text = content
+    if section_header:
+        idx = content.find(section_header)
+        if idx == -1:
+            return [("SECTION_NOT_FOUND", f"{filepath}: {section_header}")]
 
-    section_text = content[idx:]
-    # Stop at next ## section if any
-    next_sec = re.search(r'\n##\s+', section_text[len(section_header):])
-    if next_sec:
-        section_text = section_text[:len(section_header) + next_sec.start()]
+        section_text = content[idx:]
+        next_sec = re.search(r'\n##\s+', section_text[len(section_header):])
+        if next_sec:
+            section_text = section_text[:len(section_header) + next_sec.start()]
 
     # Extract ```bash or ``` blocks
     code_blocks = re.findall(r'```(?:bash|sh)?\s*\n(.*?)\n```', section_text, re.DOTALL)
@@ -62,33 +62,28 @@ def check_file_repro_blocks(filepath: str, section_header: str) -> list[tuple[st
 
 
 def main():
-    print("Checking reproduction commands in REPORT.md and README.md...")
+    print("Checking reproduction commands in docs/REPRODUCE.md...")
     errors = []
     checked = set()
 
-    targets = [
-        (os.path.join(ROOT, "REPORT.md"), "## 6. Reproduction Instructions"),
-        (os.path.join(ROOT, "README.md"), "## Testing"),
-    ]
-
-    for filepath, header in targets:
-        rel_f = os.path.relpath(filepath, ROOT)
-        results = check_file_repro_blocks(filepath, header)
-        for kind, val in results:
-            if kind == "SCRIPT":
-                script_rel = val
-                script_full = os.path.join(ROOT, script_rel)
-                if not os.path.exists(script_full):
-                    errors.append(f"{rel_f}: Script does not exist: '{script_rel}'")
-                else:
-                    if script_full not in checked:
-                        checked.add(script_full)
-                        try:
-                            py_compile.compile(script_full, doraise=True)
-                        except py_compile.PyCompileError as e:
-                            errors.append(f"{rel_f}: Compilation error in '{script_rel}': {e}")
+    reproduce_path = os.path.join(ROOT, "docs", "REPRODUCE.md")
+    rel_f = os.path.relpath(reproduce_path, ROOT)
+    results = check_file_repro_blocks(reproduce_path, None)
+    for kind, val in results:
+        if kind == "SCRIPT":
+            script_rel = val
+            script_full = os.path.join(ROOT, script_rel)
+            if not os.path.exists(script_full):
+                errors.append(f"{rel_f}: Script does not exist: '{script_rel}'")
             else:
-                errors.append(f"{rel_f}: {kind} ({val})")
+                if script_full not in checked:
+                    checked.add(script_full)
+                    try:
+                        py_compile.compile(script_full, doraise=True)
+                    except py_compile.PyCompileError as e:
+                        errors.append(f"{rel_f}: Compilation error in '{script_rel}': {e}")
+        else:
+            errors.append(f"{rel_f}: {kind} ({val})")
 
     if errors:
         print("\nFAILED: Found issues with reproduction commands:")
