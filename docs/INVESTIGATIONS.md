@@ -157,12 +157,14 @@ Full algorithmic isolation and ablation experiments are conducted in Phase 3 bel
 To distinguish data sample variance from stochastic graph construction variance, 25 seed combinations (data seeds 0 to 4 crossed with build seeds 0 to 4) were evaluated on Dataset B ($20\text{k} \times 64\text{d}, \sigma=0.1, M=16, ef_c=100$). Single-threaded (1T) and 4-threaded (4T) builds were recorded across all four engines.
 
 <!-- BEGIN GENERATED table=seed_matrix run_id=seed-matrix-dbead162 -->
-| Engine | 1T Recall (Mean +/- Std) | 1T Range [Min, Max] | 4T Recall (Mean +/- Std) | 4T Range [Min, Max] | Unreachable (self-retrieval, Mean) |
+| Engine | 1T Recall (Mean +/- Std) | 1T Range [Min, Max] | 4T Recall (Mean +/- Std) | 4T Range [Min, Max] | Unreachable nodes (self-retrieval, mean over n builds) |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **hnswdb_legacy** | 0.9972 +/- 0.0037 | [0.9885, 1.0000] | 0.9970 +/- 0.0037 | [0.9883, 1.0000] | 166.2 |
-| **hnswdb_cured** | 0.9998 +/- 0.0005 | [0.9974, 1.0000] | 0.9985 +/- 0.0008 | [0.9966, 0.9998] | 9.3 |
-| **hnswlib** | 0.9993 +/- 0.0015 | [0.9936, 1.0000] | 0.9992 +/- 0.0029 | [0.9849, 1.0000] | 3.0 |
-| **faiss** | 0.9999 +/- 0.0002 | [0.9993, 1.0000] | 0.9999 +/- 0.0002 | [0.9993, 1.0000] | 5.4 |
+| **hnswdb_legacy** | 0.9972 +/- 0.0037 | [0.9885, 1.0000] | 0.9970 +/- 0.0037 | [0.9883, 1.0000] | 166.2 (n=25) |
+| **hnswdb_cured** | 0.9998 +/- 0.0005 | [0.9974, 1.0000] | 0.9985 +/- 0.0008 | [0.9966, 0.9998] | 9.3 (n=25) |
+| **hnswlib** | 0.9993 +/- 0.0015 | [0.9936, 1.0000] | 0.9992 +/- 0.0029 | [0.9849, 1.0000] | 3.0 (n=5) |
+| **faiss** | 0.9999 +/- 0.0002 | [0.9993, 1.0000] | 0.9999 +/- 0.0002 | [0.9993, 1.0000] | 5.4 (n=5) |
+
+Baseline means use fewer builds than HNSWDB's; compare with care.
 <!-- END GENERATED -->
 
 Two-way analysis of variance (ANOVA) on Recall@10 across the seed matrix:

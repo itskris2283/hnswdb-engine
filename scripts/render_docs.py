@@ -374,7 +374,7 @@ def format_recall_table(data: dict, table_name: str) -> str:
             lines.append(f"| {m} | {rec:.4f} |")
 
     elif table_name == "seed_matrix":
-        lines.append("| Engine | 1T Recall (Mean +/- Std) | 1T Range [Min, Max] | 4T Recall (Mean +/- Std) | 4T Range [Min, Max] | Unreachable (self-retrieval, Mean) |")
+        lines.append("| Engine | 1T Recall (Mean +/- Std) | 1T Range [Min, Max] | 4T Recall (Mean +/- Std) | 4T Range [Min, Max] | Unreachable nodes (self-retrieval, mean over n builds) |")
         lines.append("| :--- | :--- | :--- | :--- | :--- | :--- |")
         bsr_files = [f for f in os.listdir(RAW_DIR) if f.startswith("baseline_self_retrieval_") and f.endswith(".json")]
         bsr_data = None
@@ -392,15 +392,18 @@ def format_recall_table(data: dict, table_name: str) -> str:
             r4_min = stats.get("recall_4t_min", 0.0)
             r4_max = stats.get("recall_4t_max", 0.0)
             unreach = stats.get("unreachable_mean", None)
+            n_builds = 25 if "hnswdb" in eng else 5
             if unreach is None and bsr_data:
                 db_bsr = bsr_data.get("dataset_b", {})
                 if eng in db_bsr and "unreachable_mean" in db_bsr[eng]:
                     unreach = db_bsr[eng]["unreachable_mean"]
-            unreach_str = f"{unreach:.1f}" if unreach is not None else "not measured"
+            unreach_str = f"{unreach:.1f} (n={n_builds})" if unreach is not None else "not measured"
             lines.append(
                 f"| **{eng}** | {r1_m:.4f} +/- {r1_s:.4f} | [{r1_min:.4f}, {r1_max:.4f}] | "
                 f"{r4_m:.4f} +/- {r4_s:.4f} | [{r4_min:.4f}, {r4_max:.4f}] | {unreach_str} |"
             )
+        lines.append("")
+        lines.append("Baseline means use fewer builds than HNSWDB's; compare with care.")
 
     elif table_name == "seed_anova":
         lines.append("| Engine | Data Seed SS Share | Build Seed SS Share | Residual SS Share | F-stat (Data Seed) | F-stat (Build Seed) |")
@@ -581,7 +584,7 @@ def format_recall_table(data: dict, table_name: str) -> str:
                 lines.append(f"| {ds_name} | {tgt:.2f} | **{eng}** | {stat} | {p50:.4f} | {sqps:,.0f} | {b4:,.0f} |")
 
     elif table_name.startswith("readme_clustered_matrix"):
-        lines.append("| Engine | 1T Recall@10 (Mean ± Std) | 4T Recall@10 (Mean ± Std) | Unreachable Nodes (Self-Retrieval Mean) |")
+        lines.append("| Engine | 1T Recall@10 (Mean ± Std) | 4T Recall@10 (Mean ± Std) | Unreachable nodes (self-retrieval, mean over n builds) |")
         lines.append("| :--- | :---: | :---: | :---: |")
         engs = [
             ("hnswdb_cured", "**HNSWDB (Cured)**"),
@@ -603,12 +606,15 @@ def format_recall_table(data: dict, table_name: str) -> str:
             r4_m = ed.get("recall_4t_mean", 0.0)
             r4_s = ed.get("recall_4t_std", 0.0)
             unreach = ed.get("unreachable_mean", None)
+            n_builds = 25 if "hnswdb" in eng_key else 5
             if unreach is None and bsr_data:
                 db_bsr = bsr_data.get("dataset_b", {})
                 if eng_key in db_bsr and "unreachable_mean" in db_bsr[eng_key]:
                     unreach = db_bsr[eng_key]["unreachable_mean"]
-            unreach_str = f"{unreach:.2f}" if unreach is not None else "not measured"
+            unreach_str = f"{unreach:.2f} (n={n_builds})" if unreach is not None else "not measured"
             lines.append(f"| {display_name} | {r1_m:.4f} ± {r1_s:.4f} | {r4_m:.4f} ± {r4_s:.4f} | {unreach_str} |")
+        lines.append("")
+        lines.append("Baseline means use fewer builds than HNSWDB's; compare with care.")
 
     elif table_name.startswith("where_it_loses"):
         comparisons = data.get("comparisons", [])
@@ -625,6 +631,8 @@ def format_recall_table(data: dict, table_name: str) -> str:
                 g = c.get("gap", "")
                 s = c.get("source", "")
                 lines.append(f"| {w} | {m} | {h} | {b} | **{g}** | `{s}` |")
+            lines.append("")
+            lines.append("Baseline means use fewer builds than HNSWDB's; compare with care.")
 
     else:
         lines.append(f"*Unknown table type: {table_name}*")

@@ -217,9 +217,9 @@ def analyze_losing_comparisons() -> tuple[list[dict], str]:
                 ratio = cur_unreach / best_b_val if best_b_val > 0 else float("inf")
                 comparisons.append({
                     "workload": "Dataset B (20K x 64d, sigma=0.1)",
-                    "metric": "Unreachable nodes (self-retrieval)",
-                    "hnswdb": f"{cur_unreach:.2f}",
-                    "best_baseline": f"{best_b_val:.1f} ({best_b_eng})",
+                    "metric": "Unreachable nodes (self-retrieval, mean over n builds)",
+                    "hnswdb": f"{cur_unreach:.2f} (n=25)",
+                    "best_baseline": f"{best_b_val:.1f} ({best_b_eng}, n=5)",
                     "gap": f"+{gap_abs:.2f} ({ratio:.2f}x)",
                     "source": f"seed_matrix_dataset_b.json:engines[hnswdb_cured].unreachable_mean; {best_b_src}",
                 })
@@ -252,9 +252,9 @@ def analyze_losing_comparisons() -> tuple[list[dict], str]:
                 ratio = h_unreach / best_b_val if best_b_val > 0 else float("inf")
                 comparisons.append({
                     "workload": "Fashion-MNIST (60K x 784d)",
-                    "metric": "Unreachable nodes (self-retrieval)",
-                    "hnswdb": f"{h_unreach}",
-                    "best_baseline": f"{best_b_val} ({best_b_eng})",
+                    "metric": "Unreachable nodes (self-retrieval, mean over n builds)",
+                    "hnswdb": f"{h_unreach} (n=1)",
+                    "best_baseline": f"{best_b_val} ({best_b_eng}, n=1)",
                     "gap": f"+{int(gap_abs)} ({ratio:.2f}x)",
                     "source": f"self_retrieval_fashion_mnist_50033fba.json:metrics.unreachable_nodes; {best_b_src}",
                 })
