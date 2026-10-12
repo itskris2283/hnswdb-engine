@@ -1,30 +1,30 @@
-HNSWDB Full Verification Run - 2026-10-12T09:37:12.676992
+HNSWDB Full Verification Run - 2026-10-12T16:25:48.486320
 === COMMAND: ctest --test-dir build/cp312-cp312-win_amd64 -C Release --output-on-failure ===
 Exit Code: 0
 --- STDOUT ---
 Test project D:/MERN/CustomVecDB/build/cp312-cp312-win_amd64
     Start 1: test_distance
-1/9 Test #1: test_distance ....................   Passed    0.04 sec
+1/9 Test #1: test_distance ....................   Passed    0.16 sec
     Start 2: test_flat_index
-2/9 Test #2: test_flat_index ..................   Passed    0.06 sec
+2/9 Test #2: test_flat_index ..................   Passed    0.25 sec
     Start 3: test_hnsw_basic
-3/9 Test #3: test_hnsw_basic ..................   Passed    0.05 sec
+3/9 Test #3: test_hnsw_basic ..................   Passed    0.08 sec
     Start 4: test_hnsw_invariants
-4/9 Test #4: test_hnsw_invariants .............   Passed    1.90 sec
+4/9 Test #4: test_hnsw_invariants .............   Passed    3.42 sec
     Start 5: test_hnsw_delete
-5/9 Test #5: test_hnsw_delete .................   Passed    0.06 sec
+5/9 Test #5: test_hnsw_delete .................   Passed    0.05 sec
     Start 6: test_errors
 6/9 Test #6: test_errors ......................   Passed    0.05 sec
     Start 7: test_metadata_filter
-7/9 Test #7: test_metadata_filter .............   Passed    0.24 sec
+7/9 Test #7: test_metadata_filter .............   Passed    0.30 sec
     Start 8: test_serialization
-8/9 Test #8: test_serialization ...............   Passed    0.13 sec
+8/9 Test #8: test_serialization ...............   Passed    0.16 sec
     Start 9: test_concurrency
-9/9 Test #9: test_concurrency .................   Passed    0.49 sec
+9/9 Test #9: test_concurrency .................   Passed    0.60 sec
 
 100% tests passed out of 9
 
-Total Test time (real) =   3.05 sec
+Total Test time (real) =   5.69 sec
 
 --- STDERR ---
 
@@ -39,89 +39,92 @@ rootdir: D:\
 configfile: pyproject.toml
 plugins: anyio-4.6.2, langsmith-0.4.43, asyncio-0.25.0, cov-6.0.0, typeguard-4.4.2
 asyncio: mode=Mode.STRICT, asyncio_default_fixture_loop_scope=None
-collecting ... collected 79 items
+collecting ... collected 82 items
 
 tests\python\test_anova.py::test_anova_pure_row_effect PASSED            [  1%]
 tests\python\test_anova.py::test_anova_pure_col_effect PASSED            [  2%]
 tests\python\test_anova.py::test_anova_equal_shares PASSED               [  3%]
-tests\python\test_anova.py::test_anova_known_three_way_split PASSED      [  5%]
+tests\python\test_anova.py::test_anova_known_three_way_split PASSED      [  4%]
 tests\python\test_anova.py::test_anova_invalid_inputs PASSED             [  6%]
 tests\python\test_api.py::test_basic_lifecycle PASSED                    [  7%]
 tests\python\test_api.py::test_batch_add_and_search_shapes PASSED        [  8%]
-tests\python\test_api.py::test_1d_inputs PASSED                          [ 10%]
-tests\python\test_api.py::test_type_casting PASSED                       [ 11%]
+tests\python\test_api.py::test_1d_inputs PASSED                          [  9%]
+tests\python\test_api.py::test_type_casting PASSED                       [ 10%]
 tests\python\test_api.py::test_dimension_mismatch PASSED                 [ 12%]
 tests\python\test_api.py::test_invalid_vector_exceptions PASSED          [ 13%]
-tests\python\test_api.py::test_capacity_exceeded PASSED                  [ 15%]
-tests\python\test_api.py::test_stats_dictionary PASSED                   [ 16%]
+tests\python\test_api.py::test_capacity_exceeded PASSED                  [ 14%]
+tests\python\test_api.py::test_stats_dictionary PASSED                   [ 15%]
 tests\python\test_api.py::test_flat_index_api PASSED                     [ 17%]
 tests\python\test_api.py::test_diagnostics_dictionary PASSED             [ 18%]
-tests\python\test_api.py::test_parameter_safety PASSED                   [ 20%]
-tests\python\test_benchmark_metrics.py::test_recall_at_k_exact_and_disjoint PASSED [ 21%]
-tests\python\test_benchmark_metrics.py::test_approx_ratio_metrics PASSED [ 22%]
-tests\python\test_benchmark_metrics.py::test_measure_single_query_latency_and_suspect_validation PASSED [ 24%]
-tests\python\test_benchmark_metrics.py::test_measure_batch_qps_repeats PASSED [ 25%]
-tests\python\test_benchmark_metrics.py::test_equal_recall_interpolation PASSED [ 26%]
-tests\python\test_benchmark_smoke.py::test_benchmark_smoke PASSED        [ 27%]
-tests\python\test_ceiling.py::test_recall_monotonicity_dataset_a PASSED  [ 29%]
-tests\python\test_ceiling.py::test_recall_convergence_dataset_b PASSED   [ 30%]
-tests\python\test_ceiling.py::test_recall_monotonicity_dataset_b PASSED  [ 31%]
-tests\python\test_ceiling.py::test_sigma_sensitivity PASSED              [ 32%]
-tests\python\test_ceiling.py::test_self_retrieval_rate_dataset_a PASSED  [ 34%]
-tests\python\test_check_claims.py::test_banned_phrase_fails PASSED       [ 35%]
-tests\python\test_check_claims.py::test_unscoped_allowlist_entry_fails PASSED [ 36%]
-tests\python\test_check_claims.py::test_allowlisted_raw_metric_value_fails PASSED [ 37%]
-tests\python\test_check_claims.py::test_missing_evidence_path_fails PASSED [ 39%]
-tests\python\test_check_claims.py::test_allowlist_cap_enforced PASSED    [ 40%]
-tests\python\test_check_claims.py::test_new_banned_phrases_fail PASSED   [ 41%]
-tests\python\test_check_claims.py::test_corrections_block_numbers_scanned PASSED [ 43%]
-tests\python\test_check_repro_commands.py::test_reproduction_commands_pass PASSED [ 44%]
-tests\python\test_clean_headers.py::test_no_generated_block_contains_unknown_or_question_marks PASSED [ 45%]
-tests\python\test_clean_headers.py::test_scorecard_header_format PASSED  [ 46%]
-tests\python\test_cli.py::test_cli_build_info_query_bench PASSED         [ 48%]
-tests\python\test_concurrency.py::test_concurrent_python_readers_and_writers PASSED [ 49%]
-tests\python\test_concurrency.py::test_concurrent_batch_threading PASSED [ 50%]
-tests\python\test_conformance.py::test_select_neighbors_heuristic_conformance PASSED [ 51%]
-tests\python\test_conformance.py::test_search_layer_conformance PASSED   [ 53%]
-tests\python\test_conformance.py::test_overflow_pruning_conformance PASSED [ 54%]
-tests\python\test_crc_matches_zlib.py::test_crc_matches_zlib_trailer PASSED [ 55%]
+tests\python\test_api.py::test_parameter_safety PASSED                   [ 19%]
+tests\python\test_benchmark_metrics.py::test_recall_at_k_exact_and_disjoint PASSED [ 20%]
+tests\python\test_benchmark_metrics.py::test_approx_ratio_metrics PASSED [ 21%]
+tests\python\test_benchmark_metrics.py::test_measure_single_query_latency_and_suspect_validation PASSED [ 23%]
+tests\python\test_benchmark_metrics.py::test_measure_batch_qps_repeats PASSED [ 24%]
+tests\python\test_benchmark_metrics.py::test_equal_recall_interpolation PASSED [ 25%]
+tests\python\test_benchmark_smoke.py::test_benchmark_smoke PASSED        [ 26%]
+tests\python\test_ceiling.py::test_recall_monotonicity_dataset_a PASSED  [ 28%]
+tests\python\test_ceiling.py::test_recall_convergence_dataset_b PASSED   [ 29%]
+tests\python\test_ceiling.py::test_recall_monotonicity_dataset_b PASSED  [ 30%]
+tests\python\test_ceiling.py::test_sigma_sensitivity PASSED              [ 31%]
+tests\python\test_ceiling.py::test_self_retrieval_rate_dataset_a PASSED  [ 32%]
+tests\python\test_check_claims.py::test_banned_phrase_fails PASSED       [ 34%]
+tests\python\test_check_claims.py::test_unscoped_allowlist_entry_fails PASSED [ 35%]
+tests\python\test_check_claims.py::test_allowlisted_raw_metric_value_fails PASSED [ 36%]
+tests\python\test_check_claims.py::test_missing_evidence_path_fails PASSED [ 37%]
+tests\python\test_check_claims.py::test_allowlist_cap_enforced PASSED    [ 39%]
+tests\python\test_check_claims.py::test_new_banned_phrases_fail PASSED   [ 40%]
+tests\python\test_check_claims.py::test_corrections_block_numbers_scanned PASSED [ 41%]
+tests\python\test_check_repro_commands.py::test_reproduction_commands_pass PASSED [ 42%]
+tests\python\test_clean_headers.py::test_no_generated_block_contains_unknown_or_question_marks PASSED [ 43%]
+tests\python\test_clean_headers.py::test_scorecard_header_format PASSED  [ 45%]
+tests\python\test_cli.py::test_cli_build_info_query_bench PASSED         [ 46%]
+tests\python\test_concurrency.py::test_concurrent_python_readers_and_writers PASSED [ 47%]
+tests\python\test_concurrency.py::test_concurrent_batch_threading PASSED [ 48%]
+tests\python\test_conformance.py::test_select_neighbors_heuristic_conformance PASSED [ 50%]
+tests\python\test_conformance.py::test_search_layer_conformance PASSED   [ 51%]
+tests\python\test_conformance.py::test_overflow_pruning_conformance PASSED [ 52%]
+tests\python\test_counts_consistent.py::test_counts_consistent PASSED    [ 53%]
+tests\python\test_crc_matches_zlib.py::test_crc_matches_zlib_trailer PASSED [ 54%]
 tests\python\test_crc_matches_zlib.py::test_corrupted_byte_detected_by_crc PASSED [ 56%]
-tests\python\test_crc_matches_zlib.py::test_truncated_file_detected PASSED [ 58%]
-tests\python\test_crc_matches_zlib.py::test_version_1_file_rejected_with_message PASSED [ 59%]
-tests\python\test_filtering.py::test_simple_equality_filter PASSED       [ 60%]
-tests\python\test_filtering.py::test_complex_filter_operators PASSED     [ 62%]
-tests\python\test_filtering.py::test_filtered_search_recall PASSED       [ 63%]
-tests\python\test_fuzz_model.py::test_fuzz_operations PASSED             [ 64%]
-tests\python\test_fuzz_model.py::test_churn_delete_20pct_insert_20pct_recall PASSED [ 65%]
-tests\python\test_kernel_parity.py::test_kernel_parity_l2_and_ip PASSED  [ 67%]
-tests\python\test_kernel_parity.py::test_odd_dimensions_parity PASSED    [ 68%]
-tests\python\test_persistence.py::test_hnsw_save_load_roundtrip PASSED   [ 69%]
-tests\python\test_persistence.py::test_flat_save_load_roundtrip PASSED   [ 70%]
-tests\python\test_persistence.py::test_corruption_detection PASSED       [ 72%]
-tests\python\test_persistence.py::test_binary_format_struct_offsets_and_crc PASSED [ 73%]
-tests\python\test_recall_vs_faiss.py::test_recall_vs_faiss_l2 PASSED     [ 74%]
-tests\python\test_recall_vs_faiss.py::test_recall_vs_faiss_ip PASSED     [ 75%]
-tests\python\test_recall_vs_faiss.py::test_recall_vs_faiss_cosine PASSED [ 77%]
-tests\python\test_recall_vs_faiss.py::test_ef_search_monotonicity PASSED [ 78%]
-tests\python\test_recall_vs_faiss.py::test_clustered_dataset_recall_floor PASSED [ 79%]
-tests\python\test_regression_bug.py::test_graph_invariants_dataset_a PASSED [ 81%]
-tests\python\test_regression_bug.py::test_recall_dataset_a PASSED        [ 82%]
-tests\python\test_regression_bug.py::test_graph_connectivity PASSED      [ 83%]
-tests\python\test_regression_bug.py::test_approximation_ratio_correct PASSED [ 84%]
-tests\python\test_rest_api.py::test_health PASSED                        [ 86%]
-tests\python\test_rest_api.py::test_full_rest_workflow PASSED            [ 87%]
-tests\python\test_resume_bullets.py::test_resume_bullets_file_exists PASSED [ 88%]
-tests\python\test_resume_bullets.py::test_resume_bullets_provenance PASSED [ 89%]
-tests\python\test_self_retrieval.py::test_exact_index_self_retrieval_rate_one PASSED [ 91%]
-tests\python\test_self_retrieval.py::test_missing_points_self_retrieval_expected_fraction PASSED [ 92%]
-tests\python\test_self_retrieval.py::test_duplicate_rows_handled_by_distance_zero PASSED [ 93%]
-tests\python\test_text_encoding.py::test_all_text_files_are_valid_utf8_without_bom PASSED [ 94%]
-tests\python\test_text_encoding.py::test_report_and_interview_prep_explicit PASSED [ 96%]
-tests\python\test_where_it_loses.py::test_where_it_loses_numbers_appear_in_source PASSED [ 97%]
-tests\python\test_where_it_loses.py::test_where_it_loses_matches_independent_recomputation PASSED [ 98%]
-tests\python\test_where_it_loses.py::test_where_it_loses_includes_self_retrieval PASSED [100%]
+tests\python\test_crc_matches_zlib.py::test_truncated_file_detected PASSED [ 57%]
+tests\python\test_crc_matches_zlib.py::test_version_1_file_rejected_with_message PASSED [ 58%]
+tests\python\test_filtering.py::test_simple_equality_filter PASSED       [ 59%]
+tests\python\test_filtering.py::test_complex_filter_operators PASSED     [ 60%]
+tests\python\test_filtering.py::test_filtered_search_recall PASSED       [ 62%]
+tests\python\test_fuzz_model.py::test_fuzz_operations PASSED             [ 63%]
+tests\python\test_fuzz_model.py::test_churn_delete_20pct_insert_20pct_recall PASSED [ 64%]
+tests\python\test_kernel_parity.py::test_kernel_parity_l2_and_ip PASSED  [ 65%]
+tests\python\test_kernel_parity.py::test_odd_dimensions_parity PASSED    [ 67%]
+tests\python\test_persistence.py::test_hnsw_save_load_roundtrip PASSED   [ 68%]
+tests\python\test_persistence.py::test_flat_save_load_roundtrip PASSED   [ 69%]
+tests\python\test_persistence.py::test_corruption_detection PASSED       [ 70%]
+tests\python\test_persistence.py::test_binary_format_struct_offsets_and_crc PASSED [ 71%]
+tests\python\test_recall_vs_faiss.py::test_recall_vs_faiss_l2 PASSED     [ 73%]
+tests\python\test_recall_vs_faiss.py::test_recall_vs_faiss_ip PASSED     [ 74%]
+tests\python\test_recall_vs_faiss.py::test_recall_vs_faiss_cosine PASSED [ 75%]
+tests\python\test_recall_vs_faiss.py::test_ef_search_monotonicity PASSED [ 76%]
+tests\python\test_recall_vs_faiss.py::test_clustered_dataset_recall_floor PASSED [ 78%]
+tests\python\test_regression_bug.py::test_graph_invariants_dataset_a PASSED [ 79%]
+tests\python\test_regression_bug.py::test_recall_dataset_a PASSED        [ 80%]
+tests\python\test_regression_bug.py::test_graph_connectivity PASSED      [ 81%]
+tests\python\test_regression_bug.py::test_approximation_ratio_correct PASSED [ 82%]
+tests\python\test_rest_api.py::test_health PASSED                        [ 84%]
+tests\python\test_rest_api.py::test_full_rest_workflow PASSED            [ 85%]
+tests\python\test_resume_bullets.py::test_resume_bullets_file_exists PASSED [ 86%]
+tests\python\test_resume_bullets.py::test_resume_bullets_provenance PASSED [ 87%]
+tests\python\test_self_retrieval.py::test_exact_index_self_retrieval_rate_one PASSED [ 89%]
+tests\python\test_self_retrieval.py::test_missing_points_self_retrieval_expected_fraction PASSED [ 90%]
+tests\python\test_self_retrieval.py::test_duplicate_rows_handled_by_distance_zero PASSED [ 91%]
+tests\python\test_text_encoding.py::test_all_text_files_are_valid_utf8_without_bom PASSED [ 92%]
+tests\python\test_text_encoding.py::test_report_and_interview_prep_explicit PASSED [ 93%]
+tests\python\test_where_it_loses.py::test_where_it_loses_numbers_appear_in_source PASSED [ 95%]
+tests\python\test_where_it_loses.py::test_where_it_loses_matches_independent_recomputation PASSED [ 96%]
+tests\python\test_where_it_loses.py::test_compare_self_retrieval_mismatched_denominators_raises PASSED [ 97%]
+tests\python\test_where_it_loses.py::test_compare_self_retrieval_threshold_behavior PASSED [ 98%]
+tests\python\test_where_it_loses.py::test_where_it_loses_self_retrieval_consistent_rule PASSED [100%]
 
-============================= 79 passed in 29.72s =============================
+============================= 82 passed in 57.23s =============================
 
 --- STDERR ---
 C:\Users\lenovo\AppData\Local\Programs\Python\Python312\Lib\site-packages\pytest_asyncio\plugin.py:207: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
@@ -151,7 +154,7 @@ PASSED: All claims, scoped allowlists, and evidence paths verified successfully.
 === COMMAND: C:\Users\lenovo\AppData\Local\Programs\Python\Python312\python.exe scripts/check_provenance.py --output D:\MERN\CustomVecDB\results\raw\provenance_check.txt ===
 Exit Code: 0
 --- STDOUT ---
-Found 25 valid run_id(s) in results/raw/
+Found 27 valid run_id(s) in results/raw/
 
 PASS: All provenance checks passed
 
@@ -187,6 +190,29 @@ Verifying README Python snippet...
 PASSED: README verification completed successfully.
 
 --- STDERR ---
+
+
+=== COMMAND: C:\Users\lenovo\AppData\Local\Programs\Python\Python312\python.exe -m pytest tests/python/test_counts_consistent.py -v ===
+Exit Code: 0
+--- STDOUT ---
+============================= test session starts =============================
+platform win32 -- Python 3.12.6, pytest-8.3.4, pluggy-1.6.0 -- C:\Users\lenovo\AppData\Local\Programs\Python\Python312\python.exe
+cachedir: .pytest_cache
+rootdir: D:\
+configfile: pyproject.toml
+plugins: anyio-4.6.2, langsmith-0.4.43, asyncio-0.25.0, cov-6.0.0, typeguard-4.4.2
+asyncio: mode=Mode.STRICT, asyncio_default_fixture_loop_scope=None
+collecting ... collected 1 item
+
+tests\python\test_counts_consistent.py::test_counts_consistent PASSED    [100%]
+
+============================== 1 passed in 5.50s ==============================
+
+--- STDERR ---
+C:\Users\lenovo\AppData\Local\Programs\Python\Python312\Lib\site-packages\pytest_asyncio\plugin.py:207: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
 
 
 OVERALL STATUS: ALL CHECKS PASSED

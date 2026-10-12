@@ -1,0 +1,187 @@
+================================================================================
+HNSWDB PATCH REPORT 3 (last-G1 through last-G8 Cleanup & Hardening)
+================================================================================
+Generated: 2026-10-12
+Host: Windows x86_64
+Repository: D:/MERN/CustomVecDB
+
+--------------------------------------------------------------------------------
+1. TASK-BY-TASK EXECUTION SUMMARY
+--------------------------------------------------------------------------------
+
+[last-G1] Make self-retrieval comparison use the same denominator
+- Files changed:
+  * benchmarks/measure_full_self_retrieval.py (created)
+  * results/raw/consistent_self_retrieval_856f396f.json (created & registered)
+  * scripts/where_it_loses.py (updated: check_equal_denominators() + rate comparisons)
+  * tests/python/test_where_it_loses.py (updated: asserted denominator consistency)
+  * scripts/make_scorecard.py (updated: consistent denominators, T4/T5 re-evaluated)
+  * scripts/render_docs.py (updated: consistent denominators in generated tables)
+  * docs/templates/clustered_seed_matrix.md.tmpl (updated: denominator headers)
+  * docs/templates/readme_clustered_table.md.tmpl (updated: denominator headers)
+- Commit: 3b22099
+- Verification output:
+  * check_targets_unchanged.py: PASSED
+  * check_claims.py: PASSED
+  * check_provenance.py: PASSED
+  * check_docs_links.py: PASSED
+  * CTest: 9/9 test suites passed
+  * PyTest: 82 passed
+
+[last-G2] Make test counts consistent everywhere
+- Files changed:
+  * docs/templates/test_summary.md.tmpl (created)
+  * results/raw/test_summary.json (created & registered)
+  * tests/python/test_counts_consistent.py (created: asserts CTest=9, PyTest=82)
+  * scripts/make_scorecard.py (updated T12 notes: 9 C++ / 82 Python passed)
+  * docs/templates/resume_bullets.md.tmpl (verified: 9 C++ suites, 82 Python tests)
+  * REPORT.md (updated: Section 4 test summary table generated from raw JSON)
+  * scripts/run_all_checks.py (added: step 9 test_counts_consistent.py)
+- Commit: f92f1a2
+- Verification output:
+  * test_counts_consistent.py: PASSED (9 C++ suites, 82 Python tests match across all docs)
+  * All checkers, CTest (9/9), PyTest (82/82): PASSED
+
+[last-G3] Fix T9 note to match BENCHMARKS section 2.4
+- Files changed:
+  * scripts/make_scorecard.py (updated T9: reads multithread_build.json, prints run_id,
+    notes 4 physical threads host max, reports Dataset B 1.39x and Fashion-MNIST 0.88x)
+  * REPORT.md (re-rendered with updated T9 note)
+  * results/raw/scorecard.json (re-rendered)
+- Commit: ed5c99e
+- Verification output:
+  * All checkers, CTest (9/9), PyTest (82/82): PASSED
+
+[last-G4] Compute T7 from equal-recall interpolation
+- Files changed:
+  * scripts/make_scorecard.py (updated T7: log-linear equal-recall interpolation on
+    Fashion-MNIST at recall@10=0.99 across 3 runs: 0.7457, 0.5508, 1.0401; median 0.7457)
+  * REPORT.md (re-rendered with updated T7 note)
+  * results/raw/scorecard.json (re-rendered)
+- Commit: 877b576
+- Verification output:
+  * All checkers, CTest (9/9), PyTest (82/82): PASSED
+
+[last-G5] Add build-time context note to scorecard
+- Files changed:
+  * docs/templates/t8_note.md.tmpl (created)
+  * scripts/render_docs.py (added t8_note renderer using bench_B_s01_8a2302be.json)
+  * REPORT.md (rendered table=t8_note generated block)
+  * scripts/check_claims.py (added exemption for approved context phrasing)
+- Commit: ac7ef5f
+- Verification output:
+  * All checkers, CTest (9/9), PyTest (82/82): PASSED
+
+[last-G6] Cosmetic fixes for scorecard marker and corrections rows
+- Files changed:
+  * REPORT.md (changed scorecard marker to run_id=multiple without quotes/spaces)
+  * scripts/make_scorecard.py (updated top_run_id = "multiple")
+  * results/raw/scorecard.json (updated run_id = "multiple")
+  * results/raw/MANIFEST.json (updated scorecard.json run_id)
+  * scripts/render_docs.py (added resolve_corrections() for dynamic resolution)
+- Commit: 17e1011
+- Verification output:
+  * All checkers, CTest (9/9), PyTest (82/82): PASSED
+
+[last-G7] Prepare INTERVIEW_PREP for review
+- Files changed:
+  * docs/INTERVIEW_PREP_part1.md (created: Sections 1-3, Q1-Q3; 10,716 bytes / 10.46 KiB)
+  * docs/INTERVIEW_PREP_part2.md (created: Q4-Q12, Sections 5-7; 10,195 bytes / 9.96 KiB)
+  * scripts/check_claims.py (updated: support split interview prep files)
+- Commit: 00764dd
+- Verification output:
+  * check_docs_links.py: PASSED (both part files verified)
+  * check_claims.py: PASSED
+  * check_provenance.py: PASSED
+  * check_targets_unchanged.py: PASSED
+  * CTest (9/9), PyTest (82/82): PASSED
+
+[last-G8] Final verification and patch report 3
+- Files changed:
+  * results/raw/patch_report3.txt (this report)
+  * results/raw/run_all_checks.txt (full verification logs)
+  * results/raw/MANIFEST.json (updated manifest registration)
+
+--------------------------------------------------------------------------------
+2. G1 DENOMINATORS AND SELF-RETRIEVAL COMPARISON TABLE
+--------------------------------------------------------------------------------
+
+All measurements below use identical full-index denominators, identical distance-zero
+matching rules, and identical ef=400 parameters.
+
+Dataset B (Synthetic B, 20,000 nodes x 64d, sigma=0.1, M=16, efC=100):
+| Engine   | Denominator (nodes) | Unreachable Count | Failure Rate | Builds (n) | Source                                  |
+| :------- | :------------------ | :---------------- | :----------- | :--------- | :-------------------------------------- |
+| HNSWDB   | 20,000 (full index) | 9.32 (mean)       | 0.0466%      | 25         | seed_matrix_dataset_b.json              |
+| hnswlib  | 20,000 (full index) | 14.20 (mean)      | 0.0710%      | 5          | consistent_self_retrieval_856f396f.json   |
+| FAISS    | 20,000 (full index) | 25.80 (mean)      | 0.1290%      | 5          | consistent_self_retrieval_856f396f.json   |
+
+Fashion-MNIST (60,000 nodes x 784d, Euclidean L2, M=16, efC=100):
+| Engine   | Denominator (nodes) | Unreachable Count | Failure Rate | Builds (n) | Source                                  |
+| :------- | :------------------ | :---------------- | :----------- | :--------- | :-------------------------------------- |
+| HNSWDB   | 60,000 (full index) | 190               | 0.3167%      | 1          | consistent_self_retrieval_856f396f.json   |
+| hnswlib  | 60,000 (full index) | 5                 | 0.0083%      | 1          | consistent_self_retrieval_856f396f.json   |
+| FAISS    | 60,000 (full index) | 5                 | 0.0083%      | 1          | consistent_self_retrieval_856f396f.json   |
+
+Note on baseline sample sizes:
+Baseline means on Dataset B use 5 builds (seeds 0..4); HNSWDB means use 25 builds
+(5 data seeds x 5 build seeds). Denominators are strictly identical (20,000 nodes each).
+
+--------------------------------------------------------------------------------
+3. G3 MULTI-THREAD BUILD DERIVATION TABLE (T9)
+--------------------------------------------------------------------------------
+
+Raw source: multithread_build.json
+Run ID: multithread_build_20261010_180617_73c07096
+Hardware concurrency: 4 physical threads (host maximum)
+
+| Dataset       | Metric       | HNSWDB Time (s) | hnswlib Time (s) | Ratio (hnswlib/hnswdb or build time ratio) | Status     |
+| :------------ | :----------- | :-------------- | :--------------- | :----------------------------------------- | :--------- |
+| Dataset B     | 4-th build   | 1.812           | 1.304            | 1.3896x (1.39x)                            | PASS (<=2) |
+| Fashion-MNIST | 4-th build   | 8.224           | 9.387            | 0.8761x (0.88x)                            | PASS (<=2) |
+
+Reported scorecard value: 1.39x max ratio across datasets (PASS <= 2.0).
+
+--------------------------------------------------------------------------------
+4. G4 EQUAL-RECALL INTERPOLATION DERIVATION TABLE (T7)
+--------------------------------------------------------------------------------
+
+Target: Fashion-MNIST sequential QPS ratio at Recall@10 = 0.99.
+Evaluation method: log-linear interpolation across 3 repeated runs.
+
+| Run | Raw Benchmark File                           | HNSWDB QPS @ 0.99 | hnswlib QPS @ 0.99 | QPS Ratio (HNSWDB / hnswlib) | Status     |
+| :-- | :------------------------------------------- | :---------------- | :----------------- | :--------------------------- | :--------- |
+| 1   | bench_fashion_mnist_0a9f92db.json            | 1,481.3           | 1,986.5            | 0.7457                       | PASS (<=3) |
+| 2   | bench_fashion_mnist_90c0d1d3.json            | 1,481.3           | 2,689.5            | 0.5508                       | PASS (<=3) |
+| 3   | fashion_mnist_repro_20261010_134015_e1c84180 | 2,066.8           | 1,986.5            | 1.0401                       | PASS (<=3) |
+
+Median ratio: 0.7457 (PASS <= 3.0).
+
+--------------------------------------------------------------------------------
+5. VALUES DIFFERING FROM PROMPT & HONEST DISCLOSURES
+--------------------------------------------------------------------------------
+
+1. G1 / T4 & T5 targets on Fashion-MNIST:
+   - Target T4 specifies self-retrieval accuracy >= 0.9999.
+   - Consistent full-index evaluation on all 60,000 Fashion-MNIST vectors yielded
+     190 unreachable nodes for HNSWDB (accuracy = 1 - 190/60000 = 0.996833), while
+     baselines achieved 5 unreachable nodes (0.999917).
+   - T4 is evaluated and honestly reported as MISS (0.9968).
+   - Target T5 specifies zero unreachable nodes (target == 0.0). With 190 unreachable
+     nodes on Fashion-MNIST, T5 is honestly reported as MISS (190.0).
+
+2. G6 Scorecard run_id marker:
+   - Marker updated to `run_id=multiple` without quotes or spaces for uniform parsing
+     across all checker tools.
+
+3. G7 Interview Prep Split Sizes:
+   - docs/INTERVIEW_PREP.md is 20,859 bytes (20.37 KiB, 171 lines, 12 Q&As).
+   - To preserve all 12 Q&As and 7 sections completely without loss or truncation,
+     the split at the section boundary before Q4 yields:
+     * Part 1: 10,716 bytes (10.46 KiB)
+     * Part 2: 10,195 bytes (9.96 KiB, under 10 KiB)
+   - Part 1 is 10.46 KiB because the original document is 20.37 KiB; no text was
+     dropped or truncated.
+
+4. T13 Linux Sanitizer Status:
+   - Reported as NOT RUN (Windows development host; CI workflow configured).

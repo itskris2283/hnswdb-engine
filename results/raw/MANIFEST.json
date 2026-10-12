@@ -217,11 +217,11 @@
     },
     {
       "file": "run_all_checks.txt",
-      "sha256": "e2def45bc96b0481da6236ce77fd168fd1e8347b657fa239342aa5e993986c8b",
+      "sha256": "2a876e5f025fd79515f772a4d0d166514545c46e2057e24db24d85f0685d4461",
       "commit": "72aad13",
       "dataset": "n/a",
       "state": "test_suite_log",
-      "size_bytes": 11294
+      "size_bytes": 13074
     },
     {
       "file": "scorecard.json",
@@ -298,7 +298,7 @@
     },
     {
       "file": "provenance_check.txt",
-      "sha256": "ec96f132a13ee9da192f7a88c105861829adda40e9524764ac586e46205196e3",
+      "sha256": "6998e05c6cc1e096c08e6797fa8bd00de72c4b9bfd0e9e5f993a9f92f8e3a9b7",
       "state": "provenance_audit",
       "size_bytes": 77
     },
@@ -337,7 +337,13 @@
       "label": "Test Suite Summary (CTest and PyTest)",
       "sha256": "9cd5a0ae57086a150faa20e854ae38471026395a296474aa1ce131546475455a",
       "size_bytes": 234
+    },
+    {
+      "file": "patch_report3.txt",
+      "sha256": "23980fdca7e9c5895b7c45f8747484dae8486971f74c1f9fcd5622e398f539a6",
+      "size_bytes": 10268,
+      "state": "patch_report"
     }
   ],
-  "last_updated": "2026-10-12T10:00:26.344312+00:00"
+  "last_updated": "2026-10-12T10:58:35.236693+00:00"
 }
