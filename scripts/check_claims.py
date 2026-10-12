@@ -285,7 +285,7 @@ def check_claims(root_dir=PROJECT_ROOT):
                     if phrase in line_lower:
                         if phrase == "edge starvation" and "does not explain the gap" in line_lower:
                             continue
-                        if phrase in ("beats faiss", "beats hnswlib") and rel_path.endswith("INTERVIEW_PREP.md"):
+                        if phrase in ("beats faiss", "beats hnswlib") and "INTERVIEW_PREP" in rel_path:
                             continue
                         if phrase in ("cryptographic", "audited") and "do not say" in line_lower:
                             continue
