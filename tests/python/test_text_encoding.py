@@ -63,3 +63,18 @@ def test_all_text_files_are_valid_utf8_without_bom():
             failures.append(f"{rel}: UnicodeDecodeError when decoding as UTF-8: {e}")
 
     assert not failures, "Encoding failures found:\n" + "\n".join(failures)
+
+
+def test_report_and_interview_prep_explicit():
+    for rel_path in ["REPORT.md", "docs/INTERVIEW_PREP.md"]:
+        full_path = os.path.join(ROOT, rel_path)
+        assert os.path.exists(full_path), f"{rel_path} must exist"
+        sz = os.path.getsize(full_path)
+        assert sz < 200 * 1024, f"{rel_path} exceeds 200 KB ({sz} bytes)"
+        with open(full_path, "rb") as f:
+            raw = f.read()
+        assert not raw.startswith(b"\xef\xbb\xbf"), f"{rel_path} has UTF-8 BOM"
+        assert not raw.startswith((b"\xff\xfe", b"\xfe\xff")), f"{rel_path} has UTF-16 BOM"
+        assert b"\x00" not in raw, f"{rel_path} contains null bytes"
+        decoded = raw.decode("utf-8")
+        assert not any(ord(c) > 0xFFFF for c in decoded), f"{rel_path} has chars outside BMP"
