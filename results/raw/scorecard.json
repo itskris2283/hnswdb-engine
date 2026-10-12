@@ -50,38 +50,30 @@
     {
       "id": "T4",
       "description": "Corrected self-retrieval rate >= 0.999 on Dataset B and on Fashion-MNIST",
-      "value": 0.9976,
+      "value": 0.9968,
       "status": "MISS",
       "raw_files": [
-        "seed_matrix_dataset_b.json",
-        "self_retrieval_fashion_mnist_50033fba.json",
-        "baseline_self_retrieval_2796e161.json"
+        "consistent_self_retrieval_856f396f.json"
       ],
       "run_ids": [
-        "seed-matrix-dbead162",
-        "self_retrieval_fashion_mnist_20261011_094933_50033fba",
-        "baseline_self_retrieval_2796e161"
+        "consistent_self_retrieval_856f396f"
       ],
-      "aggregation": "Minimum self-retrieval rate across Dataset B (25-seed mean) and Fashion-MNIST (5K sample)",
-      "notes": "Dataset B: 0.9995, Fashion-MNIST: 0.9976. Baselines under the same metric: hnswlib (0.9994 / 0.9978), FAISS (0.9989 / 0.9952)"
+      "aggregation": "Minimum self-retrieval rate across Dataset B (20K full index, 5-seed mean) and Fashion-MNIST (60K full index)",
+      "notes": "Dataset B: 8.20 / 20,000 (0.0410%, n=5), Fashion-MNIST (full index): 190 / 60,000 (0.3167%, n=1). Baselines under the same metric: hnswlib (Dataset B: 9.00 / 20,000 (0.0450%, n=5); Fashion-MNIST: 193 / 60,000 (0.3217%, n=1)), FAISS (Dataset B: 21.20 / 20,000 (0.1060%, n=5); Fashion-MNIST: 275 / 60,000 (0.4583%, n=1))"
     },
     {
       "id": "T5",
       "description": "Unreachable nodes == 0 (Dataset B mean, Fashion-MNIST)",
-      "value": 12.0,
+      "value": 190.0,
       "status": "MISS",
       "raw_files": [
-        "seed_matrix_dataset_b.json",
-        "self_retrieval_fashion_mnist_50033fba.json",
-        "baseline_self_retrieval_2796e161.json"
+        "consistent_self_retrieval_856f396f.json"
       ],
       "run_ids": [
-        "seed-matrix-dbead162",
-        "self_retrieval_fashion_mnist_20261011_094933_50033fba",
-        "baseline_self_retrieval_2796e161"
+        "consistent_self_retrieval_856f396f"
       ],
-      "aggregation": "Maximum unreachable node count across Dataset B (25-seed mean) and Fashion-MNIST (5K sample)",
-      "notes": "Dataset B mean: 9.32, Fashion-MNIST (in sample): 12. Baselines under the same metric: hnswlib (3.00 / 11), FAISS (5.40 / 24)"
+      "aggregation": "Maximum unreachable node count across Dataset B (20K full index, 5-seed mean) and Fashion-MNIST (60K full index)",
+      "notes": "Dataset B mean: 8.20 / 20,000 (0.0410%, n=5), Fashion-MNIST (full index): 190 / 60,000 (0.3167%, n=1). Baselines under the same metric: hnswlib (Dataset B: 9.00 / 20,000 (0.0450%, n=5); Fashion-MNIST: 193 / 60,000 (0.3217%, n=1)), FAISS (Dataset B: 21.20 / 20,000 (0.1060%, n=5); Fashion-MNIST: 275 / 60,000 (0.4583%, n=1))"
     },
     {
       "id": "T6",

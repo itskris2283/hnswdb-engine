@@ -91,15 +91,84 @@ def test_where_it_loses_matches_independent_recomputation():
         assert row["source"] == exp["source"]
 
 
-def test_where_it_loses_includes_self_retrieval():
-    rows = extract_where_it_loses_table_rows()
-    self_retrieval_rows = [
-        r for r in rows
-        if "self-retrieval" in r["metric"].lower() or "unreachable" in r["metric"].lower()
-    ]
-    assert len(self_retrieval_rows) >= 2, (
-        f"Expected at least 2 self-retrieval failure rows (Dataset B and Fashion-MNIST), found {len(self_retrieval_rows)}"
+def test_compare_self_retrieval_mismatched_denominators_raises():
+    from scripts.where_it_loses import compare_self_retrieval
+
+    with pytest.raises(ValueError, match="Mismatched denominators"):
+        compare_self_retrieval(
+            h_unreach=9.32,
+            h_denom=20000,
+            h_builds=25,
+            b_unreach=3.0,
+            b_denom=5000,
+            b_builds=5,
+            b_eng="hnswlib",
+            workload="Dataset B",
+            source_str="test_source",
+        )
+
+
+def test_compare_self_retrieval_threshold_behavior():
+    from scripts.where_it_loses import compare_self_retrieval
+
+    # Case 1: HNSWDB is worse by > 5% relative (e.g. 10 failures vs 5 failures on same 10,000 denominator)
+    losing_case = compare_self_retrieval(
+        h_unreach=10.0,
+        h_denom=10000,
+        h_builds=5,
+        b_unreach=5.0,
+        b_denom=10000,
+        b_builds=5,
+        b_eng="hnswlib",
+        workload="Test Dataset",
+        source_str="test_source",
     )
-    workloads = [r["workload"] for r in self_retrieval_rows]
-    assert any("Dataset B" in w for w in workloads), "Dataset B self-retrieval row missing from where_it_loses"
-    assert any("Fashion-MNIST" in w for w in workloads), "Fashion-MNIST self-retrieval row missing from where_it_loses"
+    assert losing_case is not None
+    assert losing_case["gap"] == "+100.0% (2.00x)"
+    assert "10.00 / 10,000" in losing_case["hnswdb"]
+    assert "5.00 / 10,000" in losing_case["best_baseline"]
+
+    # Case 2: HNSWDB is within 5% or better (e.g. 5 failures vs 5 failures on same 10,000 denominator)
+    equal_case = compare_self_retrieval(
+        h_unreach=5.0,
+        h_denom=10000,
+        h_builds=5,
+        b_unreach=5.0,
+        b_denom=10000,
+        b_builds=5,
+        b_eng="hnswlib",
+        workload="Test Dataset",
+        source_str="test_source",
+    )
+    assert equal_case is None, "Should omit comparison when within 5% threshold"
+
+    # Case 3: HNSWDB is better (e.g. 4 failures vs 5 failures)
+    better_case = compare_self_retrieval(
+        h_unreach=4.0,
+        h_denom=10000,
+        h_builds=5,
+        b_unreach=5.0,
+        b_denom=10000,
+        b_builds=5,
+        b_eng="hnswlib",
+        workload="Test Dataset",
+        source_str="test_source",
+    )
+    assert better_case is None, "Should omit comparison when HNSWDB outperforms baseline"
+
+
+def test_where_it_loses_self_retrieval_consistent_rule():
+    from scripts.where_it_loses import analyze_losing_comparisons
+
+    expected_comparisons, _ = analyze_losing_comparisons()
+    table_rows = extract_where_it_loses_table_rows()
+
+    sr_in_exp = [c for c in expected_comparisons if "self-retrieval" in c["metric"].lower()]
+    sr_in_table = [r for r in table_rows if "self-retrieval" in r["metric"].lower()]
+
+    assert len(sr_in_exp) == len(sr_in_table)
+    # Under current consistent full-index measurements, HNSWDB is within 5% of or outperforms baselines
+    # so self-retrieval rows are omitted. If any were present, their denominators must match.
+    for r in sr_in_table:
+        m = re.search(r"count / ([\d,]+)", r["metric"])
+        assert m, f"Metric description must state denominator: {r['metric']}"

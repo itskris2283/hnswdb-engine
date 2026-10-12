@@ -16,8 +16,8 @@ Every measured number in this report is programmatically generated from raw JSON
 | `T1` | Fashion-MNIST (M=16, efC=100): recall@10 >= 0.99 at some ef <= 100 and >= 0.999 at some ef <= 400 | `0.9992` | **PASS** | Fashion-MNIST (3 runs, median ef=200 recall); runs: 0a9f92db, 723b5b0a, b3b2cd25 |
 | `T2` | Dataset B (sigma=0.1, efC=100): recall@10 at ef=200, mean over 5 data seeds x 5 build seeds, >= 0.999 | `0.9998` | **PASS** | Dataset B (seed_matrix_dataset_b.json); mean over 5x5 data/build seeds |
 | `T3` | Dataset B: mean recall gap vs hnswlib (same seeds) <= 0.002 | `0.0005` | **PASS** | Dataset B (seed_matrix_dataset_b.json); |hnswdb_cured - hnswlib| recall@200 |
-| `T4` | Corrected self-retrieval rate >= 0.999 on Dataset B and on Fashion-MNIST | `0.9976` | **MISS** | Dataset B: 0.9995, Fashion-MNIST: 0.9976. Baselines under the same metric: hnswlib (0.9994 / 0.9978), FAISS (0.9989 / 0.9952) |
-| `T5` | Unreachable nodes == 0 (Dataset B mean, Fashion-MNIST) | `12.0000` | **MISS** | Dataset B mean: 9.32, Fashion-MNIST (in sample): 12. Baselines under the same metric: hnswlib (3.00 / 11), FAISS (5.40 / 24) |
+| `T4` | Corrected self-retrieval rate >= 0.999 on Dataset B and on Fashion-MNIST | `0.9968` | **MISS** | Dataset B: 8.20 / 20,000 (0.0410%, n=5), Fashion-MNIST (full index): 190 / 60,000 (0.3167%, n=1). Baselines under the same metric: hnswlib (Dataset B: 9.00 / 20,000 (0.0450%, n=5); Fashion-MNIST: 193 / 60,000 (0.3217%, n=1)), FAISS (Dataset B: 21.20 / 20,000 (0.1060%, n=5); Fashion-MNIST: 275 / 60,000 (0.4583%, n=1)) |
+| `T5` | Unreachable nodes == 0 (Dataset B mean, Fashion-MNIST) | `190.0000` | **MISS** | Dataset B mean: 8.20 / 20,000 (0.0410%, n=5), Fashion-MNIST (full index): 190 / 60,000 (0.3167%, n=1). Baselines under the same metric: hnswlib (Dataset B: 9.00 / 20,000 (0.0450%, n=5); Fashion-MNIST: 193 / 60,000 (0.3217%, n=1)), FAISS (Dataset B: 21.20 / 20,000 (0.1060%, n=5); Fashion-MNIST: 275 / 60,000 (0.4583%, n=1)) |
 | `T6` | HNSWDB single-thread vs multi-thread build recall difference < 0.003 | `0.0014` | **PASS** | Dataset B (seed_matrix_dataset_b.json); |1T - 4T| build recall difference |
 | `T7` | Sequential QPS at recall@10 = 0.99 within 3x of hnswlib (Fashion-MNIST, equal-recall interpolation) | `0.7321` | **PASS** | Ratio = hnswlib seq QPS / HNSWDB seq QPS at ef=50 (R~0.995). Runs: 0.7321, 0.5701, 1.1016; median across 3 runs = 0.7321 |
 | `T8` | Build time, 1 thread, within 3x of hnswlib on Fashion-MNIST and Dataset B | `0.6164` | **PASS** | Ratio = max(FM build ratio, Dataset B build ratio). FM median = 0.6164 (runs: 1.0535, 0.5604, 0.6164), Dataset B = 0.4378. Max = 0.6164 |
@@ -29,7 +29,7 @@ Every measured number in this report is programmatically generated from raw JSON
 
 *Target T5 uses the self-retrieval unreachable metric.*
 *Ratio definitions: T7 = hnswlib sequential QPS / HNSWDB sequential QPS at recall@10 = 0.99 (evaluated at ef=50, R~0.995; <= 3 passes) on Fashion-MNIST (median across 3 runs). T8 = max(Fashion-MNIST build ratio, Dataset B build ratio) of HNSWDB single-thread build time / hnswlib single-thread build time (Fashion-MNIST uses median across 3 runs). T10 = |HNSWDB RSS - hnswlib RSS| / hnswlib RSS on Fashion-MNIST (median across 3 runs).*
-*Baselines under the same metric: hnswlib (Dataset B: 3.00 unreachable / 0.9994 rate; Fashion-MNIST: 11 unreachable / 0.9978 rate); FAISS (Dataset B: 5.40 unreachable / 0.9989 rate; Fashion-MNIST: 24 unreachable / 0.9952 rate).*
+*Baselines under the same metric: hnswlib (Dataset B: 9.00 / 20,000 (0.0450%, n=5); Fashion-MNIST: 193 / 60,000 (0.3217%, n=1)); FAISS (Dataset B: 21.20 / 20,000 (0.1060%, n=5); Fashion-MNIST: 275 / 60,000 (0.4583%, n=1)).*
 <!-- END GENERATED -->
 
 <!-- BEGIN GENERATED table=t3_note run_id=seed-matrix-dbead162 -->

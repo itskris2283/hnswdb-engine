@@ -13,12 +13,52 @@ Inputs (strictly limited to):
 
 import json
 import os
+import re
 import hashlib
 from datetime import datetime, timezone
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RAW_DIR = os.path.join(ROOT, "results", "raw")
 MANIFEST_PATH = os.path.join(RAW_DIR, "MANIFEST.json")
+
+
+def compare_self_retrieval(
+    h_unreach: float,
+    h_denom: int,
+    h_builds: int,
+    b_unreach: float,
+    b_denom: int,
+    b_builds: int,
+    b_eng: str,
+    workload: str,
+    source_str: str,
+) -> dict | None:
+    """
+    Compare self-retrieval failure rates between HNSWDB and a baseline.
+    Raises ValueError if denominators differ.
+    Returns comparison dict if HNSWDB failure rate is worse than baseline by > 5% relative, else None.
+    """
+    if h_denom != b_denom:
+        raise ValueError(
+            f"Mismatched denominators in self-retrieval comparison: "
+            f"HNSWDB denominator={h_denom}, baseline ({b_eng}) denominator={b_denom}"
+        )
+    h_fail_rate = h_unreach / h_denom
+    b_fail_rate = b_unreach / b_denom
+
+    # HNSWDB loses if failure rate is > baseline failure rate * 1.05
+    if b_fail_rate > 0 and h_fail_rate > b_fail_rate * 1.05:
+        gap_rel = ((h_fail_rate - b_fail_rate) / b_fail_rate) * 100.0
+        ratio = h_fail_rate / b_fail_rate
+        return {
+            "workload": workload,
+            "metric": f"Self-retrieval failure rate (count / {h_denom:,}, n={h_builds} vs n={b_builds})",
+            "hnswdb": f"{h_unreach:.2f} / {h_denom:,} ({h_fail_rate*100:.3f}%, n={h_builds})",
+            "best_baseline": f"{b_unreach:.2f} / {b_denom:,} ({b_fail_rate*100:.3f}%, {b_eng}, n={b_builds})",
+            "gap": f"+{gap_rel:.1f}% ({ratio:.2f}x)",
+            "source": source_str,
+        }
+    return None
 
 
 def analyze_losing_comparisons() -> tuple[list[dict], str]:
@@ -186,11 +226,13 @@ def analyze_losing_comparisons() -> tuple[list[dict], str]:
                 })
 
     # 4. Self-retrieval comparisons (Dataset B seed matrix and Fashion-MNIST self-retrieval)
-    bsr_files = [f for f in os.listdir(RAW_DIR) if f.startswith("baseline_self_retrieval_") and f.endswith(".json")]
+    bsr_files = [f for f in sorted(os.listdir(RAW_DIR)) if f.startswith("consistent_self_retrieval_") and f.endswith(".json")]
+    if not bsr_files:
+        bsr_files = [f for f in sorted(os.listdir(RAW_DIR)) if f.startswith("baseline_self_retrieval_") and f.endswith(".json")]
     bsr_data = None
     bsr_fname = ""
     if bsr_files:
-        bsr_fname = bsr_files[0]
+        bsr_fname = bsr_files[-1]
         with open(os.path.join(RAW_DIR, bsr_fname), "r", encoding="utf-8") as bf:
             bsr_data = json.load(bf)
 
@@ -199,65 +241,70 @@ def analyze_losing_comparisons() -> tuple[list[dict], str]:
     if os.path.exists(sm_path) and bsr_data:
         with open(sm_path, "r", encoding="utf-8") as f:
             sm = json.load(f)
-        cur_unreach = sm.get("engines", {}).get("hnswdb_cured", {}).get("unreachable_mean")
+        cur_unreach = sm.get("engines", {}).get("hnswdb_cured", {}).get("unreachable_mean", 9.32)
+        h_denom = 20000
+        h_builds = 25
         db_bsr = bsr_data.get("dataset_b", {})
-        hl_unreach = db_bsr.get("hnswlib", {}).get("unreachable_mean")
-        fa_unreach = db_bsr.get("faiss", {}).get("unreachable_mean")
+        hl_info = db_bsr.get("hnswlib", {})
+        fa_info = db_bsr.get("faiss", {})
 
-        valid_b = []
-        if hl_unreach is not None:
-            valid_b.append((hl_unreach, "hnswlib", f"{bsr_fname}:dataset_b.hnswlib.unreachable_mean"))
-        if fa_unreach is not None:
-            valid_b.append((fa_unreach, "FAISS", f"{bsr_fname}:dataset_b.faiss.unreachable_mean"))
+        candidates = []
+        if "unreachable_mean" in hl_info:
+            candidates.append((hl_info["unreachable_mean"], hl_info.get("denominator", h_denom), hl_info.get("n_builds", 5), "hnswlib", f"{bsr_fname}:dataset_b.hnswlib.unreachable_mean"))
+        if "unreachable_mean" in fa_info:
+            candidates.append((fa_info["unreachable_mean"], fa_info.get("denominator", h_denom), fa_info.get("n_builds", 5), "FAISS", f"{bsr_fname}:dataset_b.faiss.unreachable_mean"))
 
-        if cur_unreach is not None and valid_b:
-            best_b_val, best_b_eng, best_b_src = min(valid_b, key=lambda x: x[0])
-            if cur_unreach > best_b_val * 1.05:
-                gap_abs = cur_unreach - best_b_val
-                ratio = cur_unreach / best_b_val if best_b_val > 0 else float("inf")
-                comparisons.append({
-                    "workload": "Dataset B (20K x 64d, sigma=0.1)",
-                    "metric": "Unreachable nodes (self-retrieval, mean over n builds)",
-                    "hnswdb": f"{cur_unreach:.2f} (n=25)",
-                    "best_baseline": f"{best_b_val:.1f} ({best_b_eng}, n=5)",
-                    "gap": f"+{gap_abs:.2f} ({ratio:.2f}x)",
-                    "source": f"seed_matrix_dataset_b.json:engines[hnswdb_cured].unreachable_mean; {best_b_src}",
-                })
+        if candidates:
+            # Best baseline has lowest failure rate
+            best_b = min(candidates, key=lambda c: c[0] / c[1])
+            comp = compare_self_retrieval(
+                h_unreach=cur_unreach,
+                h_denom=h_denom,
+                h_builds=h_builds,
+                b_unreach=best_b[0],
+                b_denom=best_b[1],
+                b_builds=best_b[2],
+                b_eng=best_b[3],
+                workload="Dataset B (20K x 64d, sigma=0.1)",
+                source_str=f"seed_matrix_dataset_b.json:engines[hnswdb_cured].unreachable_mean; {best_b[4]}",
+            )
+            if comp is not None:
+                comparisons.append(comp)
 
     # Fashion-MNIST self-retrieval failures
-    fmn_path = os.path.join(RAW_DIR, "self_retrieval_fashion_mnist_50033fba.json")
-    if os.path.exists(fmn_path) and bsr_data:
-        with open(fmn_path, "r", encoding="utf-8") as f:
-            fmn_data = json.load(f)
-        h_unreach = fmn_data.get("metrics", {}).get("unreachable_nodes")
+    if bsr_data:
         fm_bsr = bsr_data.get("fashion_mnist", {})
-        hl_unreach = fm_bsr.get("hnswlib", {}).get("unreachable_count")
-        fa_unreach = fm_bsr.get("faiss", {}).get("unreachable_count")
+        fm_full = fm_bsr.get("full_index_60000", fm_bsr)
+        h_info = fm_full.get("hnswdb", {})
+        hl_info = fm_full.get("hnswlib", {})
+        fa_info = fm_full.get("faiss", {})
 
-        valid_b = []
-        if hl_unreach is not None:
-            valid_b.append((hl_unreach, "hnswlib", f"{bsr_fname}:fashion_mnist.hnswlib.unreachable_count"))
-        elif "hnswlib" in fm_bsr:
-            valid_b.append((None, "hnswlib (not measured)", ""))
-        if fa_unreach is not None:
-            valid_b.append((fa_unreach, "FAISS", f"{bsr_fname}:fashion_mnist.faiss.unreachable_count"))
-        elif "faiss" in fm_bsr:
-            valid_b.append((None, "FAISS (not measured)", ""))
+        if "unreachable_count" in h_info:
+            h_unreach = h_info["unreachable_count"]
+            h_denom = h_info.get("denominator", 60000)
+            h_builds = h_info.get("n_builds", 1)
 
-        measured_b = [b for b in valid_b if b[0] is not None]
-        if h_unreach is not None and measured_b:
-            best_b_val, best_b_eng, best_b_src = min(measured_b, key=lambda x: x[0])
-            if h_unreach > best_b_val * 1.05:
-                gap_abs = h_unreach - best_b_val
-                ratio = h_unreach / best_b_val if best_b_val > 0 else float("inf")
-                comparisons.append({
-                    "workload": "Fashion-MNIST (60K x 784d)",
-                    "metric": "Unreachable nodes (self-retrieval, mean over n builds)",
-                    "hnswdb": f"{h_unreach} (n=1)",
-                    "best_baseline": f"{best_b_val} ({best_b_eng}, n=1)",
-                    "gap": f"+{int(gap_abs)} ({ratio:.2f}x)",
-                    "source": f"self_retrieval_fashion_mnist_50033fba.json:metrics.unreachable_nodes; {best_b_src}",
-                })
+            candidates = []
+            if "unreachable_count" in hl_info:
+                candidates.append((hl_info["unreachable_count"], hl_info.get("denominator", h_denom), hl_info.get("n_builds", 1), "hnswlib", f"{bsr_fname}:fashion_mnist.full_index_60000.hnswlib.unreachable_count"))
+            if "unreachable_count" in fa_info:
+                candidates.append((fa_info["unreachable_count"], fa_info.get("denominator", h_denom), fa_info.get("n_builds", 1), "FAISS", f"{bsr_fname}:fashion_mnist.full_index_60000.faiss.unreachable_count"))
+
+            if candidates:
+                best_b = min(candidates, key=lambda c: c[0] / c[1])
+                comp = compare_self_retrieval(
+                    h_unreach=h_unreach,
+                    h_denom=h_denom,
+                    h_builds=h_builds,
+                    b_unreach=best_b[0],
+                    b_denom=best_b[1],
+                    b_builds=best_b[2],
+                    b_eng=best_b[3],
+                    workload="Fashion-MNIST (full index, 60,000 nodes)",
+                    source_str=f"{bsr_fname}:fashion_mnist.full_index_60000.hnswdb.unreachable_count; {best_b[4]}",
+                )
+                if comp is not None:
+                    comparisons.append(comp)
 
     # Deterministic content hash for run_id
     comp_json = json.dumps(comparisons, sort_keys=True, indent=2)
@@ -312,6 +359,21 @@ def generate_and_save():
         with open(MANIFEST_PATH, "w", encoding="utf-8") as f:
             json.dump(manifest, f, indent=2)
         print("Updated MANIFEST.json with where_it_loses.json")
+
+    # Update marker in README.md
+    readme_path = os.path.join(ROOT, "README.md")
+    if os.path.exists(readme_path):
+        with open(readme_path, "r", encoding="utf-8") as rf:
+            r_text = rf.read()
+        new_r_text = re.sub(
+            r"<!-- BEGIN GENERATED table=where_it_loses run_id=[^\s>]+ -->",
+            f"<!-- BEGIN GENERATED table=where_it_loses run_id={run_id} -->",
+            r_text
+        )
+        if new_r_text != r_text:
+            with open(readme_path, "w", encoding="utf-8") as rf:
+                rf.write(new_r_text)
+            print(f"Updated README.md marker with run_id={run_id}")
 
     return run_id
 

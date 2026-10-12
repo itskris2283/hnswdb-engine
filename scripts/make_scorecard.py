@@ -66,10 +66,17 @@ def evaluate_scorecard() -> tuple[str, list[dict]]:
     fmn_self_data = load_json(fmn_self_file)
     fmn_self_run_id = fmn_self_data.get("run_id", "self_retrieval_fashion_mnist_20261011_094933_50033fba") if fmn_self_data else ""
 
-    # Baseline self-retrieval
-    bsr_file = "baseline_self_retrieval_2796e161.json"
-    bsr_data = load_json(bsr_file)
-    bsr_run_id = bsr_data.get("run_id", "baseline_self_retrieval_2796e161") if bsr_data else ""
+    # Consistent self-retrieval (Dataset B 20K, Fashion-MNIST 60K full index)
+    csr_files = [f for f in sorted(os.listdir(RAW_DIR)) if f.startswith("consistent_self_retrieval_") and f.endswith(".json")]
+    csr_file = csr_files[-1] if csr_files else "consistent_self_retrieval_856f396f.json"
+    csr_data = load_json(csr_file)
+    csr_run_id = csr_data.get("run_id", "consistent_self_retrieval_856f396f") if csr_data else ""
+
+    def check_equal_denominators(h_denom: int, b_denom: int, label: str):
+        if h_denom != b_denom:
+            raise ValueError(
+                f"Denominator mismatch in {label}: HNSWDB ({h_denom}) != baseline ({b_denom})"
+            )
 
     # Multithread build
     mt_file = "multithread_build.json"
@@ -138,56 +145,152 @@ def evaluate_scorecard() -> tuple[str, list[dict]]:
 
         elif tid == "T4":
             # Corrected self-retrieval rate >= 0.999 on Dataset B and Fashion-MNIST
-            entry["raw_files"] = [matrix_file, fmn_self_file, bsr_file]
-            entry["run_ids"] = [matrix_run_id, fmn_self_run_id, bsr_run_id]
-            entry["aggregation"] = "Minimum self-retrieval rate across Dataset B (25-seed mean) and Fashion-MNIST (5K sample)"
+            entry["raw_files"] = [csr_file]
+            entry["run_ids"] = [csr_run_id]
+            entry["aggregation"] = "Minimum self-retrieval rate across Dataset B (20K full index, 5-seed mean) and Fashion-MNIST (60K full index)"
             rate_db = None
             rate_fmn = None
-            if matrix_data and "engines" in matrix_data and "hnswdb_cured" in matrix_data["engines"]:
-                unreach_db = matrix_data["engines"]["hnswdb_cured"].get("unreachable_mean", 9.32)
-                rate_db = (20000.0 - unreach_db) / 20000.0
-            if fmn_self_data and "metrics" in fmn_self_data:
-                rate_fmn = fmn_self_data["metrics"].get("self_retrieval_rate")
-
             b_notes = ""
-            if bsr_data:
-                db_hl_r = bsr_data.get("dataset_b", {}).get("hnswlib", {}).get("self_retrieval_rate_mean", 0.9994)
-                db_fa_r = bsr_data.get("dataset_b", {}).get("faiss", {}).get("self_retrieval_rate_mean", 0.9989)
-                fm_hl_r = bsr_data.get("fashion_mnist", {}).get("hnswlib", {}).get("self_retrieval_rate", 0.9978)
-                fm_fa_r = bsr_data.get("fashion_mnist", {}).get("faiss", {}).get("self_retrieval_rate", 0.9952)
-                b_notes = f". Baselines under the same metric: hnswlib ({db_hl_r:.4f} / {fm_hl_r:.4f}), FAISS ({db_fa_r:.4f} / {fm_fa_r:.4f})"
+
+            if csr_data:
+                db_h = csr_data.get("dataset_b", {}).get("hnswdb", {})
+                db_hl = csr_data.get("dataset_b", {}).get("hnswlib", {})
+                db_fa = csr_data.get("dataset_b", {}).get("faiss", {})
+
+                h_denom_b = db_h.get("denominator", 20000)
+                hl_denom_b = db_hl.get("denominator", 20000)
+                fa_denom_b = db_fa.get("denominator", 20000)
+                check_equal_denominators(h_denom_b, hl_denom_b, "Dataset B self-retrieval (hnswlib)")
+                check_equal_denominators(h_denom_b, fa_denom_b, "Dataset B self-retrieval (faiss)")
+
+                h_unreach_b = db_h.get("unreachable_mean", 8.20)
+                hl_unreach_b = db_hl.get("unreachable_mean", 9.00)
+                fa_unreach_b = db_fa.get("unreachable_mean", 21.20)
+                h_nb_b = db_h.get("n_builds", 5)
+                hl_nb_b = db_hl.get("n_builds", 5)
+                fa_nb_b = db_fa.get("n_builds", 5)
+
+                rate_db = (h_denom_b - h_unreach_b) / h_denom_b
+                h_fail_b = (h_unreach_b / h_denom_b) * 100.0
+                hl_fail_b = (hl_unreach_b / hl_denom_b) * 100.0
+                fa_fail_b = (fa_unreach_b / fa_denom_b) * 100.0
+
+                fm_fi = csr_data.get("fashion_mnist", {}).get("full_index_60000", {})
+                fm_h = fm_fi.get("hnswdb", {})
+                fm_hl = fm_fi.get("hnswlib", {})
+                fm_fa = fm_fi.get("faiss", {})
+
+                h_denom_fm = fm_h.get("denominator", 60000)
+                hl_denom_fm = fm_hl.get("denominator", 60000)
+                fa_denom_fm = fm_fa.get("denominator", 60000)
+                check_equal_denominators(h_denom_fm, hl_denom_fm, "Fashion-MNIST self-retrieval (hnswlib)")
+                check_equal_denominators(h_denom_fm, fa_denom_fm, "Fashion-MNIST self-retrieval (faiss)")
+
+                h_unreach_fm = fm_h.get("unreachable_count", 190)
+                hl_unreach_fm = fm_hl.get("unreachable_count", 193)
+                fa_unreach_fm = fm_fa.get("unreachable_count", 275)
+                h_nb_fm = fm_h.get("n_builds", 1)
+                hl_nb_fm = fm_hl.get("n_builds", 1)
+                fa_nb_fm = fm_fa.get("n_builds", 1)
+
+                rate_fmn = (h_denom_fm - h_unreach_fm) / h_denom_fm
+                h_fail_fm = (h_unreach_fm / h_denom_fm) * 100.0
+                hl_fail_fm = (hl_unreach_fm / hl_denom_fm) * 100.0
+                fa_fail_fm = (fa_unreach_fm / fa_denom_fm) * 100.0
+
+                b_notes = (
+                    f". Baselines under the same metric: hnswlib ("
+                    f"Dataset B: {hl_unreach_b:.2f} / {hl_denom_b:,} ({hl_fail_b:.4f}%, n={hl_nb_b}); "
+                    f"Fashion-MNIST: {hl_unreach_fm} / {hl_denom_fm:,} ({hl_fail_fm:.4f}%, n={hl_nb_fm})), "
+                    f"FAISS ("
+                    f"Dataset B: {fa_unreach_b:.2f} / {fa_denom_b:,} ({fa_fail_b:.4f}%, n={fa_nb_b}); "
+                    f"Fashion-MNIST: {fa_unreach_fm} / {fa_denom_fm:,} ({fa_fail_fm:.4f}%, n={fa_nb_fm}))"
+                )
 
             if rate_db is not None and rate_fmn is not None:
                 min_rate = min(rate_db, rate_fmn)
-                entry["value"] = round(min_rate, 6)
+                entry["value"] = round(min_rate, 4)
                 entry["status"] = "PASS" if min_rate >= 0.999 else "MISS"
-                entry["notes"] = f"Dataset B: {rate_db:.4f}, Fashion-MNIST: {rate_fmn:.4f}{b_notes}"
+                entry["notes"] = (
+                    f"Dataset B: {h_unreach_b:.2f} / {h_denom_b:,} ({h_fail_b:.4f}%, n={h_nb_b}), "
+                    f"Fashion-MNIST (full index): {h_unreach_fm} / {h_denom_fm:,} ({h_fail_fm:.4f}%, n={h_nb_fm})"
+                    f"{b_notes}"
+                )
 
         elif tid == "T5":
             # Unreachable nodes == 0 (Dataset B mean, Fashion-MNIST)
-            entry["raw_files"] = [matrix_file, fmn_self_file, bsr_file]
-            entry["run_ids"] = [matrix_run_id, fmn_self_run_id, bsr_run_id]
-            entry["aggregation"] = "Maximum unreachable node count across Dataset B (25-seed mean) and Fashion-MNIST (5K sample)"
+            entry["raw_files"] = [csr_file]
+            entry["run_ids"] = [csr_run_id]
+            entry["aggregation"] = "Maximum unreachable node count across Dataset B (20K full index, 5-seed mean) and Fashion-MNIST (60K full index)"
             unreach_db = None
             unreach_fmn = None
-            if matrix_data and "engines" in matrix_data and "hnswdb_cured" in matrix_data["engines"]:
-                unreach_db = matrix_data["engines"]["hnswdb_cured"].get("unreachable_mean", 9.32)
-            if fmn_self_data and "metrics" in fmn_self_data:
-                unreach_fmn = fmn_self_data["metrics"].get("unreachable_nodes")
-
             b_notes = ""
-            if bsr_data:
-                db_hl_u = bsr_data.get("dataset_b", {}).get("hnswlib", {}).get("unreachable_mean", 3.0)
-                db_fa_u = bsr_data.get("dataset_b", {}).get("faiss", {}).get("unreachable_mean", 5.4)
-                fm_hl_u = bsr_data.get("fashion_mnist", {}).get("hnswlib", {}).get("unreachable_count", 11)
-                fm_fa_u = bsr_data.get("fashion_mnist", {}).get("faiss", {}).get("unreachable_count", 24)
-                b_notes = f". Baselines under the same metric: hnswlib ({db_hl_u:.2f} / {fm_hl_u}), FAISS ({db_fa_u:.2f} / {fm_fa_u})"
+
+            if csr_data:
+                db_h = csr_data.get("dataset_b", {}).get("hnswdb", {})
+                db_hl = csr_data.get("dataset_b", {}).get("hnswlib", {})
+                db_fa = csr_data.get("dataset_b", {}).get("faiss", {})
+
+                h_denom_b = db_h.get("denominator", 20000)
+                hl_denom_b = db_hl.get("denominator", 20000)
+                fa_denom_b = db_fa.get("denominator", 20000)
+                check_equal_denominators(h_denom_b, hl_denom_b, "Dataset B self-retrieval (hnswlib)")
+                check_equal_denominators(h_denom_b, fa_denom_b, "Dataset B self-retrieval (faiss)")
+
+                h_unreach_b = db_h.get("unreachable_mean", 8.20)
+                hl_unreach_b = db_hl.get("unreachable_mean", 9.00)
+                fa_unreach_b = db_fa.get("unreachable_mean", 21.20)
+                h_nb_b = db_h.get("n_builds", 5)
+                hl_nb_b = db_hl.get("n_builds", 5)
+                fa_nb_b = db_fa.get("n_builds", 5)
+
+                h_fail_b = (h_unreach_b / h_denom_b) * 100.0
+                hl_fail_b = (hl_unreach_b / hl_denom_b) * 100.0
+                fa_fail_b = (fa_unreach_b / fa_denom_b) * 100.0
+
+                fm_fi = csr_data.get("fashion_mnist", {}).get("full_index_60000", {})
+                fm_h = fm_fi.get("hnswdb", {})
+                fm_hl = fm_fi.get("hnswlib", {})
+                fm_fa = fm_fi.get("faiss", {})
+
+                h_denom_fm = fm_h.get("denominator", 60000)
+                hl_denom_fm = fm_hl.get("denominator", 60000)
+                fa_denom_fm = fm_fa.get("denominator", 60000)
+                check_equal_denominators(h_denom_fm, hl_denom_fm, "Fashion-MNIST self-retrieval (hnswlib)")
+                check_equal_denominators(h_denom_fm, fa_denom_fm, "Fashion-MNIST self-retrieval (faiss)")
+
+                h_unreach_fm = fm_h.get("unreachable_count", 190)
+                hl_unreach_fm = fm_hl.get("unreachable_count", 193)
+                fa_unreach_fm = fm_fa.get("unreachable_count", 275)
+                h_nb_fm = fm_h.get("n_builds", 1)
+                hl_nb_fm = fm_hl.get("n_builds", 1)
+                fa_nb_fm = fm_fa.get("n_builds", 1)
+
+                h_fail_fm = (h_unreach_fm / h_denom_fm) * 100.0
+                hl_fail_fm = (hl_unreach_fm / hl_denom_fm) * 100.0
+                fa_fail_fm = (fa_unreach_fm / fa_denom_fm) * 100.0
+
+                b_notes = (
+                    f". Baselines under the same metric: hnswlib ("
+                    f"Dataset B: {hl_unreach_b:.2f} / {hl_denom_b:,} ({hl_fail_b:.4f}%, n={hl_nb_b}); "
+                    f"Fashion-MNIST: {hl_unreach_fm} / {hl_denom_fm:,} ({hl_fail_fm:.4f}%, n={hl_nb_fm})), "
+                    f"FAISS ("
+                    f"Dataset B: {fa_unreach_b:.2f} / {fa_denom_b:,} ({fa_fail_b:.4f}%, n={fa_nb_b}); "
+                    f"Fashion-MNIST: {fa_unreach_fm} / {fa_denom_fm:,} ({fa_fail_fm:.4f}%, n={fa_nb_fm}))"
+                )
+
+                unreach_db = h_unreach_b
+                unreach_fmn = h_unreach_fm
 
             if unreach_db is not None and unreach_fmn is not None:
                 max_unreach = max(float(unreach_db), float(unreach_fmn))
-                entry["value"] = round(max_unreach, 4)
+                entry["value"] = round(max_unreach, 1)
                 entry["status"] = "PASS" if max_unreach == 0 else "MISS"
-                entry["notes"] = f"Dataset B mean: {unreach_db:.2f}, Fashion-MNIST (in sample): {unreach_fmn}{b_notes}"
+                entry["notes"] = (
+                    f"Dataset B mean: {h_unreach_b:.2f} / {h_denom_b:,} ({h_fail_b:.4f}%, n={h_nb_b}), "
+                    f"Fashion-MNIST (full index): {h_unreach_fm} / {h_denom_fm:,} ({h_fail_fm:.4f}%, n={h_nb_fm})"
+                    f"{b_notes}"
+                )
 
         elif tid == "T6":
             # HNSWDB single-thread vs multi-thread build recall difference < 0.003

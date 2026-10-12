@@ -1,6 +1,6 @@
 {
-  "run_id": "where_it_loses_3f9cd156",
-  "generated_utc": "2026-10-12T03:55:59.590491+00:00",
+  "run_id": "where_it_loses_c7b365cb",
+  "generated_utc": "2026-10-12T10:22:53.211241+00:00",
   "threshold_pct": 5.0,
   "comparisons": [
     {
@@ -98,22 +98,6 @@
       "best_baseline": "1.809 s (hnswlib)",
       "gap": "+39.4%",
       "source": "multithread_build.json:dataset_b.hnswdb_build_s"
-    },
-    {
-      "workload": "Dataset B (20K x 64d, sigma=0.1)",
-      "metric": "Unreachable nodes (self-retrieval, mean over n builds)",
-      "hnswdb": "9.32 (n=25)",
-      "best_baseline": "3.0 (hnswlib, n=5)",
-      "gap": "+6.32 (3.11x)",
-      "source": "seed_matrix_dataset_b.json:engines[hnswdb_cured].unreachable_mean; baseline_self_retrieval_2796e161.json:dataset_b.hnswlib.unreachable_mean"
-    },
-    {
-      "workload": "Fashion-MNIST (60K x 784d)",
-      "metric": "Unreachable nodes (self-retrieval, mean over n builds)",
-      "hnswdb": "12 (n=1)",
-      "best_baseline": "11 (hnswlib, n=1)",
-      "gap": "+1 (1.09x)",
-      "source": "self_retrieval_fashion_mnist_50033fba.json:metrics.unreachable_nodes; baseline_self_retrieval_2796e161.json:fashion_mnist.hnswlib.unreachable_count"
     }
   ]
 }

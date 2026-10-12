@@ -284,11 +284,11 @@
     },
     {
       "file": "where_it_loses.json",
-      "run_id": "where_it_loses_3f9cd156",
+      "run_id": "where_it_loses_c7b365cb",
       "dataset": "cross_dataset",
       "label": "Where HNSWDB Loses (>5% Gap)",
-      "sha256": "045472a1b745aea68682489a59ab7e7d16fed8a20f24e2f344d1a331c466f6d9",
-      "size_bytes": 4756
+      "sha256": "1f07dbe854533b99d5c1da94dd88162e4796849fb23ed3ac6945ab56ab208719",
+      "size_bytes": 3935
     },
     {
       "file": "check_claims.txt",
@@ -321,7 +321,15 @@
       "sha256": "1c6de17818fd4950e0ea815881011e1fd67fdcde501211b8079b3c4d620c4e0b",
       "state": "patch_report",
       "size_bytes": 16205
+    },
+    {
+      "file": "consistent_self_retrieval_856f396f.json",
+      "run_id": "consistent_self_retrieval_856f396f",
+      "dataset": "dataset_b, fashion_mnist",
+      "label": "Consistent Full-Index Self-Retrieval (Dataset B 20K, Fashion-MNIST 60K)",
+      "sha256": "fc6a5671e3d1cc44f423c06685eed5f55678d424623b47e0e0fc1fa986841cbe",
+      "size_bytes": 6817
     }
   ],
-  "last_updated": "2026-10-12T04:10:40.289641+00:00"
+  "last_updated": "2026-10-12T10:00:26.344312+00:00"
 }

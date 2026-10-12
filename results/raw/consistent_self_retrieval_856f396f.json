@@ -1,0 +1,270 @@
+{
+  "benchmark": "consistent_self_retrieval",
+  "run_id": "consistent_self_retrieval_856f396f",
+  "timestamp": "2026-10-12T10:00:26.322758+00:00",
+  "params": {
+    "M": 16,
+    "ef_construction": 100,
+    "ef_search": 400,
+    "dataset_b_denominator": 20000,
+    "fashion_mnist_denominator": 60000,
+    "rule": "distance_zero_or_label_match"
+  },
+  "dataset_b": {
+    "dataset": "Dataset B (20K x 64d, sigma=0.1)",
+    "denominator": 20000,
+    "sample_size": 20000,
+    "n_builds": 5,
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "ef_search": 400,
+    "results_by_seed": [
+      {
+        "data_seed": 0,
+        "denominator": 20000,
+        "hnswlib": {
+          "unreachable_count": 6,
+          "failure_rate": 0.0003,
+          "self_retrieval_rate": 0.9997
+        },
+        "faiss": {
+          "unreachable_count": 28,
+          "failure_rate": 0.0014,
+          "self_retrieval_rate": 0.9986
+        },
+        "hnswdb": {
+          "unreachable_count": 4,
+          "failure_rate": 0.0002,
+          "self_retrieval_rate": 0.9998
+        }
+      },
+      {
+        "data_seed": 1,
+        "denominator": 20000,
+        "hnswlib": {
+          "unreachable_count": 5,
+          "failure_rate": 0.00025,
+          "self_retrieval_rate": 0.99975
+        },
+        "faiss": {
+          "unreachable_count": 21,
+          "failure_rate": 0.00105,
+          "self_retrieval_rate": 0.99895
+        },
+        "hnswdb": {
+          "unreachable_count": 5,
+          "failure_rate": 0.00025,
+          "self_retrieval_rate": 0.99975
+        }
+      },
+      {
+        "data_seed": 2,
+        "denominator": 20000,
+        "hnswlib": {
+          "unreachable_count": 14,
+          "failure_rate": 0.0007,
+          "self_retrieval_rate": 0.9993
+        },
+        "faiss": {
+          "unreachable_count": 17,
+          "failure_rate": 0.00085,
+          "self_retrieval_rate": 0.99915
+        },
+        "hnswdb": {
+          "unreachable_count": 13,
+          "failure_rate": 0.00065,
+          "self_retrieval_rate": 0.99935
+        }
+      },
+      {
+        "data_seed": 3,
+        "denominator": 20000,
+        "hnswlib": {
+          "unreachable_count": 10,
+          "failure_rate": 0.0005,
+          "self_retrieval_rate": 0.9995
+        },
+        "faiss": {
+          "unreachable_count": 21,
+          "failure_rate": 0.00105,
+          "self_retrieval_rate": 0.99895
+        },
+        "hnswdb": {
+          "unreachable_count": 8,
+          "failure_rate": 0.0004,
+          "self_retrieval_rate": 0.9996
+        }
+      },
+      {
+        "data_seed": 4,
+        "denominator": 20000,
+        "hnswlib": {
+          "unreachable_count": 10,
+          "failure_rate": 0.0005,
+          "self_retrieval_rate": 0.9995
+        },
+        "faiss": {
+          "unreachable_count": 19,
+          "failure_rate": 0.00095,
+          "self_retrieval_rate": 0.99905
+        },
+        "hnswdb": {
+          "unreachable_count": 11,
+          "failure_rate": 0.00055,
+          "self_retrieval_rate": 0.99945
+        }
+      }
+    ],
+    "hnswlib": {
+      "unreachable_mean": 9.0,
+      "unreachable_counts": [
+        6,
+        5,
+        14,
+        10,
+        10
+      ],
+      "denominator": 20000,
+      "failure_rate_mean": 0.00045,
+      "self_retrieval_rate_mean": 0.99955,
+      "n_builds": 5
+    },
+    "faiss": {
+      "unreachable_mean": 21.2,
+      "unreachable_counts": [
+        28,
+        21,
+        17,
+        21,
+        19
+      ],
+      "denominator": 20000,
+      "failure_rate_mean": 0.00106,
+      "self_retrieval_rate_mean": 0.99894,
+      "n_builds": 5
+    },
+    "hnswdb": {
+      "unreachable_mean": 8.2,
+      "unreachable_counts": [
+        4,
+        5,
+        13,
+        8,
+        11
+      ],
+      "denominator": 20000,
+      "failure_rate_mean": 0.00041,
+      "self_retrieval_rate_mean": 0.99959,
+      "n_builds": 5
+    }
+  },
+  "fashion_mnist": {
+    "dataset": "fashion_mnist",
+    "denominator": 60000,
+    "sample_size": 60000,
+    "n_builds": 1,
+    "ef_search": 400,
+    "full_index_60000": {
+      "denominator": 60000,
+      "hnswlib": {
+        "unreachable_count": 193,
+        "failure_rate": 0.0032166666666666667,
+        "self_retrieval_rate": 0.9967833333333334,
+        "n_builds": 1
+      },
+      "faiss": {
+        "unreachable_count": 275,
+        "failure_rate": 0.004583333333333333,
+        "self_retrieval_rate": 0.9954166666666666,
+        "n_builds": 1
+      },
+      "hnswdb": {
+        "unreachable_count": 190,
+        "failure_rate": 0.0031666666666666666,
+        "self_retrieval_rate": 0.9968333333333333,
+        "n_builds": 1
+      }
+    },
+    "sample_5000": {
+      "denominator": 5000,
+      "hnswlib": {
+        "unreachable_count": 11,
+        "failure_rate": 0.0022,
+        "self_retrieval_rate": 0.9978,
+        "n_builds": 1
+      },
+      "faiss": {
+        "unreachable_count": 24,
+        "failure_rate": 0.0048,
+        "self_retrieval_rate": 0.9952,
+        "n_builds": 1
+      },
+      "hnswdb": {
+        "unreachable_count": 12,
+        "failure_rate": 0.0024,
+        "self_retrieval_rate": 0.9976,
+        "n_builds": 1
+      }
+    },
+    "hnswlib": {
+      "unreachable_count": 193,
+      "denominator": 60000,
+      "failure_rate": 0.0032166666666666667,
+      "self_retrieval_rate": 0.9967833333333334,
+      "n_builds": 1
+    },
+    "faiss": {
+      "unreachable_count": 275,
+      "denominator": 60000,
+      "failure_rate": 0.004583333333333333,
+      "self_retrieval_rate": 0.9954166666666666,
+      "n_builds": 1
+    },
+    "hnswdb": {
+      "unreachable_count": 190,
+      "denominator": 60000,
+      "failure_rate": 0.0031666666666666666,
+      "self_retrieval_rate": 0.9968333333333333,
+      "n_builds": 1
+    }
+  },
+  "env": {
+    "cpu_model": "Intel(R) Core(TM) i7-8650U CPU @ 1.90GHz",
+    "physical_cores": 4,
+    "logical_cores": 8,
+    "cpu_clock_mhz": 1910.0,
+    "ram_gb": 15.84,
+    "os": "Windows",
+    "os_release": "11",
+    "os_version": "10.0.22621",
+    "machine": "AMD64",
+    "python_version": "3.12.6",
+    "compiler": "MSVC 2022 (cl.exe 19.40)",
+    "cmake_build_type": "Release",
+    "cmake_flags": "/O2 /MD /arch:AVX2 (MSVC)",
+    "git_commit": "bd83ea31a875a01a2425c390456a94ae635de3bb",
+    "active_simd_kernel": "avx2",
+    "process_affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "process_priority": "32",
+    "versions": {
+      "hnswdb": "0.1.0",
+      "numpy": "2.3.5",
+      "faiss": "1.15.1",
+      "hnswlib": "0.8.0"
+    }
+  }
+}

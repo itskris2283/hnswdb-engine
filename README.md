@@ -149,19 +149,19 @@ Evaluated on **Fashion-MNIST** (60,000 train vectors, 10,000 test vectors, 784 d
 ### Clustered Data Evaluation (5x5 Seed Matrix, Dataset B)
 
 <!-- BEGIN GENERATED table=readme_clustered_matrix run_id=seed-matrix-dbead162 -->
-| Engine | 1T Recall@10 (Mean ± Std) | 4T Recall@10 (Mean ± Std) | Unreachable nodes (self-retrieval, mean over n builds) |
+| Engine | 1T Recall@10 (Mean ± Std) | 4T Recall@10 (Mean ± Std) | Unreachable nodes: count / denom (failure rate, builds) |
 | :--- | :---: | :---: | :---: |
-| **HNSWDB (Cured)** | 0.9998 ± 0.0005 | 0.9985 ± 0.0008 | 9.32 (n=25) |
-| **FAISS HNSW** | 0.9999 ± 0.0002 | 0.9999 ± 0.0002 | 5.40 (n=5) |
-| **hnswlib** | 0.9993 ± 0.0015 | 0.9992 ± 0.0029 | 3.00 (n=5) |
-| HNSWDB (Legacy) | 0.9972 ± 0.0037 | 0.9970 ± 0.0037 | 166.16 (n=25) |
+| **HNSWDB (Cured)** | 0.9998 ± 0.0005 | 0.9985 ± 0.0008 | 9.32 / 20,000 (0.05%, n=25) |
+| **FAISS HNSW** | 0.9999 ± 0.0002 | 0.9999 ± 0.0002 | 21.20 / 20,000 (0.11%, n=5) |
+| **hnswlib** | 0.9993 ± 0.0015 | 0.9992 ± 0.0029 | 9.00 / 20,000 (0.04%, n=5) |
+| HNSWDB (Legacy) | 0.9972 ± 0.0037 | 0.9970 ± 0.0037 | 166.16 / 20,000 (0.83%, n=25) |
 
 Baseline means use fewer builds than HNSWDB's; compare with care.
 <!-- END GENERATED -->
 
 ### Where HNSWDB Loses Relative to Baselines
 
-<!-- BEGIN GENERATED table=where_it_loses run_id=where_it_loses_3f9cd156 -->
+<!-- BEGIN GENERATED table=where_it_loses run_id=where_it_loses_c7b365cb -->
 | Workload | Metric | HNSWDB | Best baseline (engine) | Relative gap | Source (raw file and key path) |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | Dataset A (5K x 32d) @ R=0.95 | Sequential QPS (equal recall) | 47374.2 QPS | 50858.0 QPS (hnswlib) | **-6.9%** | `equal_recall_grid.json:interpolations[dataset=A,target_recall=0.95].interpolated_sequential_qps` |
@@ -176,8 +176,6 @@ Baseline means use fewer builds than HNSWDB's; compare with care.
 | Dataset B (20K x 64d, sigma=0.1) (ef_search=10) | Recall@10 | 0.8461 | 0.8513 (hnswlib) | **-0.0052 abs** | `bench_B_s01_8a2302be.json:engines[hnswdb].seed_42.ef_results[ef=10].recall_at_k` |
 | Fashion-MNIST (60K x 784d) | Single-thread build time | 29.9403 s | 28.2293 s (FAISS) | **+6.1%** | `bench_fashion_mnist_0a9f92db.json:engines[hnswdb].seed_42.build_time_s` |
 | Dataset B (20K x 64d, sigma=0.1) | 4-thread build time | 2.522 s | 1.809 s (hnswlib) | **+39.4%** | `multithread_build.json:dataset_b.hnswdb_build_s` |
-| Dataset B (20K x 64d, sigma=0.1) | Unreachable nodes (self-retrieval, mean over n builds) | 9.32 (n=25) | 3.0 (hnswlib, n=5) | **+6.32 (3.11x)** | `seed_matrix_dataset_b.json:engines[hnswdb_cured].unreachable_mean; baseline_self_retrieval_2796e161.json:dataset_b.hnswlib.unreachable_mean` |
-| Fashion-MNIST (60K x 784d) | Unreachable nodes (self-retrieval, mean over n builds) | 12 (n=1) | 11 (hnswlib, n=1) | **+1 (1.09x)** | `self_retrieval_fashion_mnist_50033fba.json:metrics.unreachable_nodes; baseline_self_retrieval_2796e161.json:fashion_mnist.hnswlib.unreachable_count` |
 
 Baseline means use fewer builds than HNSWDB's; compare with care.
 <!-- END GENERATED -->

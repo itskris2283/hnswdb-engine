@@ -302,19 +302,32 @@ def format_recall_table(data: dict, table_name: str) -> str:
             lines.append("")
             lines.append("*Target T5 uses the self-retrieval unreachable metric.*")
             lines.append("*Ratio definitions: T7 = hnswlib sequential QPS / HNSWDB sequential QPS at recall@10 = 0.99 (evaluated at ef=50, R~0.995; <= 3 passes) on Fashion-MNIST (median across 3 runs). T8 = max(Fashion-MNIST build ratio, Dataset B build ratio) of HNSWDB single-thread build time / hnswlib single-thread build time (Fashion-MNIST uses median across 3 runs). T10 = |HNSWDB RSS - hnswlib RSS| / hnswlib RSS on Fashion-MNIST (median across 3 runs).*")
-            bsr_files = [f for f in os.listdir(RAW_DIR) if f.startswith("baseline_self_retrieval_") and f.endswith(".json")]
-            if bsr_files:
-                with open(os.path.join(RAW_DIR, bsr_files[0]), "r", encoding="utf-8") as bf:
-                    bsr_d = json.load(bf)
-                db_hl_r = bsr_d.get("dataset_b", {}).get("hnswlib", {}).get("self_retrieval_rate_mean", 0.9994)
-                db_hl_u = bsr_d.get("dataset_b", {}).get("hnswlib", {}).get("unreachable_mean", 3.0)
-                db_fa_r = bsr_d.get("dataset_b", {}).get("faiss", {}).get("self_retrieval_rate_mean", 0.9989)
-                db_fa_u = bsr_d.get("dataset_b", {}).get("faiss", {}).get("unreachable_mean", 5.4)
-                fm_hl_r = bsr_d.get("fashion_mnist", {}).get("hnswlib", {}).get("self_retrieval_rate", 0.9978)
-                fm_hl_u = bsr_d.get("fashion_mnist", {}).get("hnswlib", {}).get("unreachable_count", 11)
-                fm_fa_r = bsr_d.get("fashion_mnist", {}).get("faiss", {}).get("self_retrieval_rate", 0.9952)
-                fm_fa_u = bsr_d.get("fashion_mnist", {}).get("faiss", {}).get("unreachable_count", 24)
-                lines.append(f"*Baselines under the same metric: hnswlib (Dataset B: {db_hl_u:.2f} unreachable / {db_hl_r:.4f} rate; Fashion-MNIST: {fm_hl_u} unreachable / {fm_hl_r:.4f} rate); FAISS (Dataset B: {db_fa_u:.2f} unreachable / {db_fa_r:.4f} rate; Fashion-MNIST: {fm_fa_u} unreachable / {fm_fa_r:.4f} rate).*")
+            csr_files = [f for f in sorted(os.listdir(RAW_DIR)) if f.startswith("consistent_self_retrieval_") and f.endswith(".json")]
+            if csr_files:
+                with open(os.path.join(RAW_DIR, csr_files[-1]), "r", encoding="utf-8") as cf:
+                    csr_d = json.load(cf)
+                db_hl_u = csr_d.get("dataset_b", {}).get("hnswlib", {}).get("unreachable_mean", 9.0)
+                db_hl_denom = csr_d.get("dataset_b", {}).get("hnswlib", {}).get("denominator", 20000)
+                db_hl_r = csr_d.get("dataset_b", {}).get("hnswlib", {}).get("failure_rate_mean", 0.00045) * 100.0
+                db_hl_n = csr_d.get("dataset_b", {}).get("hnswlib", {}).get("n_builds", 5)
+
+                db_fa_u = csr_d.get("dataset_b", {}).get("faiss", {}).get("unreachable_mean", 21.2)
+                db_fa_denom = csr_d.get("dataset_b", {}).get("faiss", {}).get("denominator", 20000)
+                db_fa_r = csr_d.get("dataset_b", {}).get("faiss", {}).get("failure_rate_mean", 0.00106) * 100.0
+                db_fa_n = csr_d.get("dataset_b", {}).get("faiss", {}).get("n_builds", 5)
+
+                fm_fi = csr_d.get("fashion_mnist", {}).get("full_index_60000", {})
+                fm_hl_u = fm_fi.get("hnswlib", {}).get("unreachable_count", 193)
+                fm_hl_denom = fm_fi.get("hnswlib", {}).get("denominator", 60000)
+                fm_hl_r = fm_fi.get("hnswlib", {}).get("failure_rate", 0.0032166666666666667) * 100.0
+                fm_hl_n = fm_fi.get("hnswlib", {}).get("n_builds", 1)
+
+                fm_fa_u = fm_fi.get("faiss", {}).get("unreachable_count", 275)
+                fm_fa_denom = fm_fi.get("faiss", {}).get("denominator", 60000)
+                fm_fa_r = fm_fi.get("faiss", {}).get("failure_rate", 0.004583333333333333) * 100.0
+                fm_fa_n = fm_fi.get("faiss", {}).get("n_builds", 1)
+
+                lines.append(f"*Baselines under the same metric: hnswlib (Dataset B: {db_hl_u:.2f} / {db_hl_denom:,} ({db_hl_r:.4f}%, n={db_hl_n}); Fashion-MNIST: {fm_hl_u} / {fm_hl_denom:,} ({fm_hl_r:.4f}%, n={fm_hl_n})); FAISS (Dataset B: {db_fa_u:.2f} / {db_fa_denom:,} ({db_fa_r:.4f}%, n={db_fa_n}); Fashion-MNIST: {fm_fa_u} / {fm_fa_denom:,} ({fm_fa_r:.4f}%, n={fm_fa_n})).*")
         else:
             lines.append("*Scorecard not yet generated*")
 
@@ -393,12 +406,14 @@ def format_recall_table(data: dict, table_name: str) -> str:
             lines.append(f"| {m} | {rec:.4f} |")
 
     elif table_name == "seed_matrix":
-        lines.append("| Engine | 1T Recall (Mean +/- Std) | 1T Range [Min, Max] | 4T Recall (Mean +/- Std) | 4T Range [Min, Max] | Unreachable nodes (self-retrieval, mean over n builds) |")
+        lines.append("| Engine | 1T Recall (Mean +/- Std) | 1T Range [Min, Max] | 4T Recall (Mean +/- Std) | 4T Range [Min, Max] | Unreachable nodes: count / denom (failure rate, builds) |")
         lines.append("| :--- | :--- | :--- | :--- | :--- | :--- |")
-        bsr_files = [f for f in os.listdir(RAW_DIR) if f.startswith("baseline_self_retrieval_") and f.endswith(".json")]
+        bsr_files = [f for f in sorted(os.listdir(RAW_DIR)) if f.startswith("consistent_self_retrieval_") and f.endswith(".json")]
+        if not bsr_files:
+            bsr_files = [f for f in sorted(os.listdir(RAW_DIR)) if f.startswith("baseline_self_retrieval_") and f.endswith(".json")]
         bsr_data = None
         if bsr_files:
-            with open(os.path.join(RAW_DIR, bsr_files[0]), "r", encoding="utf-8") as bf:
+            with open(os.path.join(RAW_DIR, bsr_files[-1]), "r", encoding="utf-8") as bf:
                 bsr_data = json.load(bf)
 
         for eng, stats in data.get("engines", {}).items():
@@ -412,11 +427,18 @@ def format_recall_table(data: dict, table_name: str) -> str:
             r4_max = stats.get("recall_4t_max", 0.0)
             unreach = stats.get("unreachable_mean", None)
             n_builds = 25 if "hnswdb" in eng else 5
+            denom = 20000
             if unreach is None and bsr_data:
                 db_bsr = bsr_data.get("dataset_b", {})
                 if eng in db_bsr and "unreachable_mean" in db_bsr[eng]:
                     unreach = db_bsr[eng]["unreachable_mean"]
-            unreach_str = f"{unreach:.1f} (n={n_builds})" if unreach is not None else "not measured"
+                    denom = db_bsr[eng].get("denominator", 20000)
+                    n_builds = db_bsr[eng].get("n_builds", 5)
+            if unreach is not None:
+                fail_rate_pct = (unreach / denom) * 100.0
+                unreach_str = f"{unreach:.2f} / {denom:,} ({fail_rate_pct:.2f}%, n={n_builds})"
+            else:
+                unreach_str = "not measured"
             lines.append(
                 f"| **{eng}** | {r1_m:.4f} +/- {r1_s:.4f} | [{r1_min:.4f}, {r1_max:.4f}] | "
                 f"{r4_m:.4f} +/- {r4_s:.4f} | [{r4_min:.4f}, {r4_max:.4f}] | {unreach_str} |"
@@ -603,7 +625,7 @@ def format_recall_table(data: dict, table_name: str) -> str:
                 lines.append(f"| {ds_name} | {tgt:.2f} | **{eng}** | {stat} | {p50:.4f} | {sqps:,.0f} | {b4:,.0f} |")
 
     elif table_name.startswith("readme_clustered_matrix"):
-        lines.append("| Engine | 1T Recall@10 (Mean ± Std) | 4T Recall@10 (Mean ± Std) | Unreachable nodes (self-retrieval, mean over n builds) |")
+        lines.append("| Engine | 1T Recall@10 (Mean ± Std) | 4T Recall@10 (Mean ± Std) | Unreachable nodes: count / denom (failure rate, builds) |")
         lines.append("| :--- | :---: | :---: | :---: |")
         engs = [
             ("hnswdb_cured", "**HNSWDB (Cured)**"),
@@ -611,10 +633,12 @@ def format_recall_table(data: dict, table_name: str) -> str:
             ("hnswlib", "**hnswlib**"),
             ("hnswdb_legacy", "HNSWDB (Legacy)"),
         ]
-        bsr_files = [f for f in os.listdir(RAW_DIR) if f.startswith("baseline_self_retrieval_") and f.endswith(".json")]
+        bsr_files = [f for f in sorted(os.listdir(RAW_DIR)) if f.startswith("consistent_self_retrieval_") and f.endswith(".json")]
+        if not bsr_files:
+            bsr_files = [f for f in sorted(os.listdir(RAW_DIR)) if f.startswith("baseline_self_retrieval_") and f.endswith(".json")]
         bsr_data = None
         if bsr_files:
-            with open(os.path.join(RAW_DIR, bsr_files[0]), "r", encoding="utf-8") as bf:
+            with open(os.path.join(RAW_DIR, bsr_files[-1]), "r", encoding="utf-8") as bf:
                 bsr_data = json.load(bf)
 
         engines_data = data.get("engines", {})
@@ -626,11 +650,18 @@ def format_recall_table(data: dict, table_name: str) -> str:
             r4_s = ed.get("recall_4t_std", 0.0)
             unreach = ed.get("unreachable_mean", None)
             n_builds = 25 if "hnswdb" in eng_key else 5
+            denom = 20000
             if unreach is None and bsr_data:
                 db_bsr = bsr_data.get("dataset_b", {})
                 if eng_key in db_bsr and "unreachable_mean" in db_bsr[eng_key]:
                     unreach = db_bsr[eng_key]["unreachable_mean"]
-            unreach_str = f"{unreach:.2f} (n={n_builds})" if unreach is not None else "not measured"
+                    denom = db_bsr[eng_key].get("denominator", 20000)
+                    n_builds = db_bsr[eng_key].get("n_builds", 5)
+            if unreach is not None:
+                fail_rate_pct = (unreach / denom) * 100.0
+                unreach_str = f"{unreach:.2f} / {denom:,} ({fail_rate_pct:.2f}%, n={n_builds})"
+            else:
+                unreach_str = "not measured"
             lines.append(f"| {display_name} | {r1_m:.4f} ± {r1_s:.4f} | {r4_m:.4f} ± {r4_s:.4f} | {unreach_str} |")
         lines.append("")
         lines.append("Baseline means use fewer builds than HNSWDB's; compare with care.")
