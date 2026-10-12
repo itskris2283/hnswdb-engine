@@ -18,7 +18,7 @@ python scripts/check_docs_links.py
 python scripts/verify_readme.py
 
 # 4. Verify C++ tests
-ctest --test-dir build -C Release --output-on-failure
+ctest --test-dir build/rel -C Release --output-on-failure
 
 # 5. Verify Python tests
 pytest tests/python/

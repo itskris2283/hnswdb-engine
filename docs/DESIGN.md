@@ -109,4 +109,4 @@ HNSWDB supports configurable graph construction parameters, with current default
 - `keep_pruned`: Current default is `false`. Setting `keep_pruned=false` matches hnswlib's behavior, discarding candidates rejected by the heuristic neighbor selection rather than back-filling.
 - `protect_last_in_edge`: Current default is `false`. When enabled, prevents evicting a node's sole remaining incoming connection during neighbor list shrinkage.
 - `overflow_selection`: Current default is `"heuristic"`. Selects neighbors during list overflow using the heuristic diversity algorithm rather than simple closest-first selection.
-- `layer_entry`: Current default is `"single"`. Routes greedy search from a single global top-layer entry point down through intermediate levels.
+- `layer_entry`: Current default is `"closest"`. Accepted values are `"closest"` (default) and `"all"`. Routes greedy search between layers using the single closest entry point (`"closest"`) or all candidate entry points (`"all"`).
