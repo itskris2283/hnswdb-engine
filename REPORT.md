@@ -1,12 +1,12 @@
 # HNSWDB: Final Engineering & Verification Report
 
-## 1. Executive Summary & Audited Scorecard
+## 1. Executive Summary & Scorecard (computed by script from raw results)
 
 **HNSWDB** is an approximate nearest neighbor (ANN) vector database implemented from first principles in C++17 with Python bindings (`pybind11`), FastAPI service, Typer CLI, and automated test and benchmark suites.
 
 Every measured number in this report is programmatically generated from raw JSON artifacts in `results/raw/`. No metrics are hand-typed.
 
-### Audited Scorecard (Fixed Targets Evaluated by Code)
+### Scorecard (computed by script from raw results)
 
 <!-- BEGIN GENERATED table=scorecard run_id="multiple runs; see Notes" -->
 **Scorecard (multiple datasets)**
@@ -32,6 +32,10 @@ Every measured number in this report is programmatically generated from raw JSON
 *Baselines under the same metric: hnswlib (Dataset B: 3.00 unreachable / 0.9994 rate; Fashion-MNIST: 11 unreachable / 0.9978 rate); FAISS (Dataset B: 5.40 unreachable / 0.9989 rate; Fashion-MNIST: 24 unreachable / 0.9952 rate).*
 <!-- END GENERATED -->
 
+<!-- BEGIN GENERATED table=t3_note run_id=seed-matrix-dbead162 -->
+The T3 difference (0.0005) is smaller than the standard deviation of hnswlib's recall across the 25-build matrix (0.0015); treat HNSWDB and hnswlib as at parity on this metric.
+<!-- END GENERATED -->
+
 *Note on T5 (MISS): On tightly-clustered synthetic data ($\sigma=0.1$), HNSWDB exhibits 9.32 mean unreachable nodes (target is 0). This limitation is investigated and documented in Section 2 and [INVESTIGATIONS.md](docs/INVESTIGATIONS.md).*
 
 ### Phase 3 Conclusion: Clustered-Data Gap Analysis
@@ -46,7 +50,7 @@ Protecting each node's last incoming edge reduced BFS-unreachable nodes to 0 wit
 
 ## 2. Corrections & Retractions from Earlier Rounds
 
-In the spirit of complete engineering honesty, this section explicitly documents all claims and framing from earlier rounds that were found to be erroneous, fabricated, or unverified upon audit:
+In the spirit of complete engineering honesty, this section explicitly documents all claims and framing from earlier rounds that were found to be erroneous, fabricated, or unverified upon review:
 
 <!-- BEGIN CORRECTIONS -->
 | Earlier Claim / Metric | Round / Context | Error Identified | Correction & Evidence |

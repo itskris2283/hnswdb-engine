@@ -58,6 +58,8 @@ BANNED_PHRASES = [
     "reduced unreachable nodes to",
     "scheduling race conditions",
     "real algorithmic",
+    "cryptographic",
+    "audited",
 ]
 
 # Regex for numbers with units: ms, us, µs, ns, s, QPS, MB, GB, x, %

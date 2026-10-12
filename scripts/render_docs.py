@@ -160,6 +160,25 @@ def format_recall_table(data: dict, table_name: str) -> str:
             cured_bfs_unreach_20k=cured_bfs_unreach_20k,
         ).strip()
 
+    if table_name == "t3_note":
+        tmpl_path = os.path.join(ROOT, "docs", "templates", "t3_note.md.tmpl")
+        with open(tmpl_path, "r", encoding="utf-8") as f:
+            tmpl = f.read()
+
+        sm_path = os.path.join(RAW_DIR, "seed_matrix_dataset_b.json")
+        with open(sm_path, "r", encoding="utf-8") as f:
+            sm_data = json.load(f)
+
+        cur_rec = sm_data.get("engines", {}).get("hnswdb_cured", {}).get("recall_1t_mean", 0.0)
+        hl_rec = sm_data.get("engines", {}).get("hnswlib", {}).get("recall_1t_mean", 0.0)
+        hl_std = sm_data.get("engines", {}).get("hnswlib", {}).get("recall_1t_std", 0.0)
+        t3_diff = abs(cur_rec - hl_rec)
+
+        return tmpl.format(
+            t3_value=f"{t3_diff:.4f}",
+            hnswlib_std=f"{hl_std:.4f}",
+        ).strip()
+
     lines = []
 
     engines = data.get("engines", {})
