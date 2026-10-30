@@ -26,6 +26,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -45,13 +47,15 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -e ".[dev]"
-          pytest -v
+          python -m pytest tests/python -v
 
   linux-clang-tsan:
     name: Linux Clang ThreadSanitizer
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Install Clang and CMake
         run: |
           sudo apt-get update
@@ -69,6 +73,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -84,4 +90,4 @@ jobs:
       - name: Run C++ Tests
         run: ctest --test-dir build -C Release --output-on-failure
       - name: Run Python Tests
-        run: python -m pytest -v
+        run: python -m pytest tests/python -v

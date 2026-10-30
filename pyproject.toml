@@ -34,3 +34,8 @@ minimum-version = "0.4"
 build-dir = "build/{wheel_tag}"
 wheel.packages = ["python/hnswdb"]
 
+[tool.pytest.ini_options]
+testpaths = ["tests/python"]
+norecursedirs = ["build*", ".git", "_deps"]
+
+

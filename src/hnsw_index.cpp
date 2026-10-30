@@ -348,7 +348,7 @@ std::vector<HNSWIndex::Candidate> HNSWIndex::search_layer_multi(
 
 
 std::vector<idx_t> HNSWIndex::select_neighbors_heuristic(
-    const float* query_vec,
+    [[maybe_unused]] const float* query_vec,
     std::vector<Candidate>& candidates,
     std::size_t max_links,
     bool keep_pruned) const {

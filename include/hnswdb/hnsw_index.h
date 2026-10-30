@@ -20,9 +20,11 @@ class SpinLock {
 public:
     void lock() {
         while (flag_.test_and_set(std::memory_order_acquire)) {
-#if defined(_MSC_VER) || defined(__GNUC__) || defined(__clang__)
 #if defined(__x86_64__) || defined(_M_X64)
+#if defined(_MSC_VER)
             _mm_pause();
+#elif defined(__GNUC__) || defined(__clang__)
+            __builtin_ia32_pause();
 #endif
 #endif
         }

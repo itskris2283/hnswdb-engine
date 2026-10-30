@@ -12,7 +12,7 @@ RESUME_BULLETS_PATH = os.path.join(ROOT, "docs", "RESUME_BULLETS.md")
 
 
 def get_pytest_collected_count() -> int:
-    cmd = [sys.executable, "-m", "pytest", "--collect-only", "-q"]
+    cmd = [sys.executable, "-m", "pytest", "tests/python", "--collect-only", "-q"]
     res = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True)
     m = re.search(r"(\d+)\s+tests?\s+collected", res.stdout)
     if m:
@@ -24,24 +24,32 @@ def get_pytest_collected_count() -> int:
 
 
 def get_ctest_suite_count() -> int:
-    ctest_file = os.path.join(ROOT, "build", "rel", "CTestTestfile.cmake")
-    if os.path.exists(ctest_file):
-        with open(ctest_file, "r", encoding="utf-8") as f:
-            names = set(re.findall(r"add_test\(([^\s]+)", f.read()))
-        if names:
-            return len(names)
-    try:
-        res = subprocess.run(
-            ["ctest", "--test-dir", "build/rel", "-N"],
-            cwd=ROOT,
-            capture_output=True,
-            text=True,
-        )
-        m = re.search(r"Total Tests:\s*(\d+)", res.stdout)
-        if m:
-            return int(m.group(1))
-    except Exception:
-        pass
+    candidates = [
+        os.path.join(ROOT, "build", "rel"),
+        os.path.join(ROOT, "build"),
+        os.path.join(ROOT, "build-asan"),
+        os.path.join(ROOT, "build-tsan"),
+        os.path.join(ROOT, "build", "cp312-cp312-win_amd64"),
+    ]
+    for cdir in candidates:
+        ctest_file = os.path.join(cdir, "CTestTestfile.cmake")
+        if os.path.exists(ctest_file):
+            with open(ctest_file, "r", encoding="utf-8") as f:
+                names = set(re.findall(r"add_test\(([^\s]+)", f.read()))
+            if names:
+                return len(names)
+        try:
+            res = subprocess.run(
+                ["ctest", "--test-dir", cdir, "-N"],
+                cwd=ROOT,
+                capture_output=True,
+                text=True,
+            )
+            m = re.search(r"Total Tests:\s*(\d+)", res.stdout)
+            if m:
+                return int(m.group(1))
+        except Exception:
+            pass
     return 9
 
 

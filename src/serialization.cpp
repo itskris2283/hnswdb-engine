@@ -15,7 +15,7 @@
 
 namespace hnswdb {
 
-static constexpr uint32_t generate_crc32_table_entry(uint32_t byte) {
+[[maybe_unused]] static constexpr uint32_t generate_crc32_table_entry(uint32_t byte) {
     uint32_t crc = byte;
     for (int j = 0; j < 8; ++j) {
         crc = (crc & 1) ? (0xEDB88320L ^ (crc >> 1)) : (crc >> 1);
