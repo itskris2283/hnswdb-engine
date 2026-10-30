@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <memory>
 #include <shared_mutex>
+#include <mutex>
 
 namespace hnswdb {
 

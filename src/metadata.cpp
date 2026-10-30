@@ -2,6 +2,7 @@
 #include "hnswdb/types.h"
 #include <algorithm>
 #include <cstring>
+#include <mutex>
 
 namespace hnswdb {
 

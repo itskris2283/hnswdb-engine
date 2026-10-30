@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <memory>
 #include <shared_mutex>
+#include <mutex>
 #include <cstddef>
 
 namespace hnswdb {
@@ -15,11 +16,11 @@ public:
     FlatIndex(std::size_t dim, Metric metric);
     ~FlatIndex() = default;
 
-    // Non-copyable, movable
+    // Non-copyable, non-movable
     FlatIndex(const FlatIndex&) = delete;
     FlatIndex& operator=(const FlatIndex&) = delete;
-    FlatIndex(FlatIndex&&) noexcept = default;
-    FlatIndex& operator=(FlatIndex&&) noexcept = default;
+    FlatIndex(FlatIndex&&) = delete;
+    FlatIndex& operator=(FlatIndex&&) = delete;
 
     void add(const float* vector, label_t label);
     void add_batch(const float* vectors, const label_t* labels, std::size_t n, std::size_t num_threads = 0);
