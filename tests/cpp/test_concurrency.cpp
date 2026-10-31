@@ -67,6 +67,7 @@ TEST(ConcurrencyTest, ConcurrentDisjointWritersAndReaders) {
                 auto res = idx.search(data.data() + query_idx * d, 5);
                 EXPECT_EQ(res.ids.size(), 5);
                 search_count.fetch_add(1, std::memory_order_relaxed);
+                std::this_thread::yield();
             }
         });
     }
@@ -112,7 +113,7 @@ TEST(ConcurrencyTest, ConcurrentSearchAndDelete) {
     std::vector<std::thread> readers;
     for (int r = 0; r < 4; ++r) {
         readers.emplace_back([&idx, &data, &done, r]() {
-            while (!done.load()) {
+            while (!done.load(std::memory_order_relaxed)) {
                 auto res = idx.search(data.data() + (r * 10) * d, 5);
                 EXPECT_EQ(res.ids.size(), 5);
                 for (hnswdb::label_t id : res.ids) {
@@ -121,6 +122,7 @@ TEST(ConcurrencyTest, ConcurrentSearchAndDelete) {
                         EXPECT_LT(id, static_cast<hnswdb::label_t>(n));
                     }
                 }
+                std::this_thread::yield();
             }
         });
     }
@@ -129,6 +131,7 @@ TEST(ConcurrencyTest, ConcurrentSearchAndDelete) {
     std::thread deleter([&idx]() {
         for (std::size_t i = 0; i < n / 2; ++i) {
             idx.delete_labels({static_cast<hnswdb::label_t>(i * 2)});
+            std::this_thread::yield();
         }
     });
 
@@ -158,9 +161,10 @@ TEST(ConcurrencyTest, ConcurrentSearchDuringSave) {
     std::vector<std::thread> readers;
     for (int r = 0; r < 4; ++r) {
         readers.emplace_back([&idx, &data, &done, r]() {
-            while (!done.load()) {
+            while (!done.load(std::memory_order_relaxed)) {
                 auto res = idx.search(data.data() + (r * 10) * d, 5);
                 EXPECT_EQ(res.ids.size(), 5);
+                std::this_thread::yield();
             }
         });
     }

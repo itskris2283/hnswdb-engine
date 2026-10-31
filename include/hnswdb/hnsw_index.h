@@ -269,7 +269,7 @@ private:
 
     // Build configuration & Layer 0 in-degree tracking
     BuildOptions build_options_;
-    std::vector<uint32_t> in_degrees_l0_;
+    std::unique_ptr<std::atomic<uint32_t>[]> in_degrees_l0_;
 };
 
 } // namespace hnswdb

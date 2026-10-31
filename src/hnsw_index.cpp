@@ -56,7 +56,10 @@ HNSWIndex::HNSWIndex(std::size_t dim,
 
     layer0_links_.resize(max_elements_ * (1 + M0_), 0);
     upper_links_.resize(max_elements_);
-    in_degrees_l0_.resize(max_elements_, 0);
+    in_degrees_l0_ = std::make_unique<std::atomic<uint32_t>[]>(max_elements_);
+    for (std::size_t i = 0; i < max_elements_; ++i) {
+        in_degrees_l0_[i].store(0, std::memory_order_relaxed);
+    }
 
     striped_locks_ = std::make_unique<SpinLock[]>(NUM_STRIPES);
 
@@ -167,7 +170,9 @@ void HNSWIndex::set_node_links(idx_t idx, int layer, const std::vector<idx_t>& l
         uint32_t count = static_cast<uint32_t>(std::min(links.size(), M0_));
         *get_layer0_link_count_ptr(idx) = count;
         uint32_t* dst = get_layer0_links_ptr(idx);
-        std::memcpy(dst, links.data(), count * sizeof(uint32_t));
+        if (count > 0 && dst != nullptr && links.data() != nullptr) {
+            std::memcpy(dst, links.data(), count * sizeof(uint32_t));
+        }
     } else {
         if (layer - 1 >= static_cast<int>(upper_links_[idx].size())) {
             upper_links_[idx].resize(layer);
@@ -216,13 +221,17 @@ std::vector<HNSWIndex::Candidate> HNSWIndex::search_layer(
             nbr_count = *get_layer0_link_count_ptr(curr.idx);
             if (nbr_count > 512) nbr_count = 512;
             const uint32_t* links = get_layer0_links_ptr(curr.idx);
-            std::memcpy(local_nbrs, links, nbr_count * sizeof(uint32_t));
+            if (nbr_count > 0 && links != nullptr) {
+                std::memcpy(local_nbrs, links, nbr_count * sizeof(uint32_t));
+            }
         } else {
             SpinLockGuard guard(get_stripe_lock(curr.idx));
             if (layer - 1 < static_cast<int>(upper_links_[curr.idx].size())) {
                 const auto& l_links = upper_links_[curr.idx][layer - 1];
                 nbr_count = static_cast<uint32_t>(std::min<size_t>(l_links.size(), 512));
-                std::memcpy(local_nbrs, l_links.data(), nbr_count * sizeof(uint32_t));
+                if (nbr_count > 0 && l_links.data() != nullptr) {
+                    std::memcpy(local_nbrs, l_links.data(), nbr_count * sizeof(uint32_t));
+                }
             }
         }
 
@@ -303,13 +312,17 @@ std::vector<HNSWIndex::Candidate> HNSWIndex::search_layer_multi(
             nbr_count = *get_layer0_link_count_ptr(curr.idx);
             if (nbr_count > 512) nbr_count = 512;
             const uint32_t* links = get_layer0_links_ptr(curr.idx);
-            std::memcpy(local_nbrs, links, nbr_count * sizeof(uint32_t));
+            if (nbr_count > 0 && links != nullptr) {
+                std::memcpy(local_nbrs, links, nbr_count * sizeof(uint32_t));
+            }
         } else {
             SpinLockGuard guard(get_stripe_lock(curr.idx));
             if (layer - 1 < static_cast<int>(upper_links_[curr.idx].size())) {
                 const auto& l_links = upper_links_[curr.idx][layer - 1];
                 nbr_count = static_cast<uint32_t>(std::min<size_t>(l_links.size(), 512));
-                std::memcpy(local_nbrs, l_links.data(), nbr_count * sizeof(uint32_t));
+                if (nbr_count > 0 && l_links.data() != nullptr) {
+                    std::memcpy(local_nbrs, l_links.data(), nbr_count * sizeof(uint32_t));
+                }
             }
         }
 
@@ -549,8 +562,8 @@ void HNSWIndex::add(const float* vector, label_t label, const MetaMap* metadata)
         set_node_links(new_idx, l, selected_neighbors);
         if (l == 0) {
             for (idx_t nbr : selected_neighbors) {
-                if (nbr < in_degrees_l0_.size()) {
-                    in_degrees_l0_[nbr]++;
+                if (nbr < max_elements_) {
+                    in_degrees_l0_[nbr].fetch_add(1, std::memory_order_relaxed);
                 }
             }
         }
@@ -579,8 +592,8 @@ void HNSWIndex::add(const float* vector, label_t label, const MetaMap* metadata)
                     if (count < M0_) {
                         links[count++] = new_idx;
                         *get_layer0_link_count_ptr(nbr) = count;
-                        if (new_idx < in_degrees_l0_.size()) {
-                            in_degrees_l0_[new_idx]++;
+                        if (new_idx < max_elements_) {
+                            in_degrees_l0_[new_idx].fetch_add(1, std::memory_order_relaxed);
                         }
                     } else {
                         overflow_reselection_calls_++;
@@ -612,12 +625,12 @@ void HNSWIndex::add(const float* vector, label_t label, const MetaMap* metadata)
                             }
 
                             for (idx_t x : r_set) {
-                                if (x < in_degrees_l0_.size() && in_degrees_l0_[x] == 1) {
+                                if (x < max_elements_ && in_degrees_l0_[x].load(std::memory_order_relaxed) == 1) {
                                     int best_s_idx = -1;
                                     float max_d = -1.0f;
                                     for (size_t si = 0; si < shrunk.size(); ++si) {
                                         idx_t y = shrunk[si];
-                                        if (y < in_degrees_l0_.size() && in_degrees_l0_[y] >= 2) {
+                                        if (y < max_elements_ && in_degrees_l0_[y].load(std::memory_order_relaxed) >= 2) {
                                             float d = compute_dist_by_idx(nbr_vec, y);
                                             if (d > max_d) {
                                                 max_d = d;
@@ -639,18 +652,23 @@ void HNSWIndex::add(const float* vector, label_t label, const MetaMap* metadata)
                         std::unordered_set<idx_t> old_links(links, links + count);
                         std::unordered_set<idx_t> new_links(shrunk.begin(), shrunk.end());
                         for (idx_t old_l : old_links) {
-                            if (new_links.find(old_l) == new_links.end() && old_l < in_degrees_l0_.size()) {
-                                if (in_degrees_l0_[old_l] > 0) in_degrees_l0_[old_l]--;
+                            if (new_links.find(old_l) == new_links.end() && old_l < max_elements_) {
+                                uint32_t val = in_degrees_l0_[old_l].load(std::memory_order_relaxed);
+                                while (val > 0 && !in_degrees_l0_[old_l].compare_exchange_weak(val, val - 1, std::memory_order_relaxed)) {
+                                    // retry
+                                }
                             }
                         }
                         for (idx_t new_l : new_links) {
-                            if (old_links.find(new_l) == old_links.end() && new_l < in_degrees_l0_.size()) {
-                                in_degrees_l0_[new_l]++;
+                            if (old_links.find(new_l) == old_links.end() && new_l < max_elements_) {
+                                in_degrees_l0_[new_l].fetch_add(1, std::memory_order_relaxed);
                             }
                         }
 
                         *get_layer0_link_count_ptr(nbr) = static_cast<uint32_t>(shrunk.size());
-                        std::memcpy(links, shrunk.data(), shrunk.size() * sizeof(uint32_t));
+                        if (!shrunk.empty() && links != nullptr && shrunk.data() != nullptr) {
+                            std::memcpy(links, shrunk.data(), shrunk.size() * sizeof(uint32_t));
+                        }
                     }
                 }
             } else {
@@ -1698,7 +1716,13 @@ std::vector<std::vector<idx_t>> HNSWIndex::export_layer0_graph() const {
 }
 
 std::vector<uint32_t> HNSWIndex::get_in_degrees_l0() const {
-    return in_degrees_l0_;
+    std::vector<uint32_t> res(max_elements_);
+    if (in_degrees_l0_) {
+        for (std::size_t i = 0; i < max_elements_; ++i) {
+            res[i] = in_degrees_l0_[i].load(std::memory_order_relaxed);
+        }
+    }
+    return res;
 }
 
 std::size_t HNSWIndex::get_unreachable_count() const {
