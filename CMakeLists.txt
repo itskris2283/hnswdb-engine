@@ -4,6 +4,7 @@ project(hnswdb VERSION 0.1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 option(HNSWDB_BUILD_TESTS "Build tests" ON)
 option(HNSWDB_WERROR "Treat warnings as errors" OFF)
@@ -21,6 +22,7 @@ add_library(hnswdb
     src/serialization.cpp
     src/thread_pool.cpp
 )
+set_target_properties(hnswdb PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 if(HNSWDB_LEGACY_DUPLICATE_BUG)
     target_compile_definitions(hnswdb PUBLIC HNSWDB_LEGACY_DUPLICATE_BUG)
