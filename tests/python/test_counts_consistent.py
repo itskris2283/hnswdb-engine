@@ -25,17 +25,20 @@ def get_pytest_collected_count() -> int:
 
 def get_ctest_suite_count() -> int:
     candidates = [
-        os.path.join(ROOT, "build", "rel"),
-        os.path.join(ROOT, "build"),
         os.path.join(ROOT, "build-asan"),
         os.path.join(ROOT, "build-tsan"),
+        os.path.join(ROOT, "build", "rel"),
         os.path.join(ROOT, "build", "cp312-cp312-win_amd64"),
+        os.path.join(ROOT, "build"),
     ]
     for cdir in candidates:
+        if not os.path.isdir(cdir):
+            continue
         ctest_file = os.path.join(cdir, "CTestTestfile.cmake")
         if os.path.exists(ctest_file):
             with open(ctest_file, "r", encoding="utf-8") as f:
-                names = set(re.findall(r"add_test\(([^\s]+)", f.read()))
+                content = f.read()
+                names = set(re.findall(r'add_test\(["\']?([^"\'\s\)]+)', content))
             if names:
                 return len(names)
         try:
@@ -46,7 +49,7 @@ def get_ctest_suite_count() -> int:
                 text=True,
             )
             m = re.search(r"Total Tests:\s*(\d+)", res.stdout)
-            if m:
+            if m and int(m.group(1)) > 0:
                 return int(m.group(1))
         except Exception:
             pass
