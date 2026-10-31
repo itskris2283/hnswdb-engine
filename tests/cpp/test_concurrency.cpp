@@ -38,11 +38,11 @@ TEST(ConcurrencyTest, ThreadPoolBasic) {
 }
 
 TEST(ConcurrencyTest, ConcurrentDisjointWritersAndReaders) {
-    constexpr std::size_t d = 16;
-    constexpr std::size_t num_writers = 8;
-    constexpr std::size_t items_per_writer = 250;
-    constexpr std::size_t total_items = num_writers * items_per_writer;
-    constexpr std::size_t num_readers = 8;
+    static constexpr std::size_t d = 16;
+    static constexpr std::size_t num_writers = 8;
+    static constexpr std::size_t items_per_writer = 250;
+    static constexpr std::size_t total_items = num_writers * items_per_writer;
+    static constexpr std::size_t num_readers = 8;
 
     auto data = make_random_matrix(total_items, d, 42);
 
@@ -61,7 +61,7 @@ TEST(ConcurrencyTest, ConcurrentDisjointWritersAndReaders) {
     // Start 8 reader threads
     std::vector<std::thread> readers;
     for (std::size_t r = 0; r < num_readers; ++r) {
-        readers.emplace_back([&idx, &data, &stop_readers, &search_count, d, r]() {
+        readers.emplace_back([&idx, &data, &stop_readers, &search_count, r]() {
             std::size_t query_idx = (r * 10) % 100;
             while (!stop_readers.load(std::memory_order_relaxed)) {
                 auto res = idx.search(data.data() + query_idx * d, 5);
@@ -74,7 +74,7 @@ TEST(ConcurrencyTest, ConcurrentDisjointWritersAndReaders) {
     // Start 8 writer threads inserting disjoint ranges
     std::vector<std::thread> writers;
     for (std::size_t w = 0; w < num_writers; ++w) {
-        writers.emplace_back([&idx, &data, d, w, total_items, num_writers]() {
+        writers.emplace_back([&idx, &data, w]() {
             std::size_t start = 100 + w * ((total_items - 100) / num_writers);
             std::size_t end = (w == num_writers - 1) ? total_items : start + ((total_items - 100) / num_writers);
             for (std::size_t i = start; i < end; ++i) {
@@ -98,8 +98,8 @@ TEST(ConcurrencyTest, ConcurrentDisjointWritersAndReaders) {
 }
 
 TEST(ConcurrencyTest, ConcurrentSearchAndDelete) {
-    constexpr std::size_t d = 8;
-    constexpr std::size_t n = 500;
+    static constexpr std::size_t d = 8;
+    static constexpr std::size_t n = 500;
 
     auto data = make_random_matrix(n, d, 101);
     hnswdb::HNSWIndex idx(d, hnswdb::Metric::L2, n, 16, 200, 50, 42);
@@ -111,7 +111,7 @@ TEST(ConcurrencyTest, ConcurrentSearchAndDelete) {
     std::atomic<bool> done{false};
     std::vector<std::thread> readers;
     for (int r = 0; r < 4; ++r) {
-        readers.emplace_back([&idx, &data, &done, d, n, r]() {
+        readers.emplace_back([&idx, &data, &done, r]() {
             while (!done.load()) {
                 auto res = idx.search(data.data() + (r * 10) * d, 5);
                 EXPECT_EQ(res.ids.size(), 5);
@@ -126,7 +126,7 @@ TEST(ConcurrencyTest, ConcurrentSearchAndDelete) {
     }
 
     // Delete half the elements concurrently
-    std::thread deleter([&idx, n]() {
+    std::thread deleter([&idx]() {
         for (std::size_t i = 0; i < n / 2; ++i) {
             idx.delete_labels({static_cast<hnswdb::label_t>(i * 2)});
         }
@@ -142,8 +142,8 @@ TEST(ConcurrencyTest, ConcurrentSearchAndDelete) {
 }
 
 TEST(ConcurrencyTest, ConcurrentSearchDuringSave) {
-    constexpr std::size_t d = 8;
-    constexpr std::size_t n = 300;
+    static constexpr std::size_t d = 8;
+    static constexpr std::size_t n = 300;
 
     auto data = make_random_matrix(n, d, 202);
     hnswdb::HNSWIndex idx(d, hnswdb::Metric::L2, n, 16, 200, 50, 42);
@@ -157,7 +157,7 @@ TEST(ConcurrencyTest, ConcurrentSearchDuringSave) {
 
     std::vector<std::thread> readers;
     for (int r = 0; r < 4; ++r) {
-        readers.emplace_back([&idx, &data, &done, d, r]() {
+        readers.emplace_back([&idx, &data, &done, r]() {
             while (!done.load()) {
                 auto res = idx.search(data.data() + (r * 10) * d, 5);
                 EXPECT_EQ(res.ids.size(), 5);

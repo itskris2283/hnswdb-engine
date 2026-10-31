@@ -7,6 +7,7 @@
 #include <vector>
 #include <fstream>
 #include <filesystem>
+#include <cstring>
 
 namespace {
 
