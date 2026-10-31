@@ -122,7 +122,7 @@ TEST(ConcurrencyTest, ConcurrentSearchAndDelete) {
                         EXPECT_LT(id, static_cast<hnswdb::label_t>(n));
                     }
                 }
-                std::this_thread::yield();
+                std::this_thread::sleep_for(std::chrono::microseconds(50));
             }
         });
     }
@@ -131,7 +131,6 @@ TEST(ConcurrencyTest, ConcurrentSearchAndDelete) {
     std::thread deleter([&idx]() {
         for (std::size_t i = 0; i < n / 2; ++i) {
             idx.delete_labels({static_cast<hnswdb::label_t>(i * 2)});
-            std::this_thread::yield();
         }
     });
 
@@ -164,7 +163,7 @@ TEST(ConcurrencyTest, ConcurrentSearchDuringSave) {
             while (!done.load(std::memory_order_relaxed)) {
                 auto res = idx.search(data.data() + (r * 10) * d, 5);
                 EXPECT_EQ(res.ids.size(), 5);
-                std::this_thread::yield();
+                std::this_thread::sleep_for(std::chrono::microseconds(50));
             }
         });
     }

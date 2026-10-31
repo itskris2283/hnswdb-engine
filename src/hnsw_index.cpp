@@ -1138,6 +1138,16 @@ void HNSWIndex::resize(std::size_t new_max_elements) {
                               ", smaller than current elements: " + std::to_string(cur_element_count_.load()));
     }
 
+    auto new_in_degrees = std::make_unique<std::atomic<uint32_t>[]>(new_max_elements);
+    for (std::size_t i = 0; i < new_max_elements; ++i) {
+        if (i < max_elements_ && in_degrees_l0_) {
+            new_in_degrees[i].store(in_degrees_l0_[i].load(std::memory_order_relaxed), std::memory_order_relaxed);
+        } else {
+            new_in_degrees[i].store(0, std::memory_order_relaxed);
+        }
+    }
+    in_degrees_l0_ = std::move(new_in_degrees);
+
     max_elements_ = new_max_elements;
     vectors_.resize(max_elements_ * dim_);
     labels_.resize(max_elements_);
