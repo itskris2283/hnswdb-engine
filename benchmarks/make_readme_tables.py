@@ -39,7 +39,14 @@ def generate_tables(csv_path=None):
         avail_cols = [c for c in cols if c in ds_df.columns]
         sub = ds_df[avail_cols].copy()
         sub = sub.sort_values(by=["engine", "ef_search"])
-        output_lines.append(sub.to_markdown(index=False))
+        try:
+            output_lines.append(sub.to_markdown(index=False))
+        except (ImportError, ModuleNotFoundError):
+            headers = [str(c) for c in sub.columns]
+            output_lines.append("| " + " | ".join(headers) + " |")
+            output_lines.append("| " + " | ".join(["---"] * len(headers)) + " |")
+            for _, r in sub.iterrows():
+                output_lines.append("| " + " | ".join(str(v) for v in r) + " |")
         output_lines.append("\n")
 
         # Table: Build Time, RSS delta & Disk Size
@@ -49,7 +56,14 @@ def generate_tables(csv_path=None):
         avail_b_cols = [c for c in b_cols if c in ds_df.columns]
         build_df = ds_df.groupby("engine")[avail_b_cols[1:]].first().reset_index()
         output_lines.append("#### Build Time, Memory RSS & Storage Footprint\n")
-        output_lines.append(build_df.to_markdown(index=False))
+        try:
+            output_lines.append(build_df.to_markdown(index=False))
+        except (ImportError, ModuleNotFoundError):
+            headers = [str(c) for c in build_df.columns]
+            output_lines.append("| " + " | ".join(headers) + " |")
+            output_lines.append("| " + " | ".join(["---"] * len(headers)) + " |")
+            for _, r in build_df.iterrows():
+                output_lines.append("| " + " | ".join(str(v) for v in r) + " |")
         output_lines.append("\n---\n")
 
     table_md = "\n".join(output_lines)
